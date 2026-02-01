@@ -1,5 +1,11 @@
-
 #!/usr/bin/env python3
+"""
+Y.1731 DM/SLM CLI and TAB completion test (SW-235373, SW-235927, SW-235372).
+This script does not use 'rollback 0': discovery, validation, cleanup, and
+commit-check sequences tear down only the PM sessions/profiles they create,
+so your candidate config (e.g. services ethernet-oam connectivity-fault-management)
+is preserved.
+"""
 import argparse
 import getpass
 import re
@@ -162,6 +168,7 @@ def show_config_contains(client: paramiko.SSHClient, match_text: str, timeout: i
         return False, "Unable to run show config for services performance-monitoring."
     if match_text in out:
         return True, f"Found '{match_text}' in '{used}'."
+    # Include a tiny snippet for debugging
     sample = "\n".join(out.splitlines()[:40]).strip()
     return False, f"Did not find '{match_text}' in '{used}'.\n--- Output sample ---\n{sample}"
 
@@ -193,6 +200,9 @@ def discover_cfm_context(
     for cmd in show_cmds:
         out = run_shell_with_prompt(client, cmd, timeout=timeout)
         err, _ = has_cli_error(out)
+        # Accept only if:
+        # - Not an error AND
+        # - Has some relevant content (not just prompt/echo)
         if (not err) and re.search(r"(ethernet-oam|connectivity-fault-management|maintenance)", out, re.IGNORECASE):
             used = cmd
             output = out
@@ -208,11 +218,17 @@ def discover_cfm_context(
             None,
         )
 
-    md_re = re.compile(r"\bmaintenance[-_]domain(?:s)?(?:[-_]name)?\s+(\S+)", flags=re.IGNORECASE)
-    ma_re = re.compile(r"\bmaintenance[-_]association(?:s)?(?:[-_]name)?\s+(\S+)", flags=re.IGNORECASE)
+    md_re = re.compile(
+        r"\bmaintenance[-_]domain(?:s)?(?:[-_]name)?\s+(\S+)", flags=re.IGNORECASE
+    )
+    ma_re = re.compile(
+        r"\bmaintenance[-_]association(?:s)?(?:[-_]name)?\s+(\S+)", flags=re.IGNORECASE
+    )
     mep_id_re = re.compile(r"\bmep[-_]id\s+(\d+)\b", flags=re.IGNORECASE)
     mep_re = re.compile(r"\bmep\s+(\d+)\b", flags=re.IGNORECASE)
-    remote_mep_re = re.compile(r"\bremote[-_]mep(?:s)?(?:[-_]id)?\s+(\d+)\b", flags=re.IGNORECASE)
+    remote_mep_re = re.compile(
+        r"\bremote[-_]mep(?:s)?(?:[-_]id)?\s+(\d+)\b", flags=re.IGNORECASE
+    )
 
     # Collect candidates keyed by (md, ma).
     # Support both "display-set" output (md/ma in same line) and hierarchical output
@@ -244,6 +260,7 @@ def discover_cfm_context(
         # Remote MEP IDs frequently appear under the same md/ma context; don't treat them
         # as local MEP IDs (otherwise we might pick a remote MEP as the "source" MEP).
         is_remote_line = bool(remote_mep_re.search(line)) or ("remote-mep" in line.lower()) or ("remote_mep" in line.lower())
+
         for m in remote_mep_re.finditer(line):
             candidates[key]["remote_meps"].add(int(m.group(1)))
         if is_remote_line:
@@ -324,9 +341,75 @@ def build_dm_profile_commands(profile: str) -> List[str]:
 
 
 def exit_profiles_to_cfg_root() -> List[str]:
-    # After creating a profile, we land under cfg-pm-profiles-cfm.
-    # Exit back to (cfg)# so session commands are accepted.
+    # After exiting the DM profile submode, the prompt is typically under
+    # services -> performance-monitoring -> profiles -> cfm (cfg-pm-profiles-cfm).
+    # We need to return to (cfg)# so that "services performance-monitoring cfm ..."
+    # is accepted.
     return ["exit", "exit", "exit", "exit"]
+
+
+def teardown_dm_profile_commands(profile_name: str) -> List[str]:
+    """Return commands to remove a DM profile and leave configure (no rollback 0).
+    Profile is 5 levels under configure; use 5 exits to reach configure before 'no services ...'.
+    """
+    return (
+        ["exit", "exit", "exit", "exit", "exit"]
+        + [f"no services performance-monitoring profiles cfm two-way-delay-measurement {profile_name}"]
+        + ["exit"]
+    )
+
+
+def teardown_slm_profile_commands(profile_name: str) -> List[str]:
+    """Return commands to remove an SLM profile and leave configure (no rollback 0).
+    Profile is 5 levels under configure; use 5 exits to reach configure before 'no services ...'.
+    """
+    return (
+        ["exit", "exit", "exit", "exit", "exit"]
+        + [f"no services performance-monitoring profiles cfm two-way-synthetic-loss-measurement {profile_name}"]
+        + ["exit"]
+    )
+
+
+def teardown_dm_session_commands(session_name: str) -> List[str]:
+    """Return commands to remove a DM session and leave configure (no rollback 0)."""
+    return (
+        ["exit", "exit", "exit", "exit"]
+        + [f"no services performance-monitoring cfm two-way-delay-measurement {session_name}"]
+        + ["exit"]
+    )
+
+
+def teardown_slm_session_commands(session_name: str) -> List[str]:
+    """Return commands to remove an SLM session and leave configure (no rollback 0)."""
+    return (
+        ["exit", "exit", "exit", "exit"]
+        + [f"no services performance-monitoring cfm two-way-synthetic-loss-measurement {session_name}"]
+        + ["exit"]
+    )
+
+
+def teardown_dm_session_and_profile(session_name: str, profile_name: str, from_session_context: bool = True) -> List[str]:
+    """Teardown for negative tests that created both DM session and profile (no rollback 0).
+    If from_session_context is True, we're inside the session (4 exits to configure).
+    If False, we're already one level up e.g. after 'exit' from session (3 exits to configure).
+    """
+    n_exits = 4 if from_session_context else 3
+    return (
+        ["exit"] * n_exits
+        + [f"no services performance-monitoring cfm two-way-delay-measurement {session_name}"]
+        + [f"no services performance-monitoring profiles cfm two-way-delay-measurement {profile_name}"]
+        + ["exit"]
+    )
+
+
+def teardown_slm_session_and_profile(session_name: str, profile_name: str) -> List[str]:
+    """Teardown for negative tests that created both SLM session and profile (no rollback 0)."""
+    return (
+        ["exit", "exit", "exit", "exit"]
+        + [f"no services performance-monitoring cfm two-way-synthetic-loss-measurement {session_name}"]
+        + [f"no services performance-monitoring profiles cfm two-way-synthetic-loss-measurement {profile_name}"]
+        + ["exit"]
+    )
 
 
 def build_slm_profile_commands(profile: str, pcp: int = 5) -> List[str]:
@@ -430,6 +513,7 @@ def discover_valid_source_mep_ids(
     """
     Ask the device (via TAB completion) what source MEP IDs are valid for the given md/ma.
     """
+    # Enter a temporary DM session context and TAB-complete the mep-id value.
     tmp_session = "__DISC_DM_SRC__"
     prefix = f"source maintenance-domain {md} maintenance-association {ma} mep-id "
     channel = client.invoke_shell()
@@ -442,9 +526,13 @@ def discover_valid_source_mep_ids(
     channel.send(prefix)
     channel.send("\t")
     out = _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
+    # Teardown: remove only the temp session (do not rollback 0 - preserves user's candidate).
     channel.send("\n")
     _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
-    channel.send("rollback 0\n")
+    for _ in range(4):
+        channel.send("exit\n")
+        _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
+    channel.send("no services performance-monitoring cfm two-way-delay-measurement __DISC_DM_SRC__\n")
     _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
     channel.send("exit\n")
     _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
@@ -470,9 +558,13 @@ def discover_valid_target_mep_ids_dm(
     channel.send(prefix)
     channel.send("\t")
     out = _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
+    # Teardown: remove only the temp session (do not rollback 0 - preserves user's candidate).
     channel.send("\n")
     _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
-    channel.send("rollback 0\n")
+    for _ in range(4):
+        channel.send("exit\n")
+        _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
+    channel.send("no services performance-monitoring cfm two-way-delay-measurement __DISC_DM_TGT__\n")
     _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
     channel.send("exit\n")
     _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
@@ -498,7 +590,11 @@ def validate_dm_source_mep_id(
     _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
     channel.send(cmd + "\n")
     out = _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
-    channel.send("rollback 0\n")
+    # Teardown: remove only the temp session (do not rollback 0 - preserves user's candidate).
+    for _ in range(4):
+        channel.send("exit\n")
+        _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
+    channel.send("no services performance-monitoring cfm two-way-delay-measurement __DISC_DM_SRC_VALIDATE__\n")
     _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
     channel.send("exit\n")
     _read_until_prompt_then_drain(channel, prompt=None, timeout=timeout)
@@ -514,6 +610,7 @@ def discover_local_mep_ids_from_ethernet_oam(
     """
     Read local (non-remote) MEP IDs for a specific MD/MA from:
       show config services ethernet-oam
+    This is what you asked for: "show config services ethernet-oam" and derive parameters from there.
     """
     show_cmds = [
         "show config services ethernet-oam | display-set",
@@ -525,6 +622,7 @@ def discover_local_mep_ids_from_ethernet_oam(
     if not used:
         return []
 
+    # Be tolerant to plural/leaf-name variants.
     md_re = re.compile(r"\bmaintenance[-_]domain(?:s)?(?:[-_]name)?\s+(\S+)", flags=re.IGNORECASE)
     ma_re = re.compile(r"\bmaintenance[-_]association(?:s)?(?:[-_]name)?\s+(\S+)", flags=re.IGNORECASE)
     mep_id_re = re.compile(r"\bmep[-_]id\s+(\d+)\b", flags=re.IGNORECASE)
@@ -548,6 +646,7 @@ def discover_local_mep_ids_from_ethernet_oam(
         if line_md != md or line_ma != ma:
             continue
 
+        # Skip any line that is clearly about remote MEPs.
         if remote_mep_re.search(line):
             continue
 
@@ -602,6 +701,10 @@ def build_slm_session_commands(
 def _run_commit_check_sequence(
     client: paramiko.SSHClient, name: str, commands: List[str], timeout: int = 60
 ) -> StepResult:
+    """
+    Run commands in one shell session and evaluate PASS/FAIL based on CLI error detection.
+    Intended for SW-235372 CLI coverage checks.
+    """
     cmd_outputs = run_shell_sequence_detailed(client, commands, timeout=timeout)
     failed_cmd = None
     failed_errs: List[str] = []
@@ -652,13 +755,11 @@ def cleanup_config(
     slm_session: Optional[str] = None,
     slm_profile: Optional[str] = None,
 ) -> Tuple[bool, str]:
-    # Use a fresh connection for cleanup (more reliable), but keep one shell
-    # so "configure" applies to subsequent commands.
-    # Always start from a clean candidate to avoid unrelated leftover errors
-    # causing the cleanup commit to fail.
+    # Use a fresh connection for cleanup (more reliable). Do NOT use rollback 0:
+    # that would discard the user's entire candidate config (e.g. ethernet-oam CFM).
+    # Only remove the PM sessions/profiles created by this script, then commit.
     commands = [
         "configure",
-        "rollback 0",
         f"no services performance-monitoring cfm two-way-delay-measurement {session}",
         f"no services performance-monitoring profiles cfm two-way-delay-measurement {profile}",
         *(  # noqa: C400
@@ -897,6 +998,7 @@ def main() -> int:
                     elif not candidates:
                         ok_src, why = validate_dm_source_mep_id(client, args.md, args.ma, args.mep_id, timeout=20)
                         if not ok_src:
+                            # Try to select a local MEP ID from ethernet-oam CFM config.
                             cfg_meps = discover_local_mep_ids_from_ethernet_oam(client, args.md, args.ma, timeout=30)
                             picked: Optional[int] = None
                             for candidate in cfg_meps:
@@ -928,8 +1030,8 @@ def main() -> int:
                                     )
                                 )
                                 args.mep_id = _prompt_numeric(None, "Local MEP ID (numeric): ")
-
                 if args.mep_id is None:
+                    # Try to discover valid MEP IDs from CLI completion first.
                     candidates = discover_valid_source_mep_ids(client, args.md, args.ma, timeout=20)
                     if candidates:
                         args.mep_id = str(candidates[0])
@@ -941,6 +1043,7 @@ def main() -> int:
                             )
                         )
                     else:
+                        # Fall back to ethernet-oam config parsing (what you asked for).
                         cfg_meps = discover_local_mep_ids_from_ethernet_oam(client, args.md, args.ma, timeout=30)
                         picked: Optional[int] = None
                         for candidate in cfg_meps:
@@ -1173,6 +1276,168 @@ def main() -> int:
                 )
 
         if not abort:
+            # SW-235372: CLI coverage for DM/SLM profiles + sessions (knobs from issue tree)
+            # DM profile duration variants + thresholds
+            _progress("sw235372_dm_profile_variants")
+            dm_prof_372 = f"{args.profile}_SW235372"
+            dm_prof_base = [
+                "configure",
+                f"services performance-monitoring profiles cfm two-way-delay-measurement {dm_prof_372}",
+                "inform-test-results enabled",
+                "thresholds delay-rtt-min 100",
+                "thresholds delay-rtt-avg 1000",
+                "thresholds delay-rtt-max 2000",
+                "thresholds jitter-rtt-avg 500",
+                "thresholds jitter-rtt-max 1000",
+                "thresholds success-rate 90",
+            ]
+            results.append(
+                _run_commit_check_sequence(
+                    client,
+                    "sw235372_dm_profile_probes",
+                    dm_prof_base
+                    + ["test-duration probes probe-count 5 probe-interval 1 repeat-interval 10", "commit check"]
+                    + teardown_dm_profile_commands(dm_prof_372),
+                )
+            )
+            results.append(
+                _run_commit_check_sequence(
+                    client,
+                    "sw235372_dm_profile_time_frame",
+                    dm_prof_base
+                    + ["test-duration time-frame 2 probe-interval 1 repeat-interval 10", "commit check"]
+                    + teardown_dm_profile_commands(dm_prof_372),
+                )
+            )
+            results.append(
+                _run_commit_check_sequence(
+                    client,
+                    "sw235372_dm_profile_non_stop",
+                    dm_prof_base
+                    + ["test-duration non-stop probe-interval 1 computation-interval 10", "commit check"]
+                    + teardown_dm_profile_commands(dm_prof_372),
+                )
+            )
+
+            # SLM profile duration variants + thresholds + PCP
+            _progress("sw235372_slm_profile_variants")
+            slm_prof_372 = f"{args.slm_profile}_SW235372"
+            slm_prof_base = [
+                "configure",
+                f"services performance-monitoring profiles cfm two-way-synthetic-loss-measurement {slm_prof_372}",
+                f"pcp {args.slm_pcp}",
+                "inform-test-results enabled",
+                "thresholds near-end-loss 1",
+                "thresholds far-end-loss 1",
+            ]
+            results.append(
+                _run_commit_check_sequence(
+                    client,
+                    "sw235372_slm_profile_probes",
+                    slm_prof_base
+                    + ["test-duration probes probe-count 5 probe-interval 1 repeat-interval 10", "commit check"]
+                    + teardown_slm_profile_commands(slm_prof_372),
+                )
+            )
+            results.append(
+                _run_commit_check_sequence(
+                    client,
+                    "sw235372_slm_profile_time_frame",
+                    slm_prof_base
+                    + ["test-duration time-frame 2 probe-interval 1 repeat-interval 10", "commit check"]
+                    + teardown_slm_profile_commands(slm_prof_372),
+                )
+            )
+            results.append(
+                _run_commit_check_sequence(
+                    client,
+                    "sw235372_slm_profile_non_stop",
+                    slm_prof_base
+                    + ["test-duration non-stop probe-interval 1 computation-interval 10", "commit check"]
+                    + teardown_slm_profile_commands(slm_prof_372),
+                )
+            )
+
+            # DM session knobs: admin-state enabled/disabled, description, profile, source, target variants
+            _progress("sw235372_dm_session_variants")
+            dm_sess_372 = f"{args.session}_SW235372"
+            # Use committed base profile (args.profile) so session references an existing profile.
+            results.append(
+                _run_commit_check_sequence(
+                    client,
+                    "sw235372_dm_session_target_mep",
+                    [
+                        "configure",
+                        f"services performance-monitoring cfm two-way-delay-measurement {dm_sess_372}",
+                        "admin-state enabled",
+                        "admin-state disabled",
+                        f"description {args.description}",
+                        f"profile {args.profile}",
+                        f"source maintenance-domain {args.md} maintenance-association {args.ma} mep-id {args.mep_id}",
+                        f"target {args.target}",
+                        "commit check",
+                    ]
+                    + teardown_dm_session_commands(dm_sess_372),
+                )
+            )
+            results.append(
+                _run_commit_check_sequence(
+                    client,
+                    "sw235372_dm_session_target_mac",
+                    [
+                        "configure",
+                        f"services performance-monitoring cfm two-way-delay-measurement {dm_sess_372}_MAC",
+                        "admin-state enabled",
+                        f"description {args.description}",
+                        f"profile {args.profile}",
+                        f"source maintenance-domain {args.md} maintenance-association {args.ma} mep-id {args.mep_id}",
+                        "target mac-address 00:11:22:33:44:55",
+                        "commit check",
+                    ]
+                    + teardown_dm_session_commands(f"{dm_sess_372}_MAC"),
+                )
+            )
+
+            # SLM session knobs: admin-state enabled/disabled, description, profile, source, target variants
+            _progress("sw235372_slm_session_variants")
+            slm_sess_372 = f"{args.slm_session}_SW235372"
+            # Use committed base profile (args.slm_profile) so session references an existing profile.
+            results.append(
+                _run_commit_check_sequence(
+                    client,
+                    "sw235372_slm_session_target_mep",
+                    [
+                        "configure",
+                        f"services performance-monitoring cfm two-way-synthetic-loss-measurement {slm_sess_372}",
+                        "admin-state enabled",
+                        "admin-state disabled",
+                        f"description {args.slm_description}",
+                        f"profile {args.slm_profile}",
+                        f"source maintenance-domain {args.md} maintenance-association {args.ma} mep-id {args.mep_id}",
+                        f"target {args.slm_target}",
+                        "commit check",
+                    ]
+                    + teardown_slm_session_commands(slm_sess_372),
+                )
+            )
+            results.append(
+                _run_commit_check_sequence(
+                    client,
+                    "sw235372_slm_session_target_mac",
+                    [
+                        "configure",
+                        f"services performance-monitoring cfm two-way-synthetic-loss-measurement {slm_sess_372}_MAC",
+                        "admin-state enabled",
+                        f"description {args.slm_description}",
+                        f"profile {args.slm_profile}",
+                        f"source maintenance-domain {args.md} maintenance-association {args.ma} mep-id {args.mep_id}",
+                        "target mac-address 00:11:22:33:44:55",
+                        "commit check",
+                    ]
+                    + teardown_slm_session_commands(f"{slm_sess_372}_MAC"),
+                )
+            )
+
             commit_err, commit_errs = has_cli_error(commit_output)
             commit_no_changes = "no configuration changes were made" in commit_output.lower()
             results.append(
@@ -1218,7 +1483,8 @@ def main() -> int:
                     args.slm_target,
                     args.long_desc,
                 )
-                + ["commit check", "rollback 0", "exit", "exit"]
+                + ["commit check"]
+                + teardown_slm_session_and_profile(slm_long_name, slm_long_profile)
             )
             cmd_outputs = run_shell_sequence_detailed(client, neg_slm_long_cmds, timeout=60)
             neg_err = False
@@ -1270,7 +1536,8 @@ def main() -> int:
                     args.slm_target,
                     args.slm_description,
                 )
-                + ["commit check", "rollback 0", "exit", "exit"]
+                + ["commit check"]
+                + teardown_slm_session_and_profile(f"{args.slm_session}_BAD", neg_slm_profile_bad)
             )
             cmd_outputs = run_shell_sequence_detailed(client, neg_slm_bad_cmds, timeout=60)
             neg_err = False
@@ -1322,7 +1589,8 @@ def main() -> int:
                     args.target,
                     args.long_desc,
                 )
-                + ["commit check", "rollback 0", "exit", "exit"]
+                + ["commit check"]
+                + teardown_dm_session_and_profile(args.long_name, dm_long_profile)
             )
             cmd_outputs = run_shell_sequence_detailed(client, neg_long_cmds, timeout=60)
             neg_err = False
@@ -1375,7 +1643,8 @@ def main() -> int:
                     args.target,
                     args.description,
                 )
-                + ["commit check", "rollback 0", "exit", "exit"]
+                + ["commit check"]
+                + teardown_dm_session_and_profile(f"{args.session}_BAD", neg_profile_bad)
             )
             cmd_outputs = run_shell_sequence_detailed(client, neg_bad_cmds, timeout=60)
             neg_err = False
@@ -1432,7 +1701,8 @@ def main() -> int:
                     "target mep-id abc",
                     "exit",
                 ]
-                + ["commit check", "rollback 0", "exit", "exit"]
+                + ["commit check"]
+                + teardown_dm_session_and_profile(neg_sess_nonnum, neg_profile_nonnum, from_session_context=False)
             )
             cmd_outputs = run_shell_sequence_detailed(client, neg_nonnum_cmds, timeout=60)
             neg_err = False
@@ -1535,11 +1805,12 @@ def main() -> int:
             or n.startswith("configure_slm")
             or n.startswith("commit_slm")
             or n.startswith("negative_slm_")
+            or n.startswith("sw235372_slm_")
         ):
             return "slm"
         if "two-way-delay-measurement" in n or n.startswith("configure_dm") or n == "commit" or n.startswith(
             "negative_"
-        ):
+        ) or n.startswith("sw235372_dm_"):
             return "dm"
         return "other"
 
