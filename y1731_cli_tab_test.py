@@ -3,8 +3,11 @@
 Y.1731 DM/SLM CLI and TAB completion test (SW-235373, SW-235927, SW-235372).
 This script does not use 'rollback 0': discovery, validation, cleanup, and
 commit-check sequences tear down only the PM sessions/profiles they create,
-so your candidate config (e.g. services ethernet-oam connectivity-fault-management)
-is preserved.
+so your candidate config is preserved.
+
+Device note: rollback 0 only rolls back the candidate (config you are about to
+commit). To revert older committed configs use rollback 1, 2, etc.; use
+'show config committed' (sh con com) to see commit history.
 """
 import argparse
 import getpass
@@ -1305,7 +1308,7 @@ def main() -> int:
                     client,
                     "sw235372_dm_profile_time_frame",
                     dm_prof_base
-                    + ["test-duration time-frame 2 probe-interval 1 repeat-interval 10", "commit check"]
+                    + ["test-duration time-frame minutes 1 probe-interval 1 repeat-interval 10", "commit check"]
                     + teardown_dm_profile_commands(dm_prof_372),
                 )
             )
@@ -1344,7 +1347,7 @@ def main() -> int:
                     client,
                     "sw235372_slm_profile_time_frame",
                     slm_prof_base
-                    + ["test-duration time-frame 2 probe-interval 1 repeat-interval 10", "commit check"]
+                    + ["test-duration time-frame minutes 1 probe-interval 1 repeat-interval 10", "commit check"]
                     + teardown_slm_profile_commands(slm_prof_372),
                 )
             )
