@@ -10,6 +10,8 @@ Automated CLI and TAB-completion tests for Y.1731 **Delay Measurement (DM)** and
 
 This script **does not use `rollback 0`**. Discovery, validation, cleanup, and commit-check steps only remove the PM sessions/profiles they create. Your candidate config (e.g. `services ethernet-oam connectivity-fault-management`) is left intact.
 
+**Device rollback:** On the device, `rollback 0` only rolls back the candidate (config you are about to commit). To revert older committed configs use `rollback 1`, `rollback 2`, etc. Use `show config committed` (sh con com) to see commit history.
+
 ---
 
 ## Prerequisites

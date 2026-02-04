@@ -3,8 +3,11 @@
 Y.1731 DM/SLM CLI and TAB completion test (SW-235373, SW-235927, SW-235372).
 This script does not use 'rollback 0': discovery, validation, cleanup, and
 commit-check sequences tear down only the PM sessions/profiles they create,
-so your candidate config (e.g. services ethernet-oam connectivity-fault-management)
-is preserved.
+so your candidate config is preserved.
+
+Device note: rollback 0 only rolls back the candidate (config you are about to
+commit). To revert older committed configs use rollback 1, 2, etc.; use
+'show config committed' (sh con com) to see commit history.
 """
 import argparse
 import getpass
@@ -349,18 +352,22 @@ def exit_profiles_to_cfg_root() -> List[str]:
 
 
 def teardown_dm_profile_commands(profile_name: str) -> List[str]:
-    """Return commands to remove a DM profile and leave configure (no rollback 0)."""
+    """Return commands to remove a DM profile and leave configure (no rollback 0).
+    Profile is 5 levels under configure; use 5 exits to reach configure before 'no services ...'.
+    """
     return (
-        ["exit", "exit", "exit", "exit"]
+        ["exit", "exit", "exit", "exit", "exit"]
         + [f"no services performance-monitoring profiles cfm two-way-delay-measurement {profile_name}"]
         + ["exit"]
     )
 
 
 def teardown_slm_profile_commands(profile_name: str) -> List[str]:
-    """Return commands to remove an SLM profile and leave configure (no rollback 0)."""
+    """Return commands to remove an SLM profile and leave configure (no rollback 0).
+    Profile is 5 levels under configure; use 5 exits to reach configure before 'no services ...'.
+    """
     return (
-        ["exit", "exit", "exit", "exit"]
+        ["exit", "exit", "exit", "exit", "exit"]
         + [f"no services performance-monitoring profiles cfm two-way-synthetic-loss-measurement {profile_name}"]
         + ["exit"]
     )
@@ -1301,7 +1308,7 @@ def main() -> int:
                     client,
                     "sw235372_dm_profile_time_frame",
                     dm_prof_base
-                    + ["test-duration time-frame duration 2 probe-interval 1 repeat-interval 10", "commit check"]
+                    + ["test-duration time-frame minutes 1 probe-interval 1 repeat-interval 10", "commit check"]
                     + teardown_dm_profile_commands(dm_prof_372),
                 )
             )
@@ -1340,7 +1347,7 @@ def main() -> int:
                     client,
                     "sw235372_slm_profile_time_frame",
                     slm_prof_base
-                    + ["test-duration time-frame duration 2 probe-interval 1 repeat-interval 10", "commit check"]
+                    + ["test-duration time-frame minutes 1 probe-interval 1 repeat-interval 10", "commit check"]
                     + teardown_slm_profile_commands(slm_prof_372),
                 )
             )
@@ -1357,6 +1364,7 @@ def main() -> int:
             # DM session knobs: admin-state enabled/disabled, description, profile, source, target variants
             _progress("sw235372_dm_session_variants")
             dm_sess_372 = f"{args.session}_SW235372"
+            # Use committed base profile (args.profile) so session references an existing profile.
             results.append(
                 _run_commit_check_sequence(
                     client,
@@ -1367,7 +1375,7 @@ def main() -> int:
                         "admin-state enabled",
                         "admin-state disabled",
                         f"description {args.description}",
-                        f"profile {dm_prof_372}",
+                        f"profile {args.profile}",
                         f"source maintenance-domain {args.md} maintenance-association {args.ma} mep-id {args.mep_id}",
                         f"target {args.target}",
                         "commit check",
@@ -1384,7 +1392,7 @@ def main() -> int:
                         f"services performance-monitoring cfm two-way-delay-measurement {dm_sess_372}_MAC",
                         "admin-state enabled",
                         f"description {args.description}",
-                        f"profile {dm_prof_372}",
+                        f"profile {args.profile}",
                         f"source maintenance-domain {args.md} maintenance-association {args.ma} mep-id {args.mep_id}",
                         "target mac-address 00:11:22:33:44:55",
                         "commit check",
@@ -1396,6 +1404,7 @@ def main() -> int:
             # SLM session knobs: admin-state enabled/disabled, description, profile, source, target variants
             _progress("sw235372_slm_session_variants")
             slm_sess_372 = f"{args.slm_session}_SW235372"
+            # Use committed base profile (args.slm_profile) so session references an existing profile.
             results.append(
                 _run_commit_check_sequence(
                     client,
@@ -1406,7 +1415,7 @@ def main() -> int:
                         "admin-state enabled",
                         "admin-state disabled",
                         f"description {args.slm_description}",
-                        f"profile {slm_prof_372}",
+                        f"profile {args.slm_profile}",
                         f"source maintenance-domain {args.md} maintenance-association {args.ma} mep-id {args.mep_id}",
                         f"target {args.slm_target}",
                         "commit check",
@@ -1423,7 +1432,7 @@ def main() -> int:
                         f"services performance-monitoring cfm two-way-synthetic-loss-measurement {slm_sess_372}_MAC",
                         "admin-state enabled",
                         f"description {args.slm_description}",
-                        f"profile {slm_prof_372}",
+                        f"profile {args.slm_profile}",
                         f"source maintenance-domain {args.md} maintenance-association {args.ma} mep-id {args.mep_id}",
                         "target mac-address 00:11:22:33:44:55",
                         "commit check",
@@ -1835,4 +1844,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-Exit(main())
