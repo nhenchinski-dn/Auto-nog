@@ -949,13 +949,13 @@ class QoSSanityTest:
         print("TEST 8: Verify QoS counters")
         print("=" * 60)
 
-        if not self.target_iface:
-            self._record("QoS counters", False, "No target interface set")
+        if not self.ingress_iface or not self.egress_iface:
+            self._record("QoS counters", False, "No target interfaces set")
             return
 
-        # Ingress counters
+        # Ingress counters (on ingress interface)
         raw_in = self.run_show(
-            f"show qos interfaces counters {self.target_iface} in",
+            f"show qos interfaces counters {self.ingress_iface} in",
             timeout=30,
         )
         in_rules = self.parse_qos_counters_rules(raw_in)
@@ -975,9 +975,9 @@ class QoSSanityTest:
         else:
             self._record("Ingress counter fields", False, "No matched packets/octets found")
 
-        # Egress counters
+        # Egress counters (on egress interface)
         raw_out = self.run_show(
-            f"show qos interfaces counters {self.target_iface} out",
+            f"show qos interfaces counters {self.egress_iface} out",
             timeout=30,
         )
         out_rules = self.parse_qos_counters_rules(raw_out)
@@ -1042,21 +1042,21 @@ class QoSSanityTest:
         print("TEST 10: Verify egress queues")
         print("=" * 60)
 
-        if not self.target_iface:
-            self._record("Egress queues", False, "No target interface set")
+        if not self.egress_iface:
+            self._record("Egress queues", False, "No egress interface set")
             return
 
         # egress-queues only works on physical interfaces, not bundles
-        if self.target_iface.startswith("bundle"):
+        if self.egress_iface.startswith("bundle"):
             self._record(
                 "Egress queues",
                 True,
-                f"Skipped -- {self.target_iface} is a bundle (egress-queues requires physical iface)",
+                f"Skipped -- {self.egress_iface} is a bundle (egress-queues requires physical iface)",
             )
             return
 
         raw = self.run_show(
-            f"show qos interfaces egress-queues {self.target_iface}",
+            f"show qos interfaces egress-queues {self.egress_iface}",
             timeout=30,
         )
         queues = self.parse_egress_queues(raw)
@@ -1088,8 +1088,8 @@ class QoSSanityTest:
         print("TEST 11: Modify bandwidth (rule 1: 10% -> 15%)")
         print("=" * 60)
 
-        if not self.target_iface:
-            self._record("Modify bandwidth", False, "No target interface set")
+        if not self.egress_iface:
+            self._record("Modify bandwidth", False, "No egress interface set")
             return
 
         config_lines = [
@@ -1114,8 +1114,8 @@ class QoSSanityTest:
             return
         self._record("Modify bandwidth commit", True)
 
-        # Verify the change
-        raw = self.run_show(f"show qos interfaces {self.target_iface} out", timeout=30)
+        # Verify the change on egress interface
+        raw = self.run_show(f"show qos interfaces {self.egress_iface} out", timeout=30)
         bw = self.parse_interface_qos_bandwidth(raw, "1")
         if bw == "15":
             self._record("Verify bandwidth = 15%", True)
@@ -1128,8 +1128,8 @@ class QoSSanityTest:
         print("TEST 12: Revert bandwidth (rule 1: 15% -> 10%)")
         print("=" * 60)
 
-        if not self.target_iface:
-            self._record("Revert bandwidth", False, "No target interface set")
+        if not self.egress_iface:
+            self._record("Revert bandwidth", False, "No egress interface set")
             return
 
         config_lines = [
@@ -1154,8 +1154,8 @@ class QoSSanityTest:
             return
         self._record("Revert bandwidth commit", True)
 
-        # Verify the revert
-        raw = self.run_show(f"show qos interfaces {self.target_iface} out", timeout=30)
+        # Verify the revert on egress interface
+        raw = self.run_show(f"show qos interfaces {self.egress_iface} out", timeout=30)
         bw = self.parse_interface_qos_bandwidth(raw, "1")
         if bw == "10":
             self._record("Verify bandwidth = 10%", True)
@@ -1166,30 +1166,40 @@ class QoSSanityTest:
     # Phase 3: Cleanup
     # ------------------------------------------------------------------
     def test_detach_policies(self):
-        """Test 13: Detach policies from interface."""
+        """Test 13: Detach policies from interfaces."""
         print("\n" + "=" * 60)
-        print("TEST 13: Detach policies from interface")
+        print("TEST 13: Detach policies from interfaces")
         print("=" * 60)
 
-        if not self.target_iface:
-            self._record("Detach policies", True, "No interface to detach from")
+        if not self.ingress_iface and not self.egress_iface:
+            self._record("Detach policies", True, "No interfaces to detach from")
             return
 
-        config_lines = ["interfaces", self.target_iface]
+        config_lines = []
 
-        # Remove policies we attached
-        if self.attached_in:
-            config_lines.append(f"no qos policy {INGRESS_POLICY} direction in")
-        if self.attached_out:
-            config_lines.append(f"no qos policy {EGRESS_POLICY} direction out")
+        # Detach ingress policy from ingress interface
+        if self.attached_in and self.ingress_iface:
+            config_lines += [
+                "interfaces",
+                self.ingress_iface,
+                f"no qos policy {INGRESS_POLICY} direction in",
+            ]
+            # Restore original if it was different
+            if self.original_in_policy and self.original_in_policy != INGRESS_POLICY:
+                config_lines.append(f"qos policy {self.original_in_policy} direction in")
+            config_lines += ["exit", "exit"]
 
-        # Restore original policies if they existed and were different
-        if self.attached_in and self.original_in_policy and self.original_in_policy != INGRESS_POLICY:
-            config_lines.append(f"qos policy {self.original_in_policy} direction in")
-        if self.attached_out and self.original_out_policy and self.original_out_policy != EGRESS_POLICY:
-            config_lines.append(f"qos policy {self.original_out_policy} direction out")
-
-        config_lines += ["exit", "exit"]  # interface, interfaces
+        # Detach egress policy from egress interface
+        if self.attached_out and self.egress_iface:
+            config_lines += [
+                "interfaces",
+                self.egress_iface,
+                f"no qos policy {EGRESS_POLICY} direction out",
+            ]
+            # Restore original if it was different
+            if self.original_out_policy and self.original_out_policy != EGRESS_POLICY:
+                config_lines.append(f"qos policy {self.original_out_policy} direction out")
+            config_lines += ["exit", "exit"]
 
         if not self.attached_in and not self.attached_out:
             self._record("Detach policies", True, "No policies were attached by this test")
@@ -1420,7 +1430,10 @@ class QoSSanityTest:
                             f.write(f"```\n{detail}\n```\n\n")
                 
                 f.write(f"## Configuration Details\n\n")
-                f.write(f"- **Target Interface**: {self.target_iface if self.target_iface else 'N/A'}\n")
+                f.write(f"- **Ingress Interface**: {self.ingress_iface if self.ingress_iface else 'N/A'}\n")
+                f.write(f"- **Egress Interface**: {self.egress_iface if self.egress_iface else 'N/A'}\n")
+                if self.ingress_iface == self.egress_iface:
+                    f.write(f"  - *(Same interface used for both directions)*\n")
                 f.write(f"- **Ingress Policy**: {INGRESS_POLICY}\n")
                 f.write(f"- **Egress Policy**: {EGRESS_POLICY}\n")
                 f.write(f"- **Expected TCMs**: {len(EXPECTED_TCM)}\n")
@@ -1439,19 +1452,31 @@ class QoSSanityTest:
         """Best-effort cleanup after an unexpected error."""
         print("\n[!] Attempting emergency cleanup...")
         try:
-            if self.target_iface and (self.attached_in or self.attached_out):
-                lines = ["interfaces", self.target_iface]
-                if self.attached_in:
-                    lines.append(f"no qos policy {INGRESS_POLICY} direction in")
-                if self.attached_out:
-                    lines.append(f"no qos policy {EGRESS_POLICY} direction out")
-                if self.original_in_policy and self.original_in_policy != INGRESS_POLICY and self.attached_in:
+            # Detach from ingress interface
+            if self.ingress_iface and self.attached_in:
+                lines = [
+                    "interfaces",
+                    self.ingress_iface,
+                    f"no qos policy {INGRESS_POLICY} direction in",
+                ]
+                if self.original_in_policy and self.original_in_policy != INGRESS_POLICY:
                     lines.append(f"qos policy {self.original_in_policy} direction in")
-                if self.original_out_policy and self.original_out_policy != EGRESS_POLICY and self.attached_out:
+                lines += ["exit", "exit"]
+                self.run_config(lines, timeout=30)
+                print(f"[!] Detached ingress policy from {self.ingress_iface}.")
+
+            # Detach from egress interface (if different)
+            if self.egress_iface and self.attached_out:
+                lines = [
+                    "interfaces",
+                    self.egress_iface,
+                    f"no qos policy {EGRESS_POLICY} direction out",
+                ]
+                if self.original_out_policy and self.original_out_policy != EGRESS_POLICY:
                     lines.append(f"qos policy {self.original_out_policy} direction out")
                 lines += ["exit", "exit"]
                 self.run_config(lines, timeout=30)
-                print("[!] Detached policies from interface.")
+                print(f"[!] Detached egress policy from {self.egress_iface}.")
 
             if self.created_policies or self.created_tcms or self.created_hwmapping:
                 lines = ["qos"]
