@@ -188,11 +188,12 @@ class QoSSanityTest:
     """QoS happy-flow sanity tester for DNOS devices."""
 
     def __init__(self, host: str, username: str, password: str,
-                 no_cleanup: bool = False):
+                 no_cleanup: bool = False, forced_interface: Optional[str] = None):
         self.host = host
         self.username = username
         self.password = password
         self.no_cleanup = no_cleanup
+        self.forced_interface = forced_interface
         self.client: Optional[paramiko.SSHClient] = None
         self.shell: Optional[paramiko.Channel] = None
         self.results: List[Tuple[str, bool, str]] = []
@@ -650,16 +651,21 @@ class QoSSanityTest:
         print("TEST 3: Discover interface and attach policies")
         print("=" * 60)
 
-        # Find up interfaces using table format
-        raw = self.run_show("show interfaces", timeout=30)
-        up_ifaces = self.parse_interfaces_summary(raw)
+        # Use forced interface if provided, otherwise auto-discover
+        if self.forced_interface:
+            self.target_iface = self.forced_interface
+            self._record("Use forced interface", True, f"Using specified interface: {self.target_iface}")
+        else:
+            # Find up interfaces using table format
+            raw = self.run_show("show interfaces", timeout=30)
+            up_ifaces = self.parse_interfaces_summary(raw)
 
-        if not up_ifaces:
-            self._record("Discover up interface", False, "No up interfaces found")
-            return
+            if not up_ifaces:
+                self._record("Discover up interface", False, "No up interfaces found")
+                return
 
-        self.target_iface = up_ifaces[0]
-        self._record("Discover up interface", True, f"Using {self.target_iface} (from {len(up_ifaces)} up)")
+            self.target_iface = up_ifaces[0]
+            self._record("Discover up interface", True, f"Using {self.target_iface} (from {len(up_ifaces)} up)")
 
         # Check if interface already has QoS policies
         qos_raw = self.run_show(f"show qos interfaces {self.target_iface}", timeout=30)
@@ -1415,6 +1421,10 @@ def main():
         "--password", default="dnroot", help="SSH password (default: dnroot)"
     )
     parser.add_argument(
+        "--interface",
+        help="Specific interface to use for testing (e.g., ge100-0/0/96, lo0). If not specified, auto-discovers first UP interface.",
+    )
+    parser.add_argument(
         "--no-cleanup",
         action="store_true",
         help="Skip cleanup phase -- leave policies and config in place after tests",
@@ -1426,6 +1436,7 @@ def main():
         username=args.user,
         password=args.password,
         no_cleanup=args.no_cleanup,
+        forced_interface=args.interface,
     )
     ok = tester.run_all()
     sys.exit(0 if ok else 1)
