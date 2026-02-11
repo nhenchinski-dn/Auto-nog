@@ -460,27 +460,33 @@ class QoSSanityTest:
         return result
 
     @staticmethod
+    @staticmethod
     def parse_interfaces_summary(output: str) -> List[str]:
         """
-        Parse 'show interfaces' to get list of 'up' physical/bundle interfaces.
-        Looks for lines like: 'Interface bundle-2' or 'Interface ge100-1/0/1'
-        followed by operational state up.
+        Parse 'show interfaces' (table format) to get list of 'up' interfaces.
+        Looks for table rows with '| up ' in the Operational column.
+        Example line: | ge100-0/0/96               | enabled  | up              | ...
         """
         up_ifaces = []
-        current_iface = None
         for line in output.split("\n"):
-            m = re.match(r"\s*Interface\s+((?:ge\d+|bundle)-\S+)\s*$", line)
-            if m:
-                current_iface = m.group(1)
+            # Skip header/separator lines
+            if not line.strip().startswith("|"):
                 continue
-            if current_iface:
-                if "Operational state: up" in line or "Operational state:.*up" in line:
-                    # Filter out sub-interfaces (contain .)
-                    if "." not in current_iface:
-                        up_ifaces.append(current_iface)
-                    current_iface = None
-                elif "Operational state:" in line:
-                    current_iface = None
+            if "Interface" in line or "---" in line:
+                continue
+            
+            # Parse table row: | interface_name | admin | operational | ...
+            parts = [p.strip() for p in line.split("|")]
+            if len(parts) < 4:
+                continue
+            
+            interface_name = parts[1]
+            operational_state = parts[3] if len(parts) > 3 else ""
+            
+            # Check if operational state is "up" and filter out sub-interfaces
+            if operational_state == "up" and "." not in interface_name:
+                up_ifaces.append(interface_name)
+        
         return up_ifaces
 
     @staticmethod
@@ -643,8 +649,8 @@ class QoSSanityTest:
         print("TEST 3: Discover interface and attach policies")
         print("=" * 60)
 
-        # Find up interfaces
-        raw = self.run_show("show interfaces detail", timeout=60)
+        # Find up interfaces using table format
+        raw = self.run_show("show interfaces", timeout=30)
         up_ifaces = self.parse_interfaces_summary(raw)
 
         if not up_ifaces:
