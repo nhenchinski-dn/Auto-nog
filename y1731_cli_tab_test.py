@@ -584,7 +584,7 @@ def run_shell_with_prompt(client: paramiko.SSHClient, command: str, timeout: int
 
 
 def run_shell_with_prompt_long(client: paramiko.SSHClient, command: str, timeout: int = 60) -> str:
-    """Like run_shell_with_prompt but with a longer quiet threshold (3s) for
+    """Like run_shell_with_prompt but with a longer quiet threshold (5s) for
     commands that return large hierarchical output (e.g. show config).
     The device may pause between sections, causing the normal 1.2s quiet
     threshold to truncate the output prematurely."""
@@ -592,10 +592,10 @@ def run_shell_with_prompt_long(client: paramiko.SSHClient, command: str, timeout
     channel.settimeout(timeout)
     banner = _read_until_prompt(channel, prompt=None, timeout=timeout, quiet=2)
     channel.send(command + "\n")
-    # Use longer quiet threshold: wait up to 3s of silence before assuming done
-    output = _read_until_prompt(channel, prompt=None, timeout=timeout, quiet=3)
-    # Extra drain with generous quiet
-    output += _read_until_quiet(channel, timeout=min(timeout, 6), quiet=2)
+    # Use longer quiet threshold: wait up to 5s of silence before assuming done
+    output = _read_until_prompt(channel, prompt=None, timeout=timeout, quiet=5)
+    # Extra drain with generous quiet threshold (4s)
+    output += _read_until_quiet(channel, timeout=min(timeout, 10), quiet=4)
     channel.close()
     return redact_text(banner + output)
 
@@ -2964,6 +2964,8 @@ def main() -> int:
                 disabled_session_for_event: Optional[str] = None
                 max_event_retries = 2
                 for event_attempt in range(max_event_retries):
+                    if args.show_progress and event_attempt > 0:
+                        print(f"  Event setup retry attempt {event_attempt + 1}/{max_event_retries}...")
                     # Send all commands in ONE shell session
                     all_outputs = run_shell_sequence_detailed(client, event_setup_and_commit_cmds, timeout=60)
                     commit_output = ""
@@ -2977,15 +2979,23 @@ def main() -> int:
                         # Success!
                         event_setup_err = False
                         event_setup_err_msgs = []
+                        if args.show_progress:
+                            print(f"  Event test low-threshold session configured successfully.")
                         break
                     else:
                         # Commit failed (but we already exited config mode, so changes discarded)
                         event_setup_err_msgs = commit_errs
+                        if args.show_progress:
+                            print(f"  Commit failed: {'; '.join(commit_errs[:2])}")
                         if any("in use with session" in e for e in commit_errs):
                             # MEP conflict detected - DISABLE the conflicting session instead of deleting
                             conflicting_evt_session = extract_conflicting_session_name(commit_errs)
+                            if args.show_progress:
+                                print(f"  Extracted conflicting session: {conflicting_evt_session}")
                             if conflicting_evt_session and event_attempt < max_event_retries - 1:
                                 _progress(f"auto_disable_conflicting_session: {conflicting_evt_session}")
+                                if args.show_progress:
+                                    print(f"  Attempting to temporarily disable: {conflicting_evt_session}")
                                 # Disable the conflicting session temporarily
                                 disable_cmds = [
                                     "configure",
@@ -3005,20 +3015,35 @@ def main() -> int:
                                             if err:
                                                 disable_ok = False
                                                 _progress(f"auto_disable failed: {'; '.join(errs)}")
+                                                if args.show_progress:
+                                                    print(f"  Disable commit failed: {'; '.join(errs)}")
                                     if disable_ok:
                                         disabled_session_for_event = conflicting_evt_session
                                         _progress(f"auto_disable successful, retrying event setup...")
+                                        if args.show_progress:
+                                            print(f"  Successfully disabled {conflicting_evt_session}, retrying...")
                                         continue  # Retry the event setup
                                     else:
+                                        if args.show_progress:
+                                            print(f"  Failed to disable conflicting session, giving up.")
                                         break
                                 except Exception as dis_exc:
                                     _progress(f"auto_disable exception: {dis_exc}")
+                                    if args.show_progress:
+                                        print(f"  Exception during disable: {dis_exc}")
                                     break
                             else:
                                 # No conflict or last attempt - give up
+                                if args.show_progress:
+                                    if not conflicting_evt_session:
+                                        print(f"  Could not extract conflicting session name, giving up.")
+                                    else:
+                                        print(f"  Last retry attempt, giving up.")
                                 break
                         else:
                             # Different error (not MEP conflict) - give up
+                            if args.show_progress:
+                                print(f"  Error is not MEP conflict, giving up.")
                             break
 
                 # Step 3: Wait for probes to run and check for event
