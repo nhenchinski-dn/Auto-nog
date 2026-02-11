@@ -188,12 +188,15 @@ class QoSSanityTest:
     """QoS happy-flow sanity tester for DNOS devices."""
 
     def __init__(self, host: str, username: str, password: str,
-                 no_cleanup: bool = False, forced_interface: Optional[str] = None):
+                 no_cleanup: bool = False, 
+                 forced_ingress_interface: Optional[str] = None,
+                 forced_egress_interface: Optional[str] = None):
         self.host = host
         self.username = username
         self.password = password
         self.no_cleanup = no_cleanup
-        self.forced_interface = forced_interface
+        self.forced_ingress_interface = forced_ingress_interface
+        self.forced_egress_interface = forced_egress_interface
         self.client: Optional[paramiko.SSHClient] = None
         self.shell: Optional[paramiko.Channel] = None
         self.results: List[Tuple[str, bool, str]] = []
@@ -203,9 +206,13 @@ class QoSSanityTest:
         self.created_tcms: Set[str] = set()
         self.created_policies: Set[str] = set()
         self.created_hwmapping: bool = False
-        self.target_iface: str = ""
+        self.target_iface: str = ""  # For backward compatibility, primary interface
+        self.ingress_iface: str = ""
+        self.egress_iface: str = ""
         self.original_in_policy: Optional[str] = None
         self.original_out_policy: Optional[str] = None
+        self.original_egress_in_policy: Optional[str] = None  # For egress interface
+        self.original_egress_out_policy: Optional[str] = None  # For egress interface
         self.attached_in: bool = False
         self.attached_out: bool = False
 
@@ -646,75 +653,131 @@ class QoSSanityTest:
         )
 
     def test_attach_policies(self):
-        """Test 3: Discover first up interface and attach policies."""
+        """Test 3: Discover interfaces and attach policies."""
         print("\n" + "=" * 60)
-        print("TEST 3: Discover interface and attach policies")
+        print("TEST 3: Discover interfaces and attach policies")
         print("=" * 60)
 
-        # Use forced interface if provided, otherwise auto-discover
-        if self.forced_interface:
-            self.target_iface = self.forced_interface
-            self._record("Use forced interface", True, f"Using specified interface: {self.target_iface}")
+        # Determine ingress and egress interfaces
+        if self.forced_ingress_interface and self.forced_egress_interface:
+            # Both interfaces specified
+            self.ingress_iface = self.forced_ingress_interface
+            self.egress_iface = self.forced_egress_interface
+            self._record("Use forced interfaces", True, 
+                        f"Ingress: {self.ingress_iface}, Egress: {self.egress_iface}")
+        elif self.forced_ingress_interface or self.forced_egress_interface:
+            # One interface specified, need to discover the other
+            raw = self.run_show("show interfaces", timeout=30)
+            up_ifaces = self.parse_interfaces_summary(raw)
+            
+            if not up_ifaces and not (self.forced_ingress_interface and self.forced_egress_interface):
+                self._record("Discover interfaces", False, "No up interfaces found for auto-discovery")
+                return
+            
+            self.ingress_iface = self.forced_ingress_interface or up_ifaces[0]
+            self.egress_iface = self.forced_egress_interface or (up_ifaces[1] if len(up_ifaces) > 1 else up_ifaces[0])
+            
+            self._record("Use mixed interfaces", True,
+                        f"Ingress: {self.ingress_iface} {'(specified)' if self.forced_ingress_interface else '(auto)'}, "
+                        f"Egress: {self.egress_iface} {'(specified)' if self.forced_egress_interface else '(auto)'}")
         else:
-            # Find up interfaces using table format
+            # Auto-discover both interfaces
             raw = self.run_show("show interfaces", timeout=30)
             up_ifaces = self.parse_interfaces_summary(raw)
 
             if not up_ifaces:
-                self._record("Discover up interface", False, "No up interfaces found")
+                self._record("Discover interfaces", False, "No up interfaces found")
                 return
+            
+            # Use first interface for both by default, or separate if multiple available
+            self.ingress_iface = up_ifaces[0]
+            self.egress_iface = up_ifaces[1] if len(up_ifaces) > 1 else up_ifaces[0]
+            
+            if self.ingress_iface == self.egress_iface:
+                self._record("Discover interfaces", True,
+                            f"Using {self.ingress_iface} for both ingress and egress (from {len(up_ifaces)} up)")
+            else:
+                self._record("Discover interfaces", True,
+                            f"Ingress: {self.ingress_iface}, Egress: {self.egress_iface} (from {len(up_ifaces)} up)")
 
-            self.target_iface = up_ifaces[0]
-            self._record("Discover up interface", True, f"Using {self.target_iface} (from {len(up_ifaces)} up)")
+        # Set target_iface for backward compatibility (use ingress interface as primary)
+        self.target_iface = self.ingress_iface
 
-        # Check if interface already has QoS policies
-        qos_raw = self.run_show(f"show qos interfaces {self.target_iface}", timeout=30)
-        self.original_in_policy = self.parse_qos_interface_policy(qos_raw, "in")
-        self.original_out_policy = self.parse_qos_interface_policy(qos_raw, "out")
-
+        # Check existing policies on ingress interface
+        qos_raw_in = self.run_show(f"show qos interfaces {self.ingress_iface}", timeout=30)
+        self.original_in_policy = self.parse_qos_interface_policy(qos_raw_in, "in")
+        
         if self.original_in_policy:
-            print(f"  [INFO] Interface already has ingress policy: {self.original_in_policy}")
-        if self.original_out_policy:
-            print(f"  [INFO] Interface already has egress policy: {self.original_out_policy}")
+            print(f"  [INFO] {self.ingress_iface} already has ingress policy: {self.original_in_policy}")
 
-        # Attach policies
-        config_lines = [
-            "interfaces",
-            self.target_iface,
-        ]
+        # Check existing policies on egress interface (if different)
+        if self.egress_iface != self.ingress_iface:
+            qos_raw_eg = self.run_show(f"show qos interfaces {self.egress_iface}", timeout=30)
+            self.original_egress_in_policy = self.parse_qos_interface_policy(qos_raw_eg, "in")
+            self.original_egress_out_policy = self.parse_qos_interface_policy(qos_raw_eg, "out")
+            self.original_out_policy = self.original_egress_out_policy
+            
+            if self.original_egress_out_policy:
+                print(f"  [INFO] {self.egress_iface} already has egress policy: {self.original_egress_out_policy}")
+        else:
+            # Same interface for both
+            self.original_out_policy = self.parse_qos_interface_policy(qos_raw_in, "out")
+            if self.original_out_policy:
+                print(f"  [INFO] {self.ingress_iface} already has egress policy: {self.original_out_policy}")
 
+        # Attach ingress policy to ingress interface
         need_attach_in = self.original_in_policy != INGRESS_POLICY
-        need_attach_out = self.original_out_policy != EGRESS_POLICY
-
+        config_lines_in = []
+        
         if need_attach_in:
-            config_lines.append(f"qos policy {INGRESS_POLICY} direction in")
+            config_lines_in = [
+                "interfaces",
+                self.ingress_iface,
+                f"qos policy {INGRESS_POLICY} direction in",
+                "exit",  # interface
+                "exit",  # interfaces
+            ]
+
+        # Attach egress policy to egress interface
+        need_attach_out = self.original_out_policy != EGRESS_POLICY
+        config_lines_out = []
+        
         if need_attach_out:
-            config_lines.append(f"qos policy {EGRESS_POLICY} direction out")
+            config_lines_out = [
+                "interfaces",
+                self.egress_iface,
+                f"qos policy {EGRESS_POLICY} direction out",
+                "exit",  # interface
+                "exit",  # interfaces
+            ]
 
-        config_lines += [
-            "exit",  # interface
-            "exit",  # interfaces
-        ]
-
+        # Apply configuration
         if not need_attach_in and not need_attach_out:
             self._record(
                 "Attach policies",
                 True,
-                "Both policies already attached to interface",
+                "Both policies already attached to interfaces",
             )
             self.attached_in = False
             self.attached_out = False
             return
 
-        commit_out = self.run_config(config_lines, timeout=60)
-        if "error" in commit_out.lower() and "commit" not in commit_out.lower():
-            self._record("Attach policies", False, f"Commit error: {commit_out[:300]}")
-            return
+        # Combine config if needed
+        all_config_lines = config_lines_in + config_lines_out
+        if all_config_lines:
+            commit_out = self.run_config(all_config_lines, timeout=60)
+            if "error" in commit_out.lower() and "commit" not in commit_out.lower():
+                self._record("Attach policies", False, f"Commit error: {commit_out[:300]}")
+                return
 
         self.attached_in = need_attach_in
         self.attached_out = need_attach_out
 
         attached = []
+        if need_attach_in:
+            attached.append(f"{INGRESS_POLICY} (in) on {self.ingress_iface}")
+        if need_attach_out:
+            attached.append(f"{EGRESS_POLICY} (out) on {self.egress_iface}")
         if need_attach_in:
             attached.append(f"{INGRESS_POLICY} (in)")
         if need_attach_out:
@@ -832,20 +895,20 @@ class QoSSanityTest:
         print("TEST 7: Verify policies on interface")
         print("=" * 60)
 
-        if not self.target_iface:
+        if not self.ingress_iface:
             self._record("Interface QoS detail", False, "No target interface set")
             return
 
-        # Check ingress
-        raw_in = self.run_show(f"show qos interfaces {self.target_iface} in", timeout=30)
+        # Check ingress on ingress interface
+        raw_in = self.run_show(f"show qos interfaces {self.ingress_iface} in", timeout=30)
         in_policy = self.parse_qos_interface_policy(raw_in, "in")
         if in_policy == INGRESS_POLICY:
-            self._record("Ingress policy on interface", True, f"{in_policy}")
+            self._record("Ingress policy on interface", True, f"{in_policy} on {self.ingress_iface}")
         else:
             self._record(
                 "Ingress policy on interface",
                 False,
-                f"Expected {INGRESS_POLICY}, got {in_policy}",
+                f"Expected {INGRESS_POLICY}, got {in_policy} on {self.ingress_iface}",
             )
 
         # Verify ingress rules visible
@@ -855,16 +918,16 @@ class QoSSanityTest:
         else:
             self._record("Ingress rules visible", False, "No rules found in show output")
 
-        # Check egress
-        raw_out = self.run_show(f"show qos interfaces {self.target_iface} out", timeout=30)
+        # Check egress on egress interface
+        raw_out = self.run_show(f"show qos interfaces {self.egress_iface} out", timeout=30)
         out_policy = self.parse_qos_interface_policy(raw_out, "out")
         if out_policy == EGRESS_POLICY:
-            self._record("Egress policy on interface", True, f"{out_policy}")
+            self._record("Egress policy on interface", True, f"{out_policy} on {self.egress_iface}")
         else:
             self._record(
                 "Egress policy on interface",
                 False,
-                f"Expected {EGRESS_POLICY}, got {out_policy}",
+                f"Expected {EGRESS_POLICY}, got {out_policy} on {self.egress_iface}",
             )
 
         # Verify egress rules and queue types visible
@@ -1422,7 +1485,15 @@ def main():
     )
     parser.add_argument(
         "--interface",
-        help="Specific interface to use for testing (e.g., ge100-0/0/96, lo0). If not specified, auto-discovers first UP interface.",
+        help="Single interface for both ingress and egress testing (e.g., ge100-0/0/96). Overridden by --ingress-interface or --egress-interface.",
+    )
+    parser.add_argument(
+        "--ingress-interface",
+        help="Specific interface for ingress policy testing (e.g., ge100-0/0/96). If not specified, uses --interface or auto-discovers.",
+    )
+    parser.add_argument(
+        "--egress-interface",
+        help="Specific interface for egress policy testing (e.g., ge100-0/0/97). If not specified, uses --interface or auto-discovers.",
     )
     parser.add_argument(
         "--no-cleanup",
@@ -1431,12 +1502,17 @@ def main():
     )
     args = parser.parse_args()
 
+    # Resolve interface arguments priority: specific > shared > auto-discover
+    ingress_iface = args.ingress_interface or args.interface
+    egress_iface = args.egress_interface or args.interface
+
     tester = QoSSanityTest(
         host=args.host,
         username=args.user,
         password=args.password,
         no_cleanup=args.no_cleanup,
-        forced_interface=args.interface,
+        forced_ingress_interface=ingress_iface,
+        forced_egress_interface=egress_iface,
     )
     ok = tester.run_all()
     sys.exit(0 if ok else 1)
