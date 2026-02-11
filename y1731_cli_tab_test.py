@@ -1524,6 +1524,16 @@ def main() -> int:
             )
             if ok_all and list_all:
                 mep_list = list_all
+                # Display discovered MEPs to user
+                print(f"\n{'='*70}")
+                print(f"DISCOVERED {len(list_all)} LOCAL MEP(S):")
+                print(f"{'='*70}")
+                for idx, (md, ma, mep_id, direction, target) in enumerate(list_all, 1):
+                    print(f"  {idx}. MEP {mep_id}")
+                    print(f"     MD/MA: {md}/{ma}")
+                    print(f"     Direction: {direction or 'N/A'}")
+                    print(f"     Target: {target or 'N/A'}")
+                print(f"{'='*70}\n")
 
         # Auto-discover MD/MA/MEP/target from existing ethernet-oam CFM config (single MEP).
         if mep_list is None and args.auto_from_cfm:
