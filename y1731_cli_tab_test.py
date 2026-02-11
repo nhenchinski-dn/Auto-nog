@@ -356,14 +356,22 @@ def discover_all_local_meps(
     Returns (ok, details, list of (md, ma, mep_id, direction, target_str)).
     """
     show_cmds = [
+        # Try display-set first (flat format, easier to parse) with no-more to disable paging
+        "show config services ethernet-oam connectivity-fault-management | display-set | no-more",
+        "show configuration services ethernet-oam connectivity-fault-management | display-set | no-more",
+        # Fallback to hierarchical with no-more
+        "show config services ethernet-oam connectivity-fault-management | no-more",
+        "show configuration services ethernet-oam connectivity-fault-management | no-more",
+        # Without no-more (in case it's not supported on older versions)
         "show config services ethernet-oam connectivity-fault-management | display-set",
         "show configuration services ethernet-oam connectivity-fault-management | display-set",
         "show config services ethernet-oam connectivity-fault-management",
         "show configuration services ethernet-oam connectivity-fault-management",
-        "show config services ethernet-oam | display-set | match connectivity-fault-management",
-        "show configuration services ethernet-oam | display-set | match connectivity-fault-management",
-        "show config services ethernet-oam | match connectivity-fault-management",
-        "show configuration services ethernet-oam | match connectivity-fault-management",
+        # Broader fallbacks
+        "show config services ethernet-oam | display-set | match connectivity-fault-management | no-more",
+        "show config services ethernet-oam | match connectivity-fault-management | no-more",
+        # Last resort: full services config
+        "show config services | display-set | match \"maintenance-domain\\|local-mep\" | no-more",
     ]
     used: Optional[str] = None
     output = ""
@@ -373,7 +381,7 @@ def discover_all_local_meps(
     for cmd in show_cmds:
         out = run_shell_with_prompt_long(client, cmd, timeout=max(timeout, 60))
         err, _ = has_cli_error(out)
-        if (not err) and re.search(r"(ethernet-oam|connectivity-fault-management|maintenance)", out, re.IGNORECASE):
+        if (not err) and re.search(r"(ethernet-oam|connectivity-fault-management|maintenance|local-mep)", out, re.IGNORECASE):
             used = cmd
             output = out
             break
@@ -383,6 +391,21 @@ def discover_all_local_meps(
             "Failed to read connectivity-fault-management config (show command not accepted).",
             [],
         )
+    
+    # Debug: Log which command worked and output size
+    output_lines = len(output.splitlines())
+    output_chars = len(output)
+    print(f"  [DEBUG] Discovery used: {used}")
+    print(f"  [DEBUG] Output: {output_lines} lines, {output_chars} chars")
+    
+    # DEBUG: Save raw output to file for inspection
+    with open("/tmp/y1731_discovery_output.txt", "w") as f:
+        f.write(f"Command: {used}\n")
+        f.write(f"Output length: {output_lines} lines, {output_chars} chars\n")
+        f.write("="*70 + "\n")
+        f.write(output)
+    print(f"  [DEBUG] Raw output saved to /tmp/y1731_discovery_output.txt")
+    
     direction_re = re.compile(r"\bdirection\s+(down|up)\b", flags=re.IGNORECASE)
     md_re = re.compile(r"\bmaintenance[-_]domain(?:s)?(?:[-_]name)?\s+(\S+)", flags=re.IGNORECASE)
     ma_re = re.compile(r"\bmaintenance[-_]association(?:s)?(?:[-_]name)?\s+(\S+)", flags=re.IGNORECASE)
@@ -394,14 +417,22 @@ def discover_all_local_meps(
     candidates: Dict[Tuple[str, str], Dict[str, Set[int]]] = {}
     current_md: Optional[str] = None
     current_ma: Optional[str] = None
+    
+    # Debug: Track what we find
+    found_mds = set()
+    found_mas = set()
+    found_local_meps = []
+    
     for line in output.splitlines():
         md_m = md_re.search(line)
         if md_m:
             current_md = md_m.group(1)
+            found_mds.add(current_md)
             current_ma = None
         ma_m = ma_re.search(line)
         if ma_m:
             current_ma = ma_m.group(1)
+            found_mas.add(current_ma)
         line_md = md_m.group(1) if md_m else current_md
         line_ma = ma_m.group(1) if ma_m else current_ma
         if not (line_md and line_ma):
@@ -428,7 +459,9 @@ def discover_all_local_meps(
             continue
         # For local MEPs: prioritize "local-mep N" pattern
         for m in local_mep_re.finditer(line):
-            candidates[key]["meps"].add(int(m.group(1)))
+            mep_num = int(m.group(1))
+            candidates[key]["meps"].add(mep_num)
+            found_local_meps.append(f"{line_md}/{line_ma}/MEP{mep_num}")
         # Also check for "mep-id N" in non-remote lines (PM session source)
         for m in mep_id_re.finditer(line):
             candidates[key]["meps"].add(int(m.group(1)))
@@ -437,6 +470,12 @@ def discover_all_local_meps(
             # Skip if this looks like it's part of "local-mep" or "remote-mep"
             if "local-mep" not in line.lower() and "remote-mep" not in line.lower():
                 candidates[key]["meps"].add(int(m.group(1)))
+    
+    # Debug: Show what was found during parsing
+    print(f"  [DEBUG] Found MDs: {sorted(found_mds)}")
+    print(f"  [DEBUG] Found MAs: {sorted(found_mas)}")
+    print(f"  [DEBUG] Found local-meps: {found_local_meps}")
+    
     if not candidates:
         sample = "\n".join(output.splitlines()[:30]).strip()
         return (
@@ -584,18 +623,24 @@ def run_shell_with_prompt(client: paramiko.SSHClient, command: str, timeout: int
 
 
 def run_shell_with_prompt_long(client: paramiko.SSHClient, command: str, timeout: int = 60) -> str:
-    """Like run_shell_with_prompt but with a longer quiet threshold (5s) for
-    commands that return large hierarchical output (e.g. show config).
-    The device may pause between sections, causing the normal 1.2s quiet
-    threshold to truncate the output prematurely."""
+    """Like run_shell_with_prompt but with longer timeout for large output.
+    Best used with '| no-more' to disable paging."""
     channel = client.invoke_shell()
     channel.settimeout(timeout)
     banner = _read_until_prompt(channel, prompt=None, timeout=timeout, quiet=2)
     channel.send(command + "\n")
-    # Use longer quiet threshold: wait up to 5s of silence before assuming done
+    
+    # Simple read with generous quiet threshold since no-more disables paging
     output = _read_until_prompt(channel, prompt=None, timeout=timeout, quiet=5)
-    # Extra drain with generous quiet threshold (4s)
-    output += _read_until_quiet(channel, timeout=min(timeout, 10), quiet=4)
+    
+    # Extra drain to catch any stragglers
+    time.sleep(1)
+    while channel.recv_ready():
+        try:
+            output += channel.recv(4096).decode(errors="ignore")
+        except:
+            break
+    
     channel.close()
     return redact_text(banner + output)
 
@@ -2973,6 +3018,7 @@ def main() -> int:
                 event_setup_err_msgs: List[str] = []
                 disabled_session_for_event: Optional[str] = None
                 max_event_retries = 2
+                retry_log: List[str] = []  # Track retry attempts for error reporting
                 for event_attempt in range(max_event_retries):
                     if args.show_progress and event_attempt > 0:
                         print(f"  Event setup retry attempt {event_attempt + 1}/{max_event_retries}...")
@@ -2989,17 +3035,20 @@ def main() -> int:
                         # Success!
                         event_setup_err = False
                         event_setup_err_msgs = []
+                        retry_log.append(f"Attempt {event_attempt+1}: Success")
                         if args.show_progress:
                             print(f"  Event test low-threshold session configured successfully.")
                         break
                     else:
                         # Commit failed (but we already exited config mode, so changes discarded)
                         event_setup_err_msgs = commit_errs
+                        retry_log.append(f"Attempt {event_attempt+1}: Commit failed - {commit_errs[0] if commit_errs else 'unknown error'}")
                         if args.show_progress:
                             print(f"  Commit failed: {'; '.join(commit_errs[:2])}")
                         if any("in use with session" in e for e in commit_errs):
                             # MEP conflict detected - DISABLE the conflicting session instead of deleting
                             conflicting_evt_session = extract_conflicting_session_name(commit_errs)
+                            retry_log.append(f"  Detected conflict with session: {conflicting_evt_session}")
                             if args.show_progress:
                                 print(f"  Extracted conflicting session: {conflicting_evt_session}")
                             if conflicting_evt_session and event_attempt < max_event_retries - 1:
@@ -3016,6 +3065,7 @@ def main() -> int:
                                     "exit",
                                 ]
                                 try:
+                                    retry_log.append(f"  Attempting to disable {conflicting_evt_session}...")
                                     disable_outputs = run_shell_sequence_detailed(client, disable_cmds, timeout=60)
                                     disable_ok = True
                                     for cmd, output in disable_outputs:
@@ -3024,26 +3074,34 @@ def main() -> int:
                                             err, errs = has_cli_error(output)
                                             if err:
                                                 disable_ok = False
+                                                retry_log.append(f"  Disable commit failed: {'; '.join(errs)}")
                                                 _progress(f"auto_disable failed: {'; '.join(errs)}")
                                                 if args.show_progress:
                                                     print(f"  Disable commit failed: {'; '.join(errs)}")
                                     if disable_ok:
                                         disabled_session_for_event = conflicting_evt_session
+                                        retry_log.append(f"  Successfully disabled {conflicting_evt_session}, will retry")
                                         _progress(f"auto_disable successful, retrying event setup...")
                                         if args.show_progress:
                                             print(f"  Successfully disabled {conflicting_evt_session}, retrying...")
                                         continue  # Retry the event setup
                                     else:
+                                        retry_log.append(f"  Failed to disable, giving up")
                                         if args.show_progress:
                                             print(f"  Failed to disable conflicting session, giving up.")
                                         break
                                 except Exception as dis_exc:
+                                    retry_log.append(f"  Exception during disable: {dis_exc}")
                                     _progress(f"auto_disable exception: {dis_exc}")
                                     if args.show_progress:
                                         print(f"  Exception during disable: {dis_exc}")
                                     break
                             else:
                                 # No conflict or last attempt - give up
+                                if not conflicting_evt_session:
+                                    retry_log.append(f"  Could not extract session name from error, giving up")
+                                else:
+                                    retry_log.append(f"  Last retry attempt, giving up")
                                 if args.show_progress:
                                     if not conflicting_evt_session:
                                         print(f"  Could not extract conflicting session name, giving up.")
@@ -3052,6 +3110,7 @@ def main() -> int:
                                 break
                         else:
                             # Different error (not MEP conflict) - give up
+                            retry_log.append(f"  Not a MEP conflict error, giving up")
                             if args.show_progress:
                                 print(f"  Error is not MEP conflict, giving up.")
                             break
@@ -3114,11 +3173,15 @@ def main() -> int:
                             )
                         )
                 else:
+                    # Include retry log in error details
+                    error_detail = f"Failed to set up low-threshold session: {'; '.join(event_setup_err_msgs)}"
+                    if retry_log:
+                        error_detail += f" | Retry history: {' → '.join(retry_log)}"
                     results.append(
                         StepResult(
                             name="system_event_cfm_proactive_test_failure",
                             ok=False,
-                            details=f"Failed to set up low-threshold session: {'; '.join(event_setup_err_msgs)}",
+                            details=error_detail,
                         )
                     )
 
