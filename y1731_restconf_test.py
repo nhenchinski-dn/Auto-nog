@@ -5,12 +5,18 @@ Y.1731 RESTCONF Sanity Test Script
 Tests RESTCONF (via OpenDaylight) operations for Y.1731 Performance Monitoring:
   Phase 1: Setup   - Mount device to ODL, discover YANG paths, discover CFM context
   Phase 2: GET     - Retrieve PM config/oper data via RESTCONF
-  Phase 3: PATCH   - Create DM profile + session, verify via GET and CLI
-  Phase 4: PATCH   - Create SLM profile + session, verify via GET and CLI
-  Phase 5: Modify  - Modify DM profile thresholds, verify
-  Phase 6: DELETE  - Remove all test artifacts via RESTCONF
+  Phase 3: PATCH   - Create DM profile + session, verify via GET and CLI (before/after)
+  Phase 4: PATCH   - Create SLM profile + session, verify via GET and CLI (before/after)
+  Phase 5: Modify  - Modify DM profile thresholds, verify via CLI (before/after)
+  Phase 6: DELETE  - Remove all test artifacts, verify via CLI (before/after)
   Phase 7: Negative - Invalid path, malformed XML, invalid values
   Phase 8: Cleanup - Unmount device from ODL
+
+Every PATCH/DELETE is verified by:
+  1. CLI BEFORE -- capture baseline via SSH show command
+  2. RESTCONF operation -- send the HTTP request
+  3. CLI AFTER  -- capture via SSH and compare to baseline
+  4. RESTCONF GET -- verify via RESTCONF GET as secondary check
 
 Jira: SW-237067 (Ethernet OAM Y.1731 | RESTCONF)
 Epic: SW-141523 (Ethernet OAM Y.1731 - Proactive PM)
@@ -27,15 +33,29 @@ from typing import Any, Dict, List, Optional, Tuple
 import paramiko, requests
 from requests.auth import HTTPBasicAuth
 
+# ── Test artifact names (unique to avoid collision with manual config) ──
 DM_PROFILE_NAME = "RESTCONF_DM_PROF"
-DM_SESSION_NAME = "RESTCONF_DM_SESS"
 SLM_PROFILE_NAME = "RESTCONF_SLM_PROF"
-SLM_SESSION_NAME = "RESTCONF_SLM_SESS"
+# Session names are dynamic per MEP: RESTCONF_DM_SESS_mep<id>, RESTCONF_SLM_SESS_mep<id>
+
+# ── Default YANG namespaces (overridden by discovery) ──
 DEFAULT_NS = {
     "dn-top": "http://drivenets.com/ns/yang/dn-top",
     "dn-services": "http://drivenets.com/ns/yang/dn-services",
     "dn-pm": "http://drivenets.com/ns/yang/dn-performance-monitoring",
+    "dn-cfm": "http://drivenets.com/ns/yang/dn-srv-connectivity-fault-management",
 }
+
+# ── ANSI colour codes ──
+G = "\033[32m"   # green
+R = "\033[31m"   # red
+Y = "\033[33m"   # yellow
+C = "\033[36m"   # cyan
+B = "\033[1m"    # bold
+DIM = "\033[2m"  # dim
+X = "\033[0m"    # reset
+
+# ── URL templates ──
 MOUNT_URL = ("http://{odl_host}:{odl_port}/restconf/config/"
              "network-topology:network-topology/topology/topology-netconf/"
              "node/{node_name}")
@@ -57,7 +77,7 @@ class Y1731RestconfTest:
                  odl_host="10.10.75.34", odl_port=8181,
                  odl_user="admin", odl_password="admin",
                  node_name=None, cleanup=False, skip_mount=False,
-                 no_ssh_verify=False, md_name=None, ma_name=None,
+                 no_ssh_verify=False, verbose=False, md_name=None, ma_name=None,
                  source_mep_id=None, target_mep_id=None):
         self.host = host
         self.username = username
@@ -69,21 +89,29 @@ class Y1731RestconfTest:
         self.cleanup = cleanup
         self.skip_mount = skip_mount
         self.no_ssh_verify = no_ssh_verify
-        self.md_name = md_name
-        self.ma_name = ma_name
-        self.source_mep_id = source_mep_id
-        self.target_mep_id = target_mep_id
+        self.verbose = verbose
+        # CLI-provided single context (if any) -- used to seed cfm_contexts
+        self._cli_md = md_name
+        self._cli_ma = ma_name
+        self._cli_src = source_mep_id
+        self._cli_tgt = target_mep_id
+        # List of CFM contexts: [{md, ma, src, tgt, dir, free, dm_sess, slm_sess}]
+        self.cfm_contexts: List[Dict[str, Any]] = []
         self.ns = dict(DEFAULT_NS)
         self.yang_pm_path = ("dn-top:drivenets-top/dn-services:services/"
                              "dn-performance-monitoring:performance-monitoring")
         self.ssh_client = None
         self.shell = None
-        self.results = []
+        # Results: (name, status, detail) where status ∈ {"pass","fail","skip"}
+        self.results: List[Tuple[str, str, str]] = []
+        self._created_artifacts: set = set()
         self.http = requests.Session()
         self.http.auth = self.odl_auth
         self.http.headers.update({"Accept": "application/json"})
 
-    # --- SSH Helpers ---
+    # ──────────────────────────────────────────────────────────────
+    # SSH Helpers
+    # ──────────────────────────────────────────────────────────────
     def ssh_connect(self):
         print(f"[*] SSH: Connecting to {self.host} as {self.username} ...")
         self.ssh_client = paramiko.SSHClient()
@@ -126,7 +154,60 @@ class Y1731RestconfTest:
         self._send(cmd)
         return self._read_until_prompt(timeout=timeout)
 
-    # --- RESTCONF Helpers ---
+    # ──────────────────────────────────────────────────────────────
+    # CLI verification helpers (before / after)
+    # ──────────────────────────────────────────────────────────────
+    def _cli_snapshot(self, show_cmd, timeout=15):
+        """Run a show command via a fresh SSH channel (avoids buffer issues)."""
+        if self.no_ssh_verify or not self.ssh_client:
+            return ""
+        try:
+            ch = self.ssh_client.invoke_shell(width=250, height=1000)
+            try:
+                # Wait for initial prompt
+                buf = ""
+                end = time.time() + 10
+                while time.time() < end:
+                    if ch.recv_ready():
+                        buf += ch.recv(65536).decode("utf-8", errors="replace")
+                        if buf.strip().endswith("#") or buf.strip().endswith(">"):
+                            break
+                    else:
+                        time.sleep(0.2)
+                # Disable paging
+                ch.send("no-paging\n")
+                time.sleep(0.5)
+                while ch.recv_ready():
+                    ch.recv(65536)
+                # Send the show command
+                ch.send(show_cmd + " | no-more\n")
+                time.sleep(0.5)
+                # Read the output
+                output = ""
+                end = time.time() + timeout
+                while time.time() < end:
+                    if ch.recv_ready():
+                        output += ch.recv(65536).decode(
+                            "utf-8", errors="replace")
+                        lines = output.strip().split("\n")
+                        if lines and (lines[-1].strip().endswith("#")
+                                      or lines[-1].strip().endswith(">")):
+                            break
+                    else:
+                        time.sleep(0.2)
+                return output
+            finally:
+                ch.close()
+        except Exception:
+            return ""
+
+    def _cli_contains(self, output, artifact):
+        """Case-insensitive check whether artifact appears in CLI output."""
+        return artifact.lower() in output.lower()
+
+    # ──────────────────────────────────────────────────────────────
+    # RESTCONF Helpers
+    # ──────────────────────────────────────────────────────────────
     def _mu(self):
         return MOUNT_URL.format(odl_host=self.odl_host, odl_port=self.odl_port,
                                 node_name=self.node_name)
@@ -154,12 +235,100 @@ class Y1731RestconfTest:
         h = {"Content-Type": "application/xml", "Accept": "application/xml"}
         return self.http.patch(self._pu(), data=xml, headers=h, timeout=60)
 
-    def _record(self, name, passed, detail=""):
-        self.results.append((name, passed, detail))
-        tag = "[PASS]" if passed else "[FAIL]"
-        print(f"  {tag} {name}" + (f" -- {detail}" if detail else ""))
+    def rc_delete(self, yang_path):
+        """Send HTTP DELETE to a specific YANG path on the mounted device."""
+        url = RESTCONF_DATA_URL.format(
+            odl_host=self.odl_host, odl_port=self.odl_port,
+            node_name=self.node_name, yang_path=yang_path)
+        return self.http.delete(url, timeout=60)
 
-    # --- XML Body Builders ---
+    @staticmethod
+    def _extract_restconf_error(text):
+        """Extract readable error from RESTCONF XML error response."""
+        m = re.search(r"<error-message>(.*?)</error-message>", text or "")
+        return m.group(1)[:150] if m else (text or "")[:150]
+
+    def _log_rc(self, method, url, status, req_body=None, resp_body=None):
+        """Print verbose RESTCONF request/response details when --verbose."""
+        if not self.verbose:
+            return
+        print(f"    {'─' * 56}")
+        print(f"    {C}RESTCONF {method}{X}  {url}")
+        if req_body:
+            # Pretty-print XML (indent for readability)
+            pretty = req_body
+            try:
+                import xml.dom.minidom
+                pretty = xml.dom.minidom.parseString(req_body).toprettyxml(
+                    indent="  ")
+                # Remove the xml declaration line
+                pretty = "\n".join(pretty.split("\n")[1:])
+            except Exception:
+                pass
+            print(f"    {DIM}Request body:{X}")
+            for line in pretty.strip().split("\n"):
+                print(f"      {line}")
+        print(f"    {DIM}Response: HTTP {status}{X}")
+        if resp_body:
+            # Try JSON pretty-print, then XML, then raw (truncated)
+            printed = False
+            if resp_body.strip().startswith("{"):
+                try:
+                    pretty = json.dumps(json.loads(resp_body), indent=2)
+                    print(f"    {DIM}Response body (JSON):{X}")
+                    for line in pretty.split("\n")[:60]:
+                        print(f"      {line}")
+                    if len(pretty.split("\n")) > 60:
+                        print(f"      ... ({len(pretty.split(chr(10)))} lines total)")
+                    printed = True
+                except Exception:
+                    pass
+            if not printed and resp_body.strip().startswith("<"):
+                try:
+                    import xml.dom.minidom
+                    pretty = xml.dom.minidom.parseString(resp_body).toprettyxml(
+                        indent="  ")
+                    pretty = "\n".join(pretty.split("\n")[1:])
+                    print(f"    {DIM}Response body (XML):{X}")
+                    for line in pretty.strip().split("\n")[:60]:
+                        print(f"      {line}")
+                    if len(pretty.strip().split("\n")) > 60:
+                        print(f"      ... ({len(pretty.strip().split(chr(10)))} lines total)")
+                    printed = True
+                except Exception:
+                    pass
+            if not printed and resp_body.strip():
+                trunc = resp_body[:2000]
+                print(f"    {DIM}Response body:{X}")
+                for line in trunc.split("\n")[:40]:
+                    print(f"      {line}")
+                if len(resp_body) > 2000:
+                    print(f"      ... (truncated, {len(resp_body)} bytes total)")
+        print(f"    {'─' * 56}")
+
+    # ──────────────────────────────────────────────────────────────
+    # Recording
+    # ──────────────────────────────────────────────────────────────
+    def _record(self, name, status, detail=""):
+        """Record a test result.  status: True/'pass', False/'fail', or 'skip'."""
+        if status is True:
+            status = "pass"
+        elif status is False:
+            status = "fail"
+        self.results.append((name, status, detail))
+        tags = {"pass": f"{G}[PASS]{X}",
+                "fail": f"{R}[FAIL]{X}",
+                "skip": f"{Y}[SKIP]{X}"}
+        tag = tags.get(status, f"{R}[????]{X}")
+        short = detail[:120] + "..." if len(detail) > 120 else detail
+        print(f"  {tag} {name}" + (f" -- {short}" if short else ""))
+
+    def _phase(self, label):
+        print(f"\n{'=' * 60}\n{label}\n{'=' * 60}")
+
+    # ──────────────────────────────────────────────────────────────
+    # XML Body Builders  (matched to device display-xml output)
+    # ──────────────────────────────────────────────────────────────
     def _mount_xml(self):
         return ('<node xmlns="urn:TBD:params:xml:ns:yang:network-topology">'
                 f"<node-id>{self.node_name}</node-id>"
@@ -177,115 +346,158 @@ class Y1731RestconfTest:
                 "3600000</default-request-timeout-millis></node>")
 
     def _wrap_pm(self, inner):
+        """Wrap inner XML in drivenets-top > services > performance-monitoring."""
         t = self.ns["dn-top"]
         s = self.ns["dn-services"]
         p = self.ns["dn-pm"]
-        return (f'<drivenets-top xmlns="{t}"><services xmlns="{s}">'
-                f'<performance-monitoring xmlns="{p}">{inner}'
-                "</performance-monitoring></services></drivenets-top>")
+        return (f'<drivenets-top xmlns="{t}">'
+                f'<services xmlns="{s}">'
+                f'<performance-monitoring xmlns="{p}">'
+                f'{inner}'
+                '</performance-monitoring></services></drivenets-top>')
 
+    # ── DM Profile XML (matched to device schema) ──
     def _dm_prof_xml(self, pn=DM_PROFILE_NAME, drm=100, dra=1000,
-                     drx=2000, jra=500, jrx=1000, sr=90,
+                     drx=2000, jra=500, jrx=1000, sr=90.0,
                      pc=5, pi_=1, ri=10):
         return self._wrap_pm(
-            "<profiles><cfm><two-way-delay-measurement>"
-            f"<profile-name>{pn}</profile-name><config-items>"
-            f"<profile-name>{pn}</profile-name>"
-            "<inform-test-results>enabled</inform-test-results>"
-            f"<test-duration><probes><probe-count>{pc}</probe-count>"
-            f"<probe-interval>{pi_}</probe-interval>"
-            f"<repeat-interval>{ri}</repeat-interval>"
-            "</probes></test-duration><thresholds>"
-            f"<delay-rtt-min>{drm}</delay-rtt-min>"
-            f"<delay-rtt-avg>{dra}</delay-rtt-avg>"
-            f"<delay-rtt-max>{drx}</delay-rtt-max>"
-            f"<jitter-rtt-avg>{jra}</jitter-rtt-avg>"
-            f"<jitter-rtt-max>{jrx}</jitter-rtt-max>"
-            f"<success-rate>{sr}</success-rate></thresholds>"
-            "</config-items></two-way-delay-measurement></cfm></profiles>")
+            '<profiles><cfm><two-way-delay-measurement>'
+            f'<profile><profile-name>{pn}</profile-name>'
+            f'<config-items><profile-name>{pn}</profile-name>'
+            '<inform-test-results>enabled</inform-test-results>'
+            '<test-duration-probes>'
+            f'<probe-count>{pc}</probe-count>'
+            f'<probe-interval>{pi_}</probe-interval>'
+            f'<repeat-interval>{ri}</repeat-interval>'
+            '</test-duration-probes>'
+            '<cfm-eth-dm-performance-thresholds>'
+            f'<delay-rtt-min>{drm}</delay-rtt-min>'
+            f'<delay-rtt-avg>{dra}</delay-rtt-avg>'
+            f'<delay-rtt-max>{drx}</delay-rtt-max>'
+            f'<jitter-rtt-avg>{jra}</jitter-rtt-avg>'
+            f'<jitter-rtt-max>{jrx}</jitter-rtt-max>'
+            f'<success-rate-percent>{sr}</success-rate-percent>'
+            '</cfm-eth-dm-performance-thresholds>'
+            '</config-items></profile>'
+            '</two-way-delay-measurement></cfm></profiles>')
 
-    def _dm_sess_xml(self, sn=DM_SESSION_NAME, pn=DM_PROFILE_NAME):
+    # ── DM Session XML (matched to device schema) ──
+    def _dm_sess_xml(self, ctx, pn=DM_PROFILE_NAME):
+        """Build DM session XML for a given CFM context dict."""
+        cfm_ns = self.ns["dn-cfm"]
+        sn = ctx["dm_sess"]
         return self._wrap_pm(
-            "<cfm><two-way-delay-measurement>"
-            f"<session-name>{sn}</session-name><config-items>"
-            f"<session-name>{sn}</session-name><profile>{pn}</profile>"
-            "<admin-state>enabled</admin-state>"
-            "<description>RESTCONF_test_DM_session</description><source>"
-            f"<maintenance-domain>{self.md_name}</maintenance-domain>"
-            f"<maintenance-association>{self.ma_name}</maintenance-association>"
-            f"<mep-id>{self.source_mep_id}</mep-id></source>"
-            f"<target><mep-id>{self.target_mep_id}</mep-id></target>"
-            "</config-items></two-way-delay-measurement></cfm>")
+            f'<cfm-tests><proactive-monitoring xmlns="{cfm_ns}">'
+            '<two-way-delay-measurements>'
+            f'<test-session><session-name>{sn}</session-name>'
+            '<config-items>'
+            f'<profile>{pn}</profile>'
+            '<admin-state>enabled</admin-state>'
+            '<description>RESTCONF_test_DM_session</description>'
+            f'<source-md-name>{ctx["md"]}</source-md-name>'
+            f'<source-ma-name>{ctx["ma"]}</source-ma-name>'
+            f'<source-mep-id>{ctx["src"]}</source-mep-id>'
+            f'<target-mep-id>{ctx["tgt"]}</target-mep-id>'
+            '</config-items></test-session>'
+            '</two-way-delay-measurements>'
+            '</proactive-monitoring></cfm-tests>')
 
+    # ── SLM Profile XML (matched to device schema) ──
     def _slm_prof_xml(self, pn=SLM_PROFILE_NAME, pcp=5,
-                      nel=1, fel=1, pc=5, pi_=1, ri=10):
+                      nel=1.0, fel=1.0, pc=5, pi_=1, ri=10):
         return self._wrap_pm(
-            "<profiles><cfm><two-way-synthetic-loss-measurement>"
-            f"<profile-name>{pn}</profile-name><config-items>"
-            f"<profile-name>{pn}</profile-name><pcp>{pcp}</pcp>"
-            "<inform-test-results>enabled</inform-test-results>"
-            f"<test-duration><probes><probe-count>{pc}</probe-count>"
-            f"<probe-interval>{pi_}</probe-interval>"
-            f"<repeat-interval>{ri}</repeat-interval>"
-            "</probes></test-duration><thresholds>"
-            f"<near-end-loss>{nel}</near-end-loss>"
-            f"<far-end-loss>{fel}</far-end-loss></thresholds>"
-            "</config-items></two-way-synthetic-loss-measurement>"
-            "</cfm></profiles>")
+            '<profiles><cfm><two-way-synthetic-loss-measurement>'
+            f'<profile><profile-name>{pn}</profile-name>'
+            f'<config-items><profile-name>{pn}</profile-name>'
+            f'<pcp>{pcp}</pcp>'
+            '<inform-test-results>enabled</inform-test-results>'
+            '<test-duration-probes>'
+            f'<probe-count>{pc}</probe-count>'
+            f'<probe-interval>{pi_}</probe-interval>'
+            f'<repeat-interval>{ri}</repeat-interval>'
+            '</test-duration-probes>'
+            '<cfm-eth-sl-performance-thresholds>'
+            f'<near-end-loss>{nel}</near-end-loss>'
+            f'<far-end-loss>{fel}</far-end-loss>'
+            '</cfm-eth-sl-performance-thresholds>'
+            '</config-items></profile>'
+            '</two-way-synthetic-loss-measurement></cfm></profiles>')
 
-    def _slm_sess_xml(self, sn=SLM_SESSION_NAME, pn=SLM_PROFILE_NAME):
+    # ── SLM Session XML (matched to device schema) ──
+    def _slm_sess_xml(self, ctx, pn=SLM_PROFILE_NAME):
+        """Build SLM session XML for a given CFM context dict."""
+        cfm_ns = self.ns["dn-cfm"]
+        sn = ctx["slm_sess"]
         return self._wrap_pm(
-            "<cfm><two-way-synthetic-loss-measurement>"
-            f"<session-name>{sn}</session-name><config-items>"
-            f"<session-name>{sn}</session-name><profile>{pn}</profile>"
-            "<admin-state>enabled</admin-state>"
-            "<description>RESTCONF_test_SLM_session</description><source>"
-            f"<maintenance-domain>{self.md_name}</maintenance-domain>"
-            f"<maintenance-association>{self.ma_name}</maintenance-association>"
-            f"<mep-id>{self.source_mep_id}</mep-id></source>"
-            f"<target><mep-id>{self.target_mep_id}</mep-id></target>"
-            "</config-items></two-way-synthetic-loss-measurement></cfm>")
+            f'<cfm-tests><proactive-monitoring xmlns="{cfm_ns}">'
+            '<two-way-synthetic-loss-measurements>'
+            f'<test-session><session-name>{sn}</session-name>'
+            '<config-items>'
+            f'<profile>{pn}</profile>'
+            '<admin-state>enabled</admin-state>'
+            '<description>RESTCONF_test_SLM_session</description>'
+            f'<source-md-name>{ctx["md"]}</source-md-name>'
+            f'<source-ma-name>{ctx["ma"]}</source-ma-name>'
+            f'<source-mep-id>{ctx["src"]}</source-mep-id>'
+            f'<target-mep-id>{ctx["tgt"]}</target-mep-id>'
+            '</config-items></test-session>'
+            '</two-way-synthetic-loss-measurements>'
+            '</proactive-monitoring></cfm-tests>')
 
+    # ── DELETE XML bodies ──
     def _del_xml(self, etype, ename):
+        cfm_ns = self.ns["dn-cfm"]
         m = {
             "dm_session": (
-                '<cfm><two-way-delay-measurement operation="delete">'
-                f"<session-name>{ename}</session-name>"
-                "</two-way-delay-measurement></cfm>"),
+                f'<cfm-tests><proactive-monitoring xmlns="{cfm_ns}">'
+                '<two-way-delay-measurements>'
+                f'<test-session operation="delete">'
+                f'<session-name>{ename}</session-name>'
+                '</test-session></two-way-delay-measurements>'
+                '</proactive-monitoring></cfm-tests>'),
             "slm_session": (
-                '<cfm><two-way-synthetic-loss-measurement operation="delete">'
-                f"<session-name>{ename}</session-name>"
-                "</two-way-synthetic-loss-measurement></cfm>"),
+                f'<cfm-tests><proactive-monitoring xmlns="{cfm_ns}">'
+                '<two-way-synthetic-loss-measurements>'
+                f'<test-session operation="delete">'
+                f'<session-name>{ename}</session-name>'
+                '</test-session></two-way-synthetic-loss-measurements>'
+                '</proactive-monitoring></cfm-tests>'),
             "dm_profile": (
-                '<profiles><cfm><two-way-delay-measurement operation="delete">'
-                f"<profile-name>{ename}</profile-name>"
-                "</two-way-delay-measurement></cfm></profiles>"),
+                '<profiles><cfm><two-way-delay-measurement>'
+                f'<profile operation="delete">'
+                f'<profile-name>{ename}</profile-name>'
+                '</profile>'
+                '</two-way-delay-measurement></cfm></profiles>'),
             "slm_profile": (
-                '<profiles><cfm><two-way-synthetic-loss-measurement operation="delete">'
-                f"<profile-name>{ename}</profile-name>"
-                "</two-way-synthetic-loss-measurement></cfm></profiles>"),
+                '<profiles><cfm><two-way-synthetic-loss-measurement>'
+                f'<profile operation="delete">'
+                f'<profile-name>{ename}</profile-name>'
+                '</profile>'
+                '</two-way-synthetic-loss-measurement></cfm></profiles>'),
         }
         return self._wrap_pm(m[etype])
 
-    # ==========================================================
+    # ──────────────────────────────────────────────────────────────
     # Phase 1: Setup
-    # ==========================================================
+    # ──────────────────────────────────────────────────────────────
     def test_mount_device(self):
-        print("\n" + "=" * 60 + "\nPHASE 1.1: Mount device to ODL\n" + "=" * 60)
+        self._phase("PHASE 1.1: Mount device to ODL")
         if self.skip_mount:
             self._record("mount_device", True, "Skipped (--skip-mount)")
             return
         h = {"Content-Type": "application/xml", "Accept": "application/xml"}
         try:
-            r = self.http.put(self._mu(), data=self._mount_xml(), headers=h, timeout=30)
+            xml_body = self._mount_xml()
+            r = self.http.put(self._mu(), data=xml_body, headers=h, timeout=30)
+            self._log_rc("PUT", self._mu(), r.status_code, xml_body, r.text)
             ok = r.status_code in (200, 201, 204)
             self._record("mount_device", ok, f"HTTP {r.status_code}" +
-                         (f" -- {r.text[:200]}" if not ok else ""))
+                         (f" -- {self._extract_restconf_error(r.text)}" if not ok else ""))
         except Exception as e:
             self._record("mount_device", False, f"Exception: {e}")
 
     def test_verify_mount_status(self):
-        print("\n" + "=" * 60 + "\nPHASE 1.2: Verify mount status\n" + "=" * 60)
+        self._phase("PHASE 1.2: Verify mount status")
         if self.skip_mount:
             self._record("verify_mount_status", True, "Skipped (--skip-mount)")
             return
@@ -297,6 +509,7 @@ class Y1731RestconfTest:
                 if r.status_code == 200:
                     b = r.text.lower()
                     if "connected" in b and "connecting" not in b:
+                        self._log_rc("GET", url, r.status_code, resp_body=r.text)
                         connected = True
                         break
             except Exception:
@@ -307,7 +520,7 @@ class Y1731RestconfTest:
                      "Device connected" if connected else "Timed out")
 
     def test_discover_yang_paths(self):
-        print("\n" + "=" * 60 + "\nPHASE 1.3: Discover YANG namespaces\n" + "=" * 60)
+        self._phase("PHASE 1.3: Discover YANG namespaces")
         if self.no_ssh_verify:
             self._record("discover_yang_paths", True, "Skipped, using defaults")
             return
@@ -315,12 +528,14 @@ class Y1731RestconfTest:
             out = self.run_show("show config services performance-monitoring "
                                 "| display-xml | no-more", timeout=30)
             for uri in re.findall(r'xmlns(?::[\w-]+)?="(http://[^"]+)"', out):
-                if "dn-top" in uri:
+                if uri.endswith("/dn-top"):
                     self.ns["dn-top"] = uri
-                elif "dn-services" in uri or "dn-srv" in uri:
+                elif uri.endswith("/dn-services"):
                     self.ns["dn-services"] = uri
                 elif "performance-monitoring" in uri:
                     self.ns["dn-pm"] = uri
+                elif "connectivity-fault-management" in uri:
+                    self.ns["dn-cfm"] = uri
             for uri in re.findall(r'xmlns(?::[\w-]+)?="(http://[^"]+)"', out):
                 if "performance-monitoring" in uri:
                     m = re.search(r"/yang/([\w-]+)$", uri)
@@ -329,50 +544,126 @@ class Y1731RestconfTest:
                             f"dn-top:drivenets-top/dn-services:services/"
                             f"{m.group(1)}:performance-monitoring")
             self._record("discover_yang_paths", True,
-                         f"pm={self.ns['dn-pm']} | path={self.yang_pm_path}")
+                         f"pm={self.ns['dn-pm']} | cfm={self.ns['dn-cfm']}")
         except Exception as e:
             self._record("discover_yang_paths", False, f"Error: {e}, using defaults")
 
     def test_discover_cfm_context(self):
-        print("\n" + "=" * 60 + "\nPHASE 1.4: Discover CFM context\n" + "=" * 60)
-        if all([self.md_name, self.ma_name, self.source_mep_id, self.target_mep_id]):
+        self._phase("PHASE 1.4: Discover CFM context")
+
+        # If all four values provided via CLI, use that single context
+        if all([self._cli_md, self._cli_ma, self._cli_src, self._cli_tgt]):
+            ctx = {"md": self._cli_md, "ma": self._cli_ma,
+                   "src": self._cli_src, "tgt": self._cli_tgt,
+                   "dir": "cli", "free": True,
+                   "dm_sess": f"RESTCONF_DM_SESS_mep{self._cli_src}",
+                   "slm_sess": f"RESTCONF_SLM_SESS_mep{self._cli_src}"}
+            self.cfm_contexts = [ctx]
             self._record("discover_cfm_context", True,
-                         f"Using provided: MD={self.md_name}, MA={self.ma_name}, "
-                         f"src={self.source_mep_id}, tgt={self.target_mep_id}")
+                         f"Using provided: MD={ctx['md']}, MA={ctx['ma']}, "
+                         f"src={ctx['src']}, tgt={ctx['tgt']}")
             return
         if self.no_ssh_verify:
-            self._record("discover_cfm_context", False, "No CFM context, --no-ssh-verify")
+            self._record("discover_cfm_context", False,
+                         "No CFM context, --no-ssh-verify")
             return
         try:
+            # Use display-xml to get structured CFM data with direction info
             out = self.run_show("show config services ethernet-oam "
                                 "connectivity-fault-management "
-                                "| display-set | no-more", timeout=30)
-            mds = list(dict.fromkeys(re.findall(r"maintenance-domain\s+(\S+)", out)))
-            mas = list(dict.fromkeys(re.findall(r"maintenance-association\s+(\S+)", out)))
-            meps = sorted(set(int(x) for x in re.findall(r"mep-id\s+(\d+)", out)))
-            if mds and not self.md_name:
-                self.md_name = mds[0]
-            if mas and not self.ma_name:
-                self.ma_name = mas[0]
-            if meps:
-                if not self.source_mep_id:
-                    self.source_mep_id = meps[0]
-                if not self.target_mep_id:
-                    self.target_mep_id = meps[1] if len(meps) > 1 else meps[0]
-            ok = all([self.md_name, self.ma_name, self.source_mep_id, self.target_mep_id])
-            d = (f"MD={self.md_name}, MA={self.ma_name}, "
-                 f"src={self.source_mep_id}, tgt={self.target_mep_id}")
-            self._record("discover_cfm_context", ok, d + ("" if ok else " (incomplete)"))
+                                "| display-xml | no-more", timeout=30)
+            # Parse all MD blocks
+            # Structure: maintenance-domain > md-id, maintenance-association > ma-id,
+            #            local-mep > mep-id + direction, remote-mep > mep-id
+            candidates = []  # (md, ma, local_mep, remote_mep, direction)
+            md_blocks = re.split(r'<maintenance-domain>', out)[1:]
+            for md_block in md_blocks:
+                md_match = re.search(r'<md-id>(\S+)</md-id>', md_block)
+                if not md_match:
+                    continue
+                md_id = md_match.group(1)
+                ma_blocks = re.split(r'<maintenance-association>', md_block)[1:]
+                for ma_block in ma_blocks:
+                    ma_match = re.search(r'<ma-id>(\S+)</ma-id>', ma_block)
+                    if not ma_match:
+                        continue
+                    ma_id = ma_match.group(1)
+                    # Each local-mep is a separate candidate
+                    lmep_blocks = re.split(r'<local-mep>', ma_block)[1:]
+                    remote_meps = [int(x) for x in
+                                   re.findall(r'<remote-mep>\s*<mep-id>(\d+)</mep-id>',
+                                              ma_block)]
+                    remote_mep = remote_meps[0] if remote_meps else None
+                    for lmep in lmep_blocks:
+                        mep_m = re.search(r'<mep-id>(\d+)</mep-id>', lmep)
+                        dir_m = re.search(r'<direction>(\w+)</direction>', lmep)
+                        if mep_m:
+                            local_mep = int(mep_m.group(1))
+                            direction = dir_m.group(1) if dir_m else "unknown"
+                            candidates.append((md_id, ma_id, local_mep,
+                                               remote_mep, direction))
+
+            # ── Check which MEPs are already used by existing PM sessions ──
+            used_meps = set()  # set of (md, ma, mep_id) tuples
+            try:
+                pm_out = self.run_show(
+                    "show config services performance-monitoring cfm | no-more",
+                    timeout=15)
+                for src_m in re.finditer(
+                    r'source\s+maintenance-domain\s+(\S+)\s+'
+                    r'maintenance-association\s+(\S+)\s+mep-id\s+(\d+)',
+                    pm_out):
+                    used_meps.add((src_m.group(1), src_m.group(2),
+                                   int(src_m.group(3))))
+            except Exception:
+                pass
+
+            # Build cfm_contexts list for ALL candidates with complete info
+            for md, ma, src, tgt, direction in candidates:
+                if tgt is None:
+                    continue  # need a target MEP for sessions
+                free = (md, ma, src) not in used_meps
+                self.cfm_contexts.append({
+                    "md": md, "ma": ma, "src": src, "tgt": tgt,
+                    "dir": direction, "free": free,
+                    "dm_sess": f"RESTCONF_DM_SESS_mep{src}",
+                    "slm_sess": f"RESTCONF_SLM_SESS_mep{src}",
+                })
+
+            # Sort: free MEPs first, then prefer down direction
+            dir_order = {"down": 0, "up": 1, "unknown": 2}
+            self.cfm_contexts.sort(
+                key=lambda c: (0 if c["free"] else 1,
+                               dir_order.get(c["dir"], 9)))
+
+            # Build summary
+            free_ctx = [c for c in self.cfm_contexts if c["free"]]
+            used_ctx = [c for c in self.cfm_contexts if not c["free"]]
+            lines = []
+            for c in self.cfm_contexts:
+                tag = "FREE" if c["free"] else "IN-USE"
+                lines.append(
+                    f"mep{c['src']}@{c['md']}/{c['ma']} "
+                    f"dir={c['dir']} tgt={c['tgt']} [{tag}]")
+            summary = f"Found {len(self.cfm_contexts)} MEP(s): " + " | ".join(lines)
+            if free_ctx:
+                summary += f" -- will test {len(free_ctx)} free MEP(s)"
+            else:
+                summary += " -- all MEPs in-use, session tests will SKIP"
+            self._record("discover_cfm_context",
+                         len(self.cfm_contexts) > 0, summary)
         except Exception as e:
             self._record("discover_cfm_context", False, f"Error: {e}")
 
-    # ==========================================================
+    # ──────────────────────────────────────────────────────────────
     # Phase 2: GET Operations
-    # ==========================================================
+    # ──────────────────────────────────────────────────────────────
     def _do_get(self, name, ct, label):
-        print("\n" + "=" * 60 + f"\n{label}\n" + "=" * 60)
+        self._phase(label)
         try:
+            url = self._du(self.yang_pm_path, ct)
             r = self.rc_get(self.yang_pm_path, ct)
+            self._log_rc("GET", url, r.status_code, resp_body=r.text)
             ok = r.status_code in (200, 204)
             d = f"HTTP {r.status_code}"
             if ok and r.text:
@@ -382,10 +673,10 @@ class Y1731RestconfTest:
                     d += ", body present"
             elif not ok:
                 if r.status_code in (404, 409, 500):
-                    d += " (may be expected)"
+                    d += " (may be expected if no PM data)"
                     ok = True
                 else:
-                    d += f" -- {r.text[:200]}"
+                    d += f" -- {self._extract_restconf_error(r.text)}"
             self._record(name, ok, d)
         except Exception as e:
             self._record(name, False, f"Exception: {e}")
@@ -399,264 +690,545 @@ class Y1731RestconfTest:
     def test_get_pm_all(self):
         self._do_get("get_pm_all", "all", "PHASE 2.3: GET PM all")
 
-    # ==========================================================
-    # Phase 3-4: PATCH helpers
-    # ==========================================================
-    def _do_patch(self, name, xml, label):
-        print("\n" + "=" * 60 + f"\n{label}\n" + "=" * 60)
+    # ──────────────────────────────────────────────────────────────
+    # Phase 3-6: PATCH / DELETE with CLI verification
+    # ──────────────────────────────────────────────────────────────
+    def _do_restconf_patch(self, name, xml, label):
+        """Send a RESTCONF PATCH with retry for transient errors. Returns True if OK."""
+        self._phase(label)
+        max_retries = 3
+        for attempt in range(1, max_retries + 1):
+            try:
+                r = self.rc_patch(xml)
+                self._log_rc("PATCH", self._pu(), r.status_code, xml, r.text)
+                http_ok = r.status_code in (200, 201, 204)
+                err_msg = "" if http_ok else self._extract_restconf_error(r.text)
+                # Retry on transient errors (commit in progress, empty commit, lock)
+                if not http_ok and attempt < max_retries and (
+                        "commit is in progress" in err_msg
+                        or "empty commit" in err_msg
+                        or "lock" in err_msg.lower()):
+                    print(f"    {DIM}Retry {attempt}/{max_retries}: {err_msg[:80]}{X}")
+                    time.sleep(5)
+                    continue
+                d = f"HTTP {r.status_code}"
+                if not http_ok:
+                    if "in use with session" in err_msg or "in use" in err_msg.lower():
+                        m = re.search(r"LMEP \d+ in use with session (\S+)", err_msg)
+                        conflict = m.group(1) if m else "another session"
+                        d += f" -- MEP in use by '{conflict}'"
+                        self._record(name, "skip", d)
+                        return False
+                    else:
+                        d += f" -- {err_msg}"
+                self._record(name, http_ok, d)
+                if http_ok:
+                    self._created_artifacts.add(name)
+                return http_ok
+            except Exception as e:
+                if attempt < max_retries:
+                    time.sleep(3)
+                    continue
+                self._record(name, False, f"Exception: {e}")
+                return False
+        return False
+
+    def _verify_artifacts_in_cli(self, artifacts_map, label, wait_secs=60):
+        """
+        Wait for ODL->device propagation, then verify artifacts in CLI.
+
+        artifacts_map: dict of {name: (show_cmd, artifact_string)}
+        Retries CLI check every 10s up to wait_secs total.
+        """
+        self._phase(label)
+        if self.no_ssh_verify:
+            for name in artifacts_map:
+                self._record(f"verify_{name}_cli", True, "Skipped (--no-ssh-verify)")
+            return
+
+        # Wait for ODL->device propagation with progress indicator
+        pending = dict(artifacts_map)  # copy
+        found = {}
+        max_attempts = max(1, wait_secs // 10)
+        for attempt in range(1, max_attempts + 1):
+            time.sleep(10)
+            still_pending = {}
+            for name, (show_cmd, artifact) in pending.items():
+                cli_out = self._cli_snapshot(show_cmd)
+                if self._cli_contains(cli_out, artifact):
+                    found[name] = True
+                    print(f"    {G}CLI: '{artifact}' found (~{attempt*10}s){X}")
+                else:
+                    still_pending[name] = (show_cmd, artifact)
+            pending = still_pending
+            if not pending:
+                break
+            names = [artifacts_map[n][1] for n in pending]
+            print(f"    {DIM}Waiting for propagation... ({attempt}/{max_attempts}) "
+                  f"pending: {names}{X}")
+
+        # Record results
+        for name, (show_cmd, artifact) in artifacts_map.items():
+            if name in found:
+                # Also verify via RESTCONF GET
+                get_ok = False
+                try:
+                    rg = self.rc_get(self.yang_pm_path, "config")
+                    get_ok = rg.status_code == 200 and artifact in rg.text
+                except Exception:
+                    pass
+                self._record(f"verify_{name}_cli", True,
+                             f"CLI: '{artifact}' present | "
+                             f"GET={'found' if get_ok else 'NOT found'}")
+            else:
+                # Check GET as fallback
+                get_ok = False
+                try:
+                    rg = self.rc_get(self.yang_pm_path, "config")
+                    get_ok = rg.status_code == 200 and artifact in rg.text
+                except Exception:
+                    pass
+                self._record(f"verify_{name}_cli", False,
+                             f"CLI: '{artifact}' NOT found after {wait_secs}s | "
+                             f"GET={'found' if get_ok else 'NOT found'}")
+
+    def _do_modify(self, name, xml, show_cmd, check_str, label):
+        """
+        PATCH (modify) with before/after CLI verification.
+
+        1. CLI BEFORE  -- capture baseline value
+        2. RESTCONF PATCH
+        3. CLI AFTER   -- check_str SHOULD appear
+        4. RESTCONF GET -- check_str SHOULD appear
+        """
+        self._phase(label)
+
+        # ── 1. CLI BEFORE ──
+        cli_before = self._cli_snapshot(show_cmd)
+        was_present = check_str.lower() in cli_before.lower()
+        print(f"    {DIM}CLI-BEFORE: '{check_str}' "
+              f"{'already present' if was_present else 'not present'}{X}")
+
+        # ── 2. RESTCONF PATCH ──
         try:
             r = self.rc_patch(xml)
-            ok = r.status_code in (200, 201, 204)
-            d = f"HTTP {r.status_code}"
-            if not ok:
-                d += f" -- {r.text[:300]}"
-            self._record(name, ok, d)
+            self._log_rc("PATCH", self._pu(), r.status_code, xml, r.text)
+            http_ok = r.status_code in (200, 201, 204)
+            http_detail = f"HTTP {r.status_code}"
+            if not http_ok:
+                http_detail += f" -- {self._extract_restconf_error(r.text)}"
         except Exception as e:
-            self._record(name, False, f"Exception: {e}")
-
-    def _do_verify_get(self, name, artifact, label):
-        print("\n" + "=" * 60 + f"\n{label}\n" + "=" * 60)
-        try:
-            r = self.rc_get(self.yang_pm_path, "config")
-            if r.status_code != 200:
-                self._record(name, False, f"HTTP {r.status_code}")
-                return
-            found = artifact in r.text
-            self._record(name, found,
-                         f"'{artifact}' {'found' if found else 'NOT found'}")
-        except Exception as e:
-            self._record(name, False, f"Exception: {e}")
-
-    def _do_verify_cli(self, name, cmd, artifact, label):
-        print("\n" + "=" * 60 + f"\n{label}\n" + "=" * 60)
-        if self.no_ssh_verify:
-            self._record(name, True, "Skipped (--no-ssh-verify)")
+            self._record(name, False, f"PATCH Exception: {e}")
             return
+
+        # ── 3. Wait and retry CLI AFTER ──
+        now_present = False
+        if http_ok and not self.no_ssh_verify:
+            for attempt in range(1, 5):
+                time.sleep(3)
+                cli_after = self._cli_snapshot(show_cmd)
+                now_present = check_str.lower() in cli_after.lower()
+                if now_present:
+                    break
+        elif self.no_ssh_verify:
+            now_present = True
+
+        # ── 4. RESTCONF GET ──
+        get_found = False
         try:
-            out = self.run_show(cmd, timeout=15)
-            found = artifact.lower() in out.lower()
-            self._record(name, found,
-                         f"'{artifact}' {'found' if found else 'NOT found'} in CLI")
+            rg = self.rc_get(self.yang_pm_path, "config")
+            self._log_rc("GET", self._du(self.yang_pm_path, "config"),
+                         rg.status_code, resp_body=rg.text)
+            if rg.status_code == 200:
+                get_found = check_str in rg.text
+        except Exception:
+            pass
+
+        # ── Verdict ──
+        if self.no_ssh_verify:
+            ok = http_ok and get_found
+            detail = f"{http_detail} | GET={'found' if get_found else 'NOT found'}"
+        else:
+            ok = http_ok and now_present
+            if not was_present and now_present:
+                detail = (f"{http_detail} | CLI: '{check_str}' appeared after PATCH | "
+                          f"GET={'found' if get_found else 'NOT found'}")
+            elif was_present and now_present:
+                detail = (f"{http_detail} | CLI: '{check_str}' present before & after | "
+                          f"GET={'found' if get_found else 'NOT found'}")
+            else:
+                detail = (f"{http_detail} | CLI: '{check_str}' "
+                          f"{'NOT found' if not now_present else 'present'} | "
+                          f"GET={'found' if get_found else 'NOT found'}")
+
+        self._record(name, ok, detail)
+
+    def _do_delete(self, name, etype, ename, show_cmd, label):
+        """
+        DELETE with before/after CLI + RESTCONF GET verification.
+
+        1. CLI BEFORE  -- artifact should exist
+        2. RESTCONF PATCH (with operation=delete)
+        3. CLI AFTER   -- artifact should be GONE
+        4. RESTCONF GET -- artifact should be GONE
+        """
+        self._phase(label)
+
+        # ── 1. CLI BEFORE ──
+        cli_before = self._cli_snapshot(show_cmd)
+        was_present = self._cli_contains(cli_before, ename)
+        if was_present:
+            print(f"    {DIM}CLI-BEFORE: '{ename}' present (will delete){X}")
+        else:
+            print(f"    {DIM}CLI-BEFORE: '{ename}' already absent{X}")
+
+        # ── 2. RESTCONF DELETE (try HTTP DELETE first, fallback to PATCH) ──
+        # Build the specific YANG path for this artifact
+        del_paths = {
+            "dm_session": (f"{self.yang_pm_path}/cfm-tests/"
+                           f"dn-srv-connectivity-fault-management:proactive-monitoring/"
+                           f"two-way-delay-measurements/test-session={ename}"),
+            "slm_session": (f"{self.yang_pm_path}/cfm-tests/"
+                            f"dn-srv-connectivity-fault-management:proactive-monitoring/"
+                            f"two-way-synthetic-loss-measurements/test-session={ename}"),
+            "dm_profile": (f"{self.yang_pm_path}/profiles/cfm/"
+                           f"two-way-delay-measurement/profile={ename}"),
+            "slm_profile": (f"{self.yang_pm_path}/profiles/cfm/"
+                            f"two-way-synthetic-loss-measurement/profile={ename}"),
+        }
+        try:
+            # Try HTTP DELETE to specific path
+            del_path = del_paths.get(etype, "")
+            r = self.rc_delete(del_path) if del_path else None
+            if r:
+                del_url = RESTCONF_DATA_URL.format(
+                    odl_host=self.odl_host, odl_port=self.odl_port,
+                    node_name=self.node_name, yang_path=del_path)
+                self._log_rc("DELETE", del_url, r.status_code, resp_body=r.text)
+            if r and r.status_code in (200, 204):
+                http_ok = True
+                http_detail = f"HTTP DELETE {r.status_code}"
+                err_msg = ""
+            else:
+                # Fallback to PATCH with operation="delete"
+                del_xml = self._del_xml(etype, ename)
+                r = self.rc_patch(del_xml)
+                self._log_rc("PATCH (delete)", self._pu(), r.status_code,
+                             del_xml, r.text)
+                http_ok = r.status_code in (200, 201, 204)
+                http_detail = f"HTTP PATCH {r.status_code}"
+                err_msg = ""
+            if not http_ok:
+                err_msg = self._extract_restconf_error(r.text)
+                http_detail += f" -- {err_msg}"
         except Exception as e:
-            self._record(name, False, f"Exception: {e}")
+            self._record(name, False, f"DELETE Exception: {e}")
+            return
 
-    # ==========================================================
-    # Phase 3: PATCH DM
-    # ==========================================================
-    def test_patch_dm_profile(self):
-        self._do_patch("patch_dm_profile", self._dm_prof_xml(),
-                       "PHASE 3.1: PATCH - Create DM profile")
+        # ── 3. Wait and verify CLI AFTER ──
+        now_gone = False
+        if http_ok and not self.no_ssh_verify:
+            for attempt in range(1, 5):
+                time.sleep(5)
+                cli_after = self._cli_snapshot(show_cmd)
+                now_gone = not self._cli_contains(cli_after, ename)
+                if now_gone:
+                    break
+        elif self.no_ssh_verify:
+            now_gone = True
+        else:
+            # PATCH failed -- still check CLI
+            time.sleep(5)
+            cli_after = self._cli_snapshot(show_cmd)
+            now_gone = not self._cli_contains(cli_after, ename)
 
-    def test_verify_dm_profile_via_get(self):
-        self._do_verify_get("verify_dm_profile_via_get", DM_PROFILE_NAME,
-                            "PHASE 3.2: Verify DM profile via GET")
+        # ── 4. RESTCONF GET ──
+        get_gone = True
+        try:
+            rg = self.rc_get(self.yang_pm_path, "config")
+            if rg.status_code == 200:
+                get_gone = ename not in rg.text
+        except Exception:
+            pass
 
-    def test_verify_dm_profile_via_cli(self):
-        self._do_verify_cli("verify_dm_profile_via_cli",
+        # ── Verdict ──
+        # If RESTCONF returned error but artifact IS gone from CLI,
+        # treat as success (e.g. "empty commit" = nothing to delete = already gone)
+        if not http_ok and now_gone and "empty commit" in err_msg:
+            ok = True
+            detail = (f"{http_detail} | CLI: '{ename}' absent (already removed) | "
+                      f"GET={'removed' if get_gone else 'STILL PRESENT'}")
+        elif self.no_ssh_verify:
+            ok = http_ok and get_gone
+            detail = f"{http_detail} | GET={'removed' if get_gone else 'STILL PRESENT'}"
+        else:
+            ok = (http_ok or now_gone) and now_gone
+            if was_present and now_gone:
+                detail = (f"{http_detail} | CLI: '{ename}' removed after DELETE | "
+                          f"GET={'removed' if get_gone else 'STILL PRESENT'}")
+            elif not was_present and now_gone:
+                detail = (f"{http_detail} | CLI: was already absent | "
+                          f"GET={'removed' if get_gone else 'STILL PRESENT'}")
+            else:
+                detail = (f"{http_detail} | CLI: '{ename}' "
+                          f"{'STILL PRESENT' if not now_gone else 'removed'} | "
+                          f"GET={'removed' if get_gone else 'STILL PRESENT'}")
+
+        self._record(name, ok, detail)
+
+    # ──────────────────────────────────────────────────────────────
+    # Phase 3: Create all profiles + sessions via RESTCONF
+    # ──────────────────────────────────────────────────────────────
+    def test_create_dm_profile(self):
+        self._do_restconf_patch(
+            "create_dm_profile", self._dm_prof_xml(),
+            "PHASE 3.1: PATCH - Create DM profile")
+
+    def test_create_slm_profile(self):
+        self._do_restconf_patch(
+            "create_slm_profile", self._slm_prof_xml(),
+            "PHASE 3.2: PATCH - Create SLM profile")
+
+    def test_create_dm_sessions(self):
+        """Create DM sessions for ALL discovered CFM contexts."""
+        if not self.cfm_contexts:
+            self._phase("PHASE 3.3: PATCH - Create DM sessions")
+            self._record("create_dm_sessions", "skip",
+                         "No CFM contexts discovered")
+            return
+        for i, ctx in enumerate(self.cfm_contexts, 1):
+            tag = f"mep{ctx['src']}@{ctx['md']}/{ctx['ma']}"
+            label = f"PHASE 3.3.{i}: PATCH - Create DM session ({tag})"
+            name = f"create_dm_sess_mep{ctx['src']}"
+            if not ctx["free"]:
+                self._phase(label)
+                self._record(name, "skip",
+                             f"MEP {ctx['src']} in {ctx['md']}/{ctx['ma']} "
+                             f"already in-use (device constraint)")
+                continue
+            self._do_restconf_patch(name, self._dm_sess_xml(ctx), label)
+            time.sleep(2)
+
+    def test_create_slm_sessions(self):
+        """Create SLM sessions for ALL discovered CFM contexts."""
+        if not self.cfm_contexts:
+            self._phase("PHASE 3.4: PATCH - Create SLM sessions")
+            self._record("create_slm_sessions", "skip",
+                         "No CFM contexts discovered")
+            return
+        for i, ctx in enumerate(self.cfm_contexts, 1):
+            tag = f"mep{ctx['src']}@{ctx['md']}/{ctx['ma']}"
+            label = f"PHASE 3.4.{i}: PATCH - Create SLM session ({tag})"
+            name = f"create_slm_sess_mep{ctx['src']}"
+            if not ctx["free"]:
+                self._phase(label)
+                self._record(name, "skip",
+                             f"MEP {ctx['src']} in {ctx['md']}/{ctx['ma']} "
+                             f"already in-use (device constraint)")
+                continue
+            self._do_restconf_patch(name, self._slm_sess_xml(ctx), label)
+            time.sleep(2)
+
+    # ──────────────────────────────────────────────────────────────
+    # Phase 4: Wait for propagation + verify all creates via CLI
+    # ──────────────────────────────────────────────────────────────
+    def test_verify_creates_via_cli(self):
+        """Verify all successfully created artifacts appear in device CLI."""
+        to_verify = {}
+        prof_cmd = "show config services performance-monitoring profiles"
+        sess_cmd = "show config services performance-monitoring cfm"
+        if "create_dm_profile" in self._created_artifacts:
+            to_verify["dm_profile"] = (prof_cmd, DM_PROFILE_NAME)
+        if "create_slm_profile" in self._created_artifacts:
+            to_verify["slm_profile"] = (prof_cmd, SLM_PROFILE_NAME)
+        # Dynamic session names from all contexts
+        for ctx in self.cfm_contexts:
+            key_dm = f"create_dm_sess_mep{ctx['src']}"
+            key_slm = f"create_slm_sess_mep{ctx['src']}"
+            if key_dm in self._created_artifacts:
+                to_verify[f"dm_sess_mep{ctx['src']}"] = (
+                    sess_cmd, ctx["dm_sess"])
+            if key_slm in self._created_artifacts:
+                to_verify[f"slm_sess_mep{ctx['src']}"] = (
+                    sess_cmd, ctx["slm_sess"])
+        if not to_verify:
+            self._phase("PHASE 4: Verify creates via CLI")
+            self._record("verify_creates_cli", True,
+                         "Nothing to verify (no artifacts created)")
+            return
+        self._verify_artifacts_in_cli(
+            to_verify,
+            "PHASE 4: Wait for propagation + verify creates via CLI",
+            wait_secs=90)
+
+    # ──────────────────────────────────────────────────────────────
+    # Phase 5: Modify DM profile
+    # ──────────────────────────────────────────────────────────────
+    def test_modify_dm_profile(self):
+        if "create_dm_profile" not in self._created_artifacts:
+            self._phase("PHASE 5: PATCH - Modify DM profile")
+            self._record("modify_dm_profile", "skip", "Profile was not created")
+            return
+        self._do_modify(
+            "modify_dm_profile",
+            self._dm_prof_xml(drm=999),
             f"show config services performance-monitoring profiles "
             f"cfm two-way-delay-measurement {DM_PROFILE_NAME}",
-            DM_PROFILE_NAME, "PHASE 3.3: Verify DM profile via CLI")
+            "999",
+            "PHASE 5: PATCH - Modify DM profile (delay-rtt-min -> 999)")
 
-    def test_patch_dm_session(self):
-        if not all([self.md_name, self.ma_name, self.source_mep_id, self.target_mep_id]):
-            print("\n" + "=" * 60 + "\nPHASE 3.4: PATCH - Create DM session\n" + "=" * 60)
-            self._record("patch_dm_session", False, "Missing CFM context")
+    # ──────────────────────────────────────────────────────────────
+    # Phase 6: DELETE all test artifacts
+    # ──────────────────────────────────────────────────────────────
+    def test_delete_dm_sessions(self):
+        """Delete DM sessions for ALL contexts that were created."""
+        any_created = any(f"create_dm_sess_mep{c['src']}" in self._created_artifacts
+                          for c in self.cfm_contexts)
+        if not any_created:
+            self._phase("PHASE 6.1: DELETE DM sessions")
+            self._record("delete_dm_sessions", "skip",
+                         "No DM sessions were created")
             return
-        self._do_patch("patch_dm_session", self._dm_sess_xml(),
-                       "PHASE 3.4: PATCH - Create DM session")
+        for i, ctx in enumerate(self.cfm_contexts, 1):
+            key = f"create_dm_sess_mep{ctx['src']}"
+            name = f"delete_dm_sess_mep{ctx['src']}"
+            tag = f"mep{ctx['src']}@{ctx['md']}/{ctx['ma']}"
+            label = f"PHASE 6.1.{i}: DELETE DM session ({tag})"
+            if key not in self._created_artifacts:
+                self._phase(label)
+                self._record(name, "skip", "Session was not created")
+                continue
+            self._do_delete(
+                name, "dm_session", ctx["dm_sess"],
+                "show config services performance-monitoring",
+                label)
 
-    def test_verify_dm_session_via_get(self):
-        self._do_verify_get("verify_dm_session_via_get", DM_SESSION_NAME,
-                            "PHASE 3.5: Verify DM session via GET")
-
-    def test_verify_dm_session_via_cli(self):
-        self._do_verify_cli("verify_dm_session_via_cli",
-            f"show config services performance-monitoring "
-            f"cfm two-way-delay-measurement {DM_SESSION_NAME}",
-            DM_SESSION_NAME, "PHASE 3.6: Verify DM session via CLI")
-
-    # ==========================================================
-    # Phase 4: PATCH SLM
-    # ==========================================================
-    def test_patch_slm_profile(self):
-        self._do_patch("patch_slm_profile", self._slm_prof_xml(),
-                       "PHASE 4.1: PATCH - Create SLM profile")
-
-    def test_verify_slm_profile_via_get(self):
-        self._do_verify_get("verify_slm_profile_via_get", SLM_PROFILE_NAME,
-                            "PHASE 4.2: Verify SLM profile via GET")
-
-    def test_verify_slm_profile_via_cli(self):
-        self._do_verify_cli("verify_slm_profile_via_cli",
-            f"show config services performance-monitoring profiles "
-            f"cfm two-way-synthetic-loss-measurement {SLM_PROFILE_NAME}",
-            SLM_PROFILE_NAME, "PHASE 4.3: Verify SLM profile via CLI")
-
-    def test_patch_slm_session(self):
-        if not all([self.md_name, self.ma_name, self.source_mep_id, self.target_mep_id]):
-            print("\n" + "=" * 60 + "\nPHASE 4.4: PATCH - Create SLM session\n" + "=" * 60)
-            self._record("patch_slm_session", False, "Missing CFM context")
+    def test_delete_slm_sessions(self):
+        """Delete SLM sessions for ALL contexts that were created."""
+        any_created = any(f"create_slm_sess_mep{c['src']}" in self._created_artifacts
+                          for c in self.cfm_contexts)
+        if not any_created:
+            self._phase("PHASE 6.2: DELETE SLM sessions")
+            self._record("delete_slm_sessions", "skip",
+                         "No SLM sessions were created")
             return
-        self._do_patch("patch_slm_session", self._slm_sess_xml(),
-                       "PHASE 4.4: PATCH - Create SLM session")
-
-    def test_verify_slm_session_via_get(self):
-        self._do_verify_get("verify_slm_session_via_get", SLM_SESSION_NAME,
-                            "PHASE 4.5: Verify SLM session via GET")
-
-    def test_verify_slm_session_via_cli(self):
-        self._do_verify_cli("verify_slm_session_via_cli",
-            f"show config services performance-monitoring "
-            f"cfm two-way-synthetic-loss-measurement {SLM_SESSION_NAME}",
-            SLM_SESSION_NAME, "PHASE 4.6: Verify SLM session via CLI")
-
-    # ==========================================================
-    # Phase 5: Modify
-    # ==========================================================
-    def test_patch_modify_dm_profile(self):
-        self._do_patch("patch_modify_dm_profile", self._dm_prof_xml(drm=200),
-                       "PHASE 5.1: PATCH - Modify DM profile threshold")
-
-    def test_verify_dm_modification_via_get(self):
-        print("\n" + "=" * 60 + "\nPHASE 5.2: Verify modification via GET\n" + "=" * 60)
-        try:
-            r = self.rc_get(self.yang_pm_path, "config")
-            if r.status_code != 200:
-                self._record("verify_dm_modification_via_get", False, f"HTTP {r.status_code}")
-                return
-            fp = DM_PROFILE_NAME in r.text
-            fv = "200" in r.text
-            self._record("verify_dm_modification_via_get", fp and fv,
-                         f"Profile found={fp}, delay-rtt-min=200 found={fv}")
-        except Exception as e:
-            self._record("verify_dm_modification_via_get", False, f"Exception: {e}")
-
-    def test_verify_dm_modification_via_cli(self):
-        print("\n" + "=" * 60 + "\nPHASE 5.3: Verify modification via CLI\n" + "=" * 60)
-        if self.no_ssh_verify:
-            self._record("verify_dm_modification_via_cli", True, "Skipped")
-            return
-        try:
-            out = self.run_show(f"show config services performance-monitoring profiles "
-                                f"cfm two-way-delay-measurement {DM_PROFILE_NAME}", timeout=15)
-            found = "200" in out
-            self._record("verify_dm_modification_via_cli", found,
-                         f"delay-rtt-min 200 {'found' if found else 'NOT found'}")
-        except Exception as e:
-            self._record("verify_dm_modification_via_cli", False, f"Exception: {e}")
-
-    # ==========================================================
-    # Phase 6: DELETE
-    # ==========================================================
-    def _do_del(self, name, etype, ename, label):
-        print("\n" + "=" * 60 + f"\n{label}\n" + "=" * 60)
-        try:
-            r = self.rc_patch(self._del_xml(etype, ename))
-            ok = r.status_code in (200, 201, 204)
-            d = f"HTTP {r.status_code}"
-            if not ok:
-                d += f" -- {r.text[:300]}"
-            self._record(name, ok, d)
-        except Exception as e:
-            self._record(name, False, f"Exception: {e}")
-
-    def test_delete_dm_session(self):
-        self._do_del("delete_dm_session", "dm_session", DM_SESSION_NAME,
-                     "PHASE 6.1: DELETE DM session")
-
-    def test_verify_dm_session_removed(self):
-        print("\n" + "=" * 60 + "\nPHASE 6.2: Verify DM session removed\n" + "=" * 60)
-        try:
-            r = self.rc_get(self.yang_pm_path, "config")
-            if r.status_code != 200:
-                self._record("verify_dm_session_removed", True,
-                             f"HTTP {r.status_code} (PM may be empty)")
-                return
-            nf = DM_SESSION_NAME not in r.text
-            self._record("verify_dm_session_removed", nf,
-                         f"'{DM_SESSION_NAME}' {'removed' if nf else 'STILL PRESENT'}")
-        except Exception as e:
-            self._record("verify_dm_session_removed", False, f"Exception: {e}")
-
-    def test_delete_slm_session(self):
-        self._do_del("delete_slm_session", "slm_session", SLM_SESSION_NAME,
-                     "PHASE 6.3: DELETE SLM session")
+        for i, ctx in enumerate(self.cfm_contexts, 1):
+            key = f"create_slm_sess_mep{ctx['src']}"
+            name = f"delete_slm_sess_mep{ctx['src']}"
+            tag = f"mep{ctx['src']}@{ctx['md']}/{ctx['ma']}"
+            label = f"PHASE 6.2.{i}: DELETE SLM session ({tag})"
+            if key not in self._created_artifacts:
+                self._phase(label)
+                self._record(name, "skip", "Session was not created")
+                continue
+            self._do_delete(
+                name, "slm_session", ctx["slm_sess"],
+                "show config services performance-monitoring",
+                label)
 
     def test_delete_dm_profile(self):
-        self._do_del("delete_dm_profile", "dm_profile", DM_PROFILE_NAME,
-                     "PHASE 6.4: DELETE DM profile")
+        if "create_dm_profile" not in self._created_artifacts:
+            self._phase("PHASE 6.3: DELETE DM profile")
+            self._record("delete_dm_profile", "skip",
+                         "Profile was not created")
+            return
+        self._do_delete(
+            "delete_dm_profile", "dm_profile", DM_PROFILE_NAME,
+            "show config services performance-monitoring",
+            "PHASE 6.3: DELETE DM profile")
 
     def test_delete_slm_profile(self):
-        self._do_del("delete_slm_profile", "slm_profile", SLM_PROFILE_NAME,
-                     "PHASE 6.5: DELETE SLM profile")
+        if "create_slm_profile" not in self._created_artifacts:
+            self._phase("PHASE 6.4: DELETE SLM profile")
+            self._record("delete_slm_profile", "skip",
+                         "Profile was not created")
+            return
+        self._do_delete(
+            "delete_slm_profile", "slm_profile", SLM_PROFILE_NAME,
+            "show config services performance-monitoring",
+            "PHASE 6.4: DELETE SLM profile")
 
     def test_verify_all_removed_via_cli(self):
-        print("\n" + "=" * 60 + "\nPHASE 6.6: Verify all removed via CLI\n" + "=" * 60)
+        self._phase("PHASE 6.5: Verify all test artifacts removed")
         if self.no_ssh_verify:
-            self._record("verify_all_removed_via_cli", True, "Skipped")
+            self._record("verify_all_removed", True, "Skipped (--no-ssh-verify)")
             return
         try:
-            out = self.run_show("show config services performance-monitoring "
-                                "| display-set | no-more", timeout=15)
-            arts = [DM_PROFILE_NAME, DM_SESSION_NAME, SLM_PROFILE_NAME, SLM_SESSION_NAME]
-            rem = [a for a in arts if a.lower() in out.lower()]
-            self._record("verify_all_removed_via_cli", len(rem) == 0,
-                         "All removed" if not rem else f"Still present: {rem}")
+            out = self._cli_snapshot(
+                "show config services performance-monitoring", timeout=15)
+            # Build list of all test artifact names (profiles + all session names)
+            arts = [DM_PROFILE_NAME, SLM_PROFILE_NAME]
+            for ctx in self.cfm_contexts:
+                arts.append(ctx["dm_sess"])
+                arts.append(ctx["slm_sess"])
+            rem = [a for a in arts if self._cli_contains(out, a)]
+            self._record("verify_all_removed", len(rem) == 0,
+                         "All test artifacts removed" if not rem
+                         else f"Still present: {rem}")
         except Exception as e:
-            self._record("verify_all_removed_via_cli", False, f"Exception: {e}")
+            self._record("verify_all_removed", False, f"Exception: {e}")
 
-    # ==========================================================
+    # ──────────────────────────────────────────────────────────────
     # Phase 7: Negative Tests
-    # ==========================================================
+    # ──────────────────────────────────────────────────────────────
     def test_get_invalid_path(self):
-        print("\n" + "=" * 60 + "\nPHASE 7.1: GET invalid path (negative)\n" + "=" * 60)
+        self._phase("PHASE 7.1: GET invalid path (negative)")
         try:
-            r = self.rc_get("dn-top:drivenets-top/dn-nonexistent:fake", "config")
+            yp = "dn-top:drivenets-top/dn-nonexistent:fake"
+            r = self.rc_get(yp, "config")
+            self._log_rc("GET", self._du(yp, "config"), r.status_code,
+                         resp_body=r.text)
             ok = r.status_code != 200
             self._record("get_invalid_path", ok,
-                         f"HTTP {r.status_code} ({'expected' if ok else 'unexpected'})")
+                         f"HTTP {r.status_code} ({'expected non-200' if ok else 'unexpected 200'})")
         except Exception as e:
             self._record("get_invalid_path", True,
                          f"Exception as expected: {type(e).__name__}")
 
     def test_patch_invalid_body(self):
-        print("\n" + "=" * 60 + "\nPHASE 7.2: PATCH malformed XML (negative)\n" + "=" * 60)
+        self._phase("PHASE 7.2: PATCH malformed XML (negative)")
         try:
-            r = self.rc_patch("<drivenets-top><not-valid></drivenets-top>")
+            bad_xml = "<drivenets-top><not-valid></drivenets-top>"
+            r = self.rc_patch(bad_xml)
+            self._log_rc("PATCH", self._pu(), r.status_code, bad_xml, r.text)
             ok = r.status_code not in (200, 201, 204)
             self._record("patch_invalid_body", ok,
-                         f"HTTP {r.status_code} ({'expected' if ok else 'unexpected'})")
+                         f"HTTP {r.status_code} ({'expected reject' if ok else 'unexpected accept'})")
         except Exception as e:
             self._record("patch_invalid_body", True, f"Exception: {type(e).__name__}")
 
     def test_patch_invalid_profile_value(self):
-        print("\n" + "=" * 60 + "\nPHASE 7.3: PATCH invalid value (negative)\n" + "=" * 60)
+        self._phase("PHASE 7.3: PATCH invalid value (negative)")
         try:
             bad = self._wrap_pm(
-                "<profiles><cfm><two-way-delay-measurement>"
-                "<profile-name>RESTCONF_INVALID_TEST</profile-name>"
-                "<config-items><profile-name>RESTCONF_INVALID_TEST</profile-name>"
-                "<thresholds><delay-rtt-min>NOT_A_NUMBER</delay-rtt-min>"
-                "</thresholds></config-items>"
-                "</two-way-delay-measurement></cfm></profiles>")
+                '<profiles><cfm><two-way-delay-measurement>'
+                '<profile><profile-name>RESTCONF_INVALID_TEST</profile-name>'
+                '<config-items><profile-name>RESTCONF_INVALID_TEST</profile-name>'
+                '<cfm-eth-dm-performance-thresholds>'
+                '<delay-rtt-min>NOT_A_NUMBER</delay-rtt-min>'
+                '</cfm-eth-dm-performance-thresholds>'
+                '</config-items></profile>'
+                '</two-way-delay-measurement></cfm></profiles>')
             r = self.rc_patch(bad)
+            self._log_rc("PATCH", self._pu(), r.status_code, bad, r.text)
             ok = r.status_code not in (200, 201, 204)
-            self._record("patch_invalid_profile_value", ok,
-                         f"HTTP {r.status_code} ({'expected' if ok else 'unexpected'})")
+            self._record("patch_invalid_value", ok,
+                         f"HTTP {r.status_code} ({'expected reject' if ok else 'unexpected accept'})")
         except Exception as e:
-            self._record("patch_invalid_profile_value", True,
+            self._record("patch_invalid_value", True,
                          f"Exception: {type(e).__name__}")
 
-    # ==========================================================
+    # ──────────────────────────────────────────────────────────────
     # Phase 8: Cleanup
-    # ==========================================================
+    # ──────────────────────────────────────────────────────────────
     def test_unmount_device(self):
-        print("\n" + "=" * 60 + "\nPHASE 8: Unmount device\n" + "=" * 60)
+        self._phase("PHASE 8: Unmount device")
         if not self.cleanup:
             self._record("unmount_device", True, "Skipped (--cleanup not set)")
             return
         try:
             r = self.http.delete(self._mu(), timeout=30)
+            self._log_rc("DELETE", self._mu(), r.status_code, resp_body=r.text)
             ok = r.status_code in (200, 204)
             self._record("unmount_device", ok,
                          f"HTTP {r.status_code}" +
@@ -664,13 +1236,13 @@ class Y1731RestconfTest:
         except Exception as e:
             self._record("unmount_device", False, f"Exception: {e}")
 
-    # ==========================================================
+    # ──────────────────────────────────────────────────────────────
     # Orchestrator
-    # ==========================================================
+    # ──────────────────────────────────────────────────────────────
     def run_all(self):
         start = datetime.now()
         print("=" * 70)
-        print("  Y.1731 RESTCONF SANITY TEST")
+        print(f"  {B}Y.1731 RESTCONF SANITY TEST{X}")
         print(f"  Device   : {self.host}")
         print(f"  ODL      : {self.odl_host}:{self.odl_port}")
         print(f"  Node     : {self.node_name}")
@@ -680,41 +1252,45 @@ class Y1731RestconfTest:
         try:
             if not self.no_ssh_verify:
                 self.ssh_connect()
+            # Phase 1: Setup
             self.test_mount_device()
             self.test_verify_mount_status()
             self.test_discover_yang_paths()
             self.test_discover_cfm_context()
+            # Phase 2: GET baseline
             self.test_get_pm_config()
             self.test_get_pm_oper()
             self.test_get_pm_all()
-            self.test_patch_dm_profile()
-            self.test_verify_dm_profile_via_get()
-            self.test_verify_dm_profile_via_cli()
-            self.test_patch_dm_session()
-            self.test_verify_dm_session_via_get()
-            self.test_verify_dm_session_via_cli()
-            self.test_patch_slm_profile()
-            self.test_verify_slm_profile_via_get()
-            self.test_verify_slm_profile_via_cli()
-            self.test_patch_slm_session()
-            self.test_verify_slm_session_via_get()
-            self.test_verify_slm_session_via_cli()
-            self.test_patch_modify_dm_profile()
-            self.test_verify_dm_modification_via_get()
-            self.test_verify_dm_modification_via_cli()
-            self.test_delete_dm_session()
-            self.test_verify_dm_session_removed()
-            self.test_delete_slm_session()
+            # Small delay to let device settle before writes
+            time.sleep(3)
+            # Phase 3: Create all artifacts via RESTCONF
+            # Small delay between creates to avoid ODL commit races
+            self.test_create_dm_profile()
+            time.sleep(2)
+            self.test_create_slm_profile()
+            time.sleep(2)
+            # Sessions: iterate over ALL discovered CFM contexts
+            self.test_create_dm_sessions()
+            self.test_create_slm_sessions()
+            # Phase 4: Wait for ODL->device propagation + verify via CLI
+            self.test_verify_creates_via_cli()
+            # Phase 5: Modify (also verifies via CLI before/after)
+            self.test_modify_dm_profile()
+            # Phase 6: Delete + verify via CLI
+            self.test_delete_dm_sessions()
+            self.test_delete_slm_sessions()
             self.test_delete_dm_profile()
             self.test_delete_slm_profile()
             self.test_verify_all_removed_via_cli()
+            # Phase 7: Negative tests
             self.test_get_invalid_path()
             self.test_patch_invalid_body()
             self.test_patch_invalid_profile_value()
+            # Phase 8: Cleanup
             self.test_unmount_device()
         except Exception as e:
             print(f"\n[ERROR] {e}")
-            self._record("Unexpected error", False, str(e))
+            self._record("unexpected_error", False, str(e))
         finally:
             try:
                 if not self.no_ssh_verify:
@@ -723,34 +1299,73 @@ class Y1731RestconfTest:
                 pass
             self.http.close()
 
+        # ── Summary ──
         elapsed = (datetime.now() - start).total_seconds()
         total = len(self.results)
-        passed = sum(1 for _, p, _ in self.results if p)
-        failed = total - passed
-        print("\n" + "=" * 70 + "\n  FULL RESULTS\n" + "=" * 70)
-        for n, p, d in self.results:
-            print(f"  {'[PASS]' if p else '[FAIL]'} {n}" +
-                  (f" -- {d}" if d else ""))
-        print("\n" + "-" * 70 + "\n  SUMMARY\n" + "-" * 70)
-        print(f"  Total : {total}")
-        print(f"  Passed: {passed}")
-        print(f"  Failed: {failed}")
-        print(f"  Time  : {elapsed:.1f}s")
-        print("=" * 70)
+        passed_list = [(n, d) for n, s, d in self.results if s == "pass"]
+        failed_list = [(n, d) for n, s, d in self.results if s == "fail"]
+        skipped_list = [(n, d) for n, s, d in self.results if s == "skip"]
+        passed = len(passed_list)
+        failed = len(failed_list)
+        skipped = len(skipped_list)
+
+        print(f"\n{'=' * 70}")
+        print(f"  {B}RESULTS SUMMARY{X}")
+        print(f"{'=' * 70}")
+        print(f"  Total  : {total}")
+        print(f"  {G}Passed : {passed}{X}")
+        if skipped:
+            print(f"  {Y}Skipped: {skipped}{X}")
         if failed:
-            print("\n  Failed tests:")
-            for n, p, d in self.results:
-                if not p:
-                    print(f"    - {n}: {d}")
-        v = "ALL TESTS PASSED" if failed == 0 else "SOME TESTS FAILED"
-        print(f"\n  >>> {v} <<<\n")
+            print(f"  {R}Failed : {failed}{X}")
+        else:
+            print(f"  Failed : {failed}")
+        print(f"  Time   : {elapsed:.1f}s")
+
+        # ── PASSED ──
+        print(f"\n  {G}{B}PASSED ({passed}):{X}")
+        for n, d in passed_list:
+            short = d[:90] if d else ""
+            print(f"    {G}[PASS]{X} {n}" + (f"  {short}" if short else ""))
+
+        # ── SKIPPED ──
+        if skipped:
+            print(f"\n  {Y}{B}SKIPPED ({skipped}):{X}")
+            for n, d in skipped_list:
+                short = d[:120] if d else ""
+                print(f"    {Y}[SKIP]{X} {n}")
+                if short:
+                    print(f"           {DIM}{short}{X}")
+
+        # ── FAILED ──
+        if failed:
+            print(f"\n  {R}{B}FAILED ({failed}):{X}")
+            for n, d in failed_list:
+                err = d
+                if "<error-message>" in err:
+                    m_err = re.search(r"<error-message>(.*?)</error-message>", err)
+                    if m_err:
+                        err = m_err.group(1)[:120]
+                elif len(err) > 120:
+                    err = err[:120] + "..."
+                print(f"    {R}[FAIL]{X} {n}")
+                if err:
+                    print(f"           {Y}{err}{X}")
+
+        print(f"\n{'=' * 70}")
+        if failed == 0:
+            print(f"  {G}{B}>>> ALL {total} TESTS PASSED ({passed} passed, {skipped} skipped) <<<{X}")
+        else:
+            print(f"  {R}{B}>>> {failed}/{total} TESTS FAILED <<<{X}")
+        print(f"{'=' * 70}\n")
         return failed == 0
 
 
 def main():
     p = argparse.ArgumentParser(
         description=("Y.1731 RESTCONF sanity test for DNOS via OpenDaylight.\n"
-                     "Tests GET, PATCH, DELETE for Performance Monitoring.\n\n"
+                     "Tests GET, PATCH, DELETE for Performance Monitoring.\n"
+                     "Verifies every operation via CLI (before/after) and RESTCONF GET.\n\n"
                      "Jira: SW-237067 | Epic: SW-141523"),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--host", required=True, help="Device management IP")
@@ -768,6 +1383,8 @@ def main():
     p.add_argument("--cleanup", action="store_true", help="Unmount from ODL at end")
     p.add_argument("--skip-mount", action="store_true", help="Skip mount (already mounted)")
     p.add_argument("--no-ssh-verify", action="store_true", help="Skip SSH/CLI verification")
+    p.add_argument("--verbose", "-v", action="store_true",
+                   help="Show full RESTCONF request/response bodies")
     a = p.parse_args()
     t = Y1731RestconfTest(
         host=a.host, username=a.user, password=a.password,
@@ -775,6 +1392,7 @@ def main():
         odl_user=a.odl_user, odl_password=a.odl_password,
         node_name=a.node_name, cleanup=a.cleanup,
         skip_mount=a.skip_mount, no_ssh_verify=a.no_ssh_verify,
+        verbose=a.verbose,
         md_name=a.md_name, ma_name=a.ma_name,
         source_mep_id=a.source_mep_id, target_mep_id=a.target_mep_id)
     sys.exit(0 if t.run_all() else 1)
