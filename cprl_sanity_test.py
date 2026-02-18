@@ -247,7 +247,9 @@ class CPRLSanityTest:
             "exit",  # exit system
         ]
         commit_out = self.run_config(config)
-        if "error" in commit_out.lower() and "commit" not in commit_out.lower():
+        # Check for commit failure indicators (error messages, failure keywords)
+        commit_lower = commit_out.lower()
+        if any(keyword in commit_lower for keyword in ["error:", "failed", "invalid", "syntax error"]):
             self._record("Commit ICMP config", False, commit_out[:200])
             return
 
@@ -282,7 +284,9 @@ class CPRLSanityTest:
             "exit",  # exit system
         ]
         commit_out = self.run_config(config)
-        if "error" in commit_out.lower() and "commit" not in commit_out.lower():
+        # Check for commit failure indicators (error messages, failure keywords)
+        commit_lower = commit_out.lower()
+        if any(keyword in commit_lower for keyword in ["error:", "failed", "invalid", "syntax error"]):
             self._record("Commit BGP config", False, commit_out[:200])
             return
 
@@ -351,7 +355,9 @@ class CPRLSanityTest:
             "exit",  # exit system
         ]
         commit_out = self.run_config(config)
-        if "error" in commit_out.lower() and "commit" not in commit_out.lower():
+        # Check for commit failure indicators (error messages, failure keywords)
+        commit_lower = commit_out.lower()
+        if any(keyword in commit_lower for keyword in ["error:", "failed", "invalid", "syntax error"]):
             self._record("Commit revert config", False, commit_out[:200])
             return
 

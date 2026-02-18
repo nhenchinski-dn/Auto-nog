@@ -645,6 +645,12 @@ class BFDOverBGPSanityTest:
             return False
         h = (hostname or "").lower()
         a = host_arg.lower()
+        
+        # If hostname is None or empty, only match against host_arg (avoid false positives)
+        if not h:
+            return r == a or a in r or r in a
+        
+        # Full matching with hostname available
         return r == h or r == a or h in r or r in h or a in r or r in a
 
     def test_snapshot_baseline(self):
