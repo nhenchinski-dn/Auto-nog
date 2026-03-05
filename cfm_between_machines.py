@@ -11,12 +11,33 @@ import argparse
 import os
 import re
 import time
-from dataclasses import dataclass
-
-
+from dataclasses import dataclass, field
 from typing import List, Optional, Set, Tuple
 
 import paramiko
+
+try:
+    import snappi
+    SNAPPI_AVAILABLE = True
+except ImportError:
+    SNAPPI_AVAILABLE = False
+
+try:
+    from testcenter.api.stc_rest import StcRestWrapper
+    from testcenter.stc_app import StcApp
+    from testcenter.stc_statistics_view import StcStats
+    PYTESTCENTER_AVAILABLE = True
+except ImportError:
+    try:
+        import stcrestclient
+        STCRESTCLIENT_AVAILABLE = True
+    except ImportError:
+        STCRESTCLIENT_AVAILABLE = False
+    PYTESTCENTER_AVAILABLE = False
+
+SPIRENT_MODE_OTG = "otg"
+SPIRENT_MODE_REST = "rest"
+SPIRENT_MODE_DIRECT = "direct"
 
 
 PROMPT_MARKERS = ("#", ">")
@@ -657,6 +678,314 @@ def apply_cfm(
     return True, "CFM configured and committed.", None
 
 
+###############################################################################
+# Spirent traffic validation — three approaches (no Windows client needed)
+###############################################################################
+
+@dataclass
+class SpirentConfig:
+    mode: str = SPIRENT_MODE_OTG
+    otg_endpoint: str = ""           # e.g. "il-auto-containers:55051"
+    labserver_endpoint: str = ""     # e.g. "il-auto-containers:80"
+    port_a_location: str = ""        # e.g. "//100.64.4.43/1/17"
+    port_b_location: str = ""        # e.g. "//100.64.4.43/1/25"
+    packets: int = 1000
+    packet_size: int = 128
+    timeout: int = 30
+    src_mac_a: str = "00:AA:00:00:01:00"
+    dst_mac_a: str = "00:AA:00:00:02:00"
+    src_ip_a: str = "10.10.10.1"
+    dst_ip_a: str = "10.10.10.2"
+    vlan_id: int = 0
+
+
+def _spirent_otg_validate(cfg: SpirentConfig) -> Tuple[bool, str]:
+    """
+    Option 1 — OTG / snappi (recommended).
+    Requires: pip install snappi grpcio grpcio-tools
+    Connects via gRPC to the OTG adapter (no Windows client).
+    """
+    if not SNAPPI_AVAILABLE:
+        return False, (
+            "snappi is not installed.  Run:\n"
+            "  pip install snappi==1.5.1 grpcio grpcio-tools\n"
+            "See https://github.com/Spirent-STC/stc-otg-setup for the full OTG setup."
+        )
+
+    api = snappi.api(location=cfg.otg_endpoint, transport=snappi.Transport.GRPC)
+    api.request_timeout = cfg.timeout + 30
+
+    config = api.config()
+    p1, p2 = (
+        config.ports
+        .port(name="p1", location=cfg.port_a_location)
+        .port(name="p2", location=cfg.port_b_location)
+    )
+    f1, f2 = (
+        config.flows
+        .flow(name="cfm_validate_a2b")
+        .flow(name="cfm_validate_b2a")
+    )
+
+    f1.tx_rx.port.tx_name, f1.tx_rx.port.rx_names = p1.name, [p2.name]
+    f2.tx_rx.port.tx_name, f2.tx_rx.port.rx_names = p2.name, [p1.name]
+
+    f1.size.fixed = cfg.packet_size
+    f2.size.fixed = cfg.packet_size
+    for f in config.flows:
+        f.duration.fixed_packets.packets = cfg.packets
+        f.metrics.enable = True
+
+    eth1, ip1 = f1.packet.ethernet().ipv4()
+    eth2, ip2 = f2.packet.ethernet().ipv4()
+    eth1.src.value, eth1.dst.value = cfg.src_mac_a, cfg.dst_mac_a
+    eth2.src.value, eth2.dst.value = cfg.dst_mac_a, cfg.src_mac_a
+    ip1.src.value, ip1.dst.value = cfg.src_ip_a, cfg.dst_ip_a
+    ip2.src.value, ip2.dst.value = cfg.dst_ip_a, cfg.src_ip_a
+
+    if cfg.vlan_id > 0:
+        f1.packet.vlan().id.value = cfg.vlan_id
+        f2.packet.vlan().id.value = cfg.vlan_id
+
+    try:
+        api.set_config(config)
+    except Exception as e:
+        return False, f"OTG set_config failed: {e}"
+
+    ts = api.control_state()
+    ts.traffic.flow_transmit.state = snappi.StateTrafficFlowTransmit.START
+    try:
+        api.set_control_state(ts)
+    except Exception as e:
+        return False, f"OTG start traffic failed: {e}"
+
+    expected = cfg.packets * 2
+    req = api.metrics_request()
+    req.flow.flow_names = [f.name for f in config.flows]
+
+    deadline = time.time() + cfg.timeout
+    while time.time() < deadline:
+        time.sleep(2)
+        res = api.get_metrics(req)
+        total_tx = sum(m.frames_tx for m in res.flow_metrics)
+        total_rx = sum(m.frames_rx for m in res.flow_metrics)
+        if total_tx >= expected and total_rx >= expected:
+            return True, f"OTG validated: {total_tx} sent, {total_rx} received (0 loss)"
+
+    res = api.get_metrics(req)
+    total_tx = sum(m.frames_tx for m in res.flow_metrics)
+    total_rx = sum(m.frames_rx for m in res.flow_metrics)
+    loss = total_tx - total_rx
+    return False, f"OTG traffic loss: {total_tx} sent, {total_rx} received ({loss} lost)"
+
+
+def _spirent_rest_validate(cfg: SpirentConfig) -> Tuple[bool, str]:
+    """
+    Option 2 — LabServer REST API (stcrestclient / pytestcenter).
+    Requires: pip install stcrestclient   (or pip install pytestcenter for richer API)
+    Connects to a Spirent LabServer Docker container via REST (no Windows client).
+    """
+    if PYTESTCENTER_AVAILABLE:
+        return _spirent_rest_pytestcenter(cfg)
+    if not globals().get("STCRESTCLIENT_AVAILABLE"):
+        return False, (
+            "Neither pytestcenter nor stcrestclient is installed.  Run one of:\n"
+            "  pip install pytestcenter    (recommended — richer API)\n"
+            "  pip install stcrestclient   (lightweight REST client)\n"
+            "LabServer Docker image: download from Viavi portal with activation key\n"
+            "  cf57-e73e-e933-4f80-8539-3569-1d88-f616\n"
+            "Load:  xz -dc labserver-5.61.0416.tar.xz | docker load\n"
+            "Run:   docker run -d --network host registry.oriontest.net/labserver:v5.61"
+        )
+    return _spirent_rest_raw(cfg)
+
+
+def _spirent_rest_pytestcenter(cfg: SpirentConfig) -> Tuple[bool, str]:
+    """LabServer REST via pytestcenter (higher-level wrappers)."""
+    import logging
+    logger = logging.getLogger("spirent_rest")
+    logger.setLevel(logging.WARNING)
+
+    host, _, port = cfg.labserver_endpoint.partition(":")
+    rest_port = int(port) if port else 80
+
+    try:
+        wrapper = StcRestWrapper(logger=logger, server=host, port=rest_port, user_name="dn")
+        stc = StcApp(logger=logger, api_wrapper=wrapper)
+        stc.connect(None)
+    except Exception as e:
+        return False, f"LabServer connection failed ({host}:{rest_port}): {e}"
+
+    try:
+        stc.project.ports["Port 1"].reserve(cfg.port_a_location.lstrip("/"))
+        stc.project.ports["Port 2"].reserve(cfg.port_b_location.lstrip("/"))
+    except Exception as e:
+        stc.disconnect(terminate=True)
+        return False, f"Port reservation failed: {e}"
+
+    try:
+        stc.start_traffic()
+        time.sleep(max(5, cfg.packets // 200))
+        stc.stop_traffic()
+
+        stats = StcStats("generatorportresults")
+        stats.read_stats()
+        total_tx = sum(
+            int(v.get("TotalFrameCount", 0))
+            for v in stats.statistics.values()
+        )
+    except Exception as e:
+        stc.disconnect(terminate=True)
+        return False, f"REST traffic run failed: {e}"
+
+    stc.disconnect(terminate=True)
+    if total_tx > 0:
+        return True, f"REST validated: TotalFrameCount={total_tx}"
+    return False, f"REST validation: no frames sent (TotalFrameCount={total_tx})"
+
+
+def _spirent_rest_raw(cfg: SpirentConfig) -> Tuple[bool, str]:
+    """LabServer REST via raw stcrestclient (minimal dependency)."""
+    host, _, port = cfg.labserver_endpoint.partition(":")
+    rest_port = int(port) if port else 80
+
+    try:
+        from stcrestclient import stchttp
+        stc = stchttp.StcHttp(host, port=rest_port)
+        sid = stc.new_session("dn", "cfm_validate")
+        stc.join_session(sid)
+    except Exception as e:
+        return False, f"LabServer connection failed ({host}:{rest_port}): {e}"
+
+    try:
+        project = stc.get("system1", "children-project")
+        port1 = stc.create("port", under=project)
+        port2 = stc.create("port", under=project)
+        stc.config(port1, {"location": cfg.port_a_location.lstrip("/")})
+        stc.config(port2, {"location": cfg.port_b_location.lstrip("/")})
+        stc.perform("AttachPorts")
+        stc.apply()
+
+        gen1 = stc.get(port1, "children-generator")
+        stc.config(
+            stc.get(gen1, "children-generatorconfig"),
+            {
+                "SchedulingMode": "PORT_BASED",
+                "DurationMode": "BURSTS",
+                "BurstSize": 1,
+                "Duration": cfg.packets,
+                "LoadUnit": "FRAMES_PER_SECOND",
+                "FixedLoad": 100,
+            },
+        )
+        stc.apply()
+
+        stc.perform("GeneratorStart", params={"GeneratorList": gen1})
+        time.sleep(max(5, cfg.packets // 100))
+        stc.perform("GeneratorStop", params={"GeneratorList": gen1})
+
+        result = stc.get(
+            stc.get(port1, "children-generatorportresults"),
+            "TotalFrameCount",
+        )
+        total = int(result) if result else 0
+    except Exception as e:
+        try:
+            stc.end_session(sid)
+        except Exception:
+            pass
+        return False, f"stcrestclient traffic run failed: {e}"
+
+    stc.end_session(sid)
+    if total > 0:
+        return True, f"REST (raw) validated: TotalFrameCount={total}"
+    return False, f"REST (raw) validation: no frames sent"
+
+
+def _spirent_direct_validate(cfg: SpirentConfig) -> Tuple[bool, str]:
+    """
+    Option 3 — Direct Python API (STC Application installed on this machine).
+    Requires: Spirent TestCenter Application installed locally (Linux or Windows).
+    The Python API is in the installation directory.
+    Not recommended for CI — tied to the installation, bare-bones API.
+    """
+    try:
+        stc_install = os.environ.get("STC_INSTALL_DIR", "")
+        if not stc_install:
+            for candidate in (
+                "/opt/Spirent_TestCenter/Spirent_TestCenter_Application",
+                "/opt/spirent/stc",
+                os.path.expanduser("~/Spirent_TestCenter_Application"),
+            ):
+                if os.path.isdir(candidate):
+                    stc_install = candidate
+                    break
+        if not stc_install:
+            return False, (
+                "STC install dir not found.  Set STC_INSTALL_DIR or install Spirent TestCenter.\n"
+                "This approach is NOT recommended — consider OTG (--spirent-mode otg) instead."
+            )
+
+        import sys
+        if stc_install not in sys.path:
+            sys.path.insert(0, stc_install)
+
+        from StcPython import StcPython
+        stc = StcPython()
+    except Exception as e:
+        return False, f"Direct STC import failed: {e}.  Set STC_INSTALL_DIR to your install path."
+
+    try:
+        stc.perform("CSServerConnect", Host=cfg.labserver_endpoint.split(":")[0] if cfg.labserver_endpoint else "127.0.0.1")
+        project = stc.get("system1", "children-project")
+        port1 = stc.create("port", under=project)
+        port2 = stc.create("port", under=project)
+        stc.config(port1, location=cfg.port_a_location.lstrip("/"))
+        stc.config(port2, location=cfg.port_b_location.lstrip("/"))
+        stc.perform("AttachPorts")
+        stc.apply()
+
+        gen1 = stc.get(port1, "children-Generator")
+        gen_cfg = stc.get(gen1, "children-GeneratorConfig")
+        stc.config(gen_cfg, DurationMode="BURSTS", Duration=str(cfg.packets), LoadUnit="FRAMES_PER_SECOND", FixedLoad="100")
+        stc.apply()
+
+        stc.perform("GeneratorStart", GeneratorList=gen1)
+        time.sleep(max(5, cfg.packets // 100))
+        stc.perform("GeneratorStop", GeneratorList=gen1)
+
+        result_handle = stc.get(port1, "children-GeneratorPortResults")
+        total = int(stc.get(result_handle, "TotalFrameCount") or 0)
+    except Exception as e:
+        try:
+            stc.perform("CSServerDisconnect")
+        except Exception:
+            pass
+        return False, f"Direct STC traffic run failed: {e}"
+
+    stc.perform("CSServerDisconnect")
+    if total > 0:
+        return True, f"Direct STC validated: TotalFrameCount={total}"
+    return False, "Direct STC validation: no frames sent"
+
+
+def validate_traffic_via_spirent(cfg: SpirentConfig) -> Tuple[bool, str]:
+    """Dispatch to the chosen Spirent mode."""
+    dispatch = {
+        SPIRENT_MODE_OTG: _spirent_otg_validate,
+        SPIRENT_MODE_REST: _spirent_rest_validate,
+        SPIRENT_MODE_DIRECT: _spirent_direct_validate,
+    }
+    handler = dispatch.get(cfg.mode)
+    if not handler:
+        return False, f"Unknown spirent mode: {cfg.mode}. Use: otg, rest, or direct."
+    print(f"  Spirent mode: {cfg.mode}")
+    try:
+        return handler(cfg)
+    except Exception as e:
+        return False, f"Spirent validation failed ({cfg.mode}): {e}"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Find link between two devices (LLDP) and bring up CFM between them."
@@ -704,6 +1033,52 @@ def main() -> int:
         "--no-enable-l2",
         action="store_true",
         help="Do not create L2 child interface; assume L2/unit is already configured",
+    )
+
+    spirent_group = parser.add_argument_group("Spirent traffic validation (optional, no Windows client needed)")
+    spirent_group.add_argument(
+        "--spirent",
+        action="store_true",
+        help="After CFM setup, validate the link by sending traffic via Spirent",
+    )
+    spirent_group.add_argument(
+        "--spirent-mode",
+        choices=[SPIRENT_MODE_OTG, SPIRENT_MODE_REST, SPIRENT_MODE_DIRECT],
+        default=SPIRENT_MODE_OTG,
+        help=(
+            "Which headless Spirent API to use (default: otg).\n"
+            "  otg    — OTG/snappi via gRPC (recommended, pip install snappi)\n"
+            "  rest   — LabServer REST API (pip install pytestcenter or stcrestclient)\n"
+            "  direct — Direct STC Python API (requires local STC install)"
+        ),
+    )
+    spirent_group.add_argument(
+        "--spirent-otg-endpoint",
+        metavar="HOST:PORT",
+        default="il-auto-containers:55051",
+        help="OTG gRPC endpoint (default: il-auto-containers:55051)",
+    )
+    spirent_group.add_argument(
+        "--spirent-labserver",
+        metavar="HOST:PORT",
+        default="il-auto-containers:80",
+        help="LabServer REST endpoint (default: il-auto-containers:80)",
+    )
+    spirent_group.add_argument(
+        "--spirent-port-a",
+        metavar="LOCATION",
+        help="Spirent port location connected toward host-a (e.g. //100.64.4.43/1/17)",
+    )
+    spirent_group.add_argument(
+        "--spirent-port-b",
+        metavar="LOCATION",
+        help="Spirent port location connected toward host-b (e.g. //100.64.4.43/1/25)",
+    )
+    spirent_group.add_argument(
+        "--spirent-packets",
+        type=int,
+        default=1000,
+        help="Number of packets per flow direction (default: 1000)",
     )
     args = parser.parse_args()
 
@@ -800,10 +1175,34 @@ def main() -> int:
         if not ok_a or not ok_b:
             return 1
         print("CFM is up between the two machines.")
-        return 0
     finally:
         client_a.close()
         client_b.close()
+
+    if args.spirent:
+        if not args.spirent_port_a or not args.spirent_port_b:
+            print(
+                "Error: --spirent requires --spirent-port-a and --spirent-port-b.\n"
+                "  Example: --spirent-port-a //100.64.4.43/1/17 --spirent-port-b //100.64.4.43/1/25"
+            )
+            return 2
+        scfg = SpirentConfig(
+            mode=args.spirent_mode,
+            otg_endpoint=args.spirent_otg_endpoint,
+            labserver_endpoint=args.spirent_labserver,
+            port_a_location=args.spirent_port_a,
+            port_b_location=args.spirent_port_b,
+            packets=args.spirent_packets,
+            vlan_id=args.vlan_id,
+        )
+        print("Validating link with Spirent traffic...")
+        ok_s, msg_s = validate_traffic_via_spirent(scfg)
+        print(f"  {msg_s}")
+        if not ok_s:
+            return 1
+        print("Spirent traffic validation passed.")
+
+    return 0
 
 
 if __name__ == "__main__":

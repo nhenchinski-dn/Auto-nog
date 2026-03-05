@@ -163,7 +163,7 @@ def show_config_contains(client: paramiko.SSHClient, match_text: str, timeout: i
     Best-effort 'show config' check that the running config contains match_text.
     Tries with paging disabled first so full output is captured (avoids truncation at '-- More --').
     """
-    show_cmd = "show config services performance-monitoring"
+    show_cmd = "show config services performance-monitoring | no-more"
     for prefix in ("set cli screen-length 0", "terminal length 0"):
         try:
             out = run_shell_sequence(client, [prefix, show_cmd], timeout=timeout + 15)
@@ -173,10 +173,10 @@ def show_config_contains(client: paramiko.SSHClient, match_text: str, timeout: i
         except Exception:
             continue
     show_cmds = [
-        "show config services performance-monitoring | display-set",
-        "show configuration services performance-monitoring | display-set",
-        show_cmd,
-        "show configuration services performance-monitoring",
+        "show config services performance-monitoring | display-set | no-more",
+        "show configuration services performance-monitoring | display-set | no-more",
+        "show config services performance-monitoring | no-more",
+        "show configuration services performance-monitoring | no-more",
     ]
     used, out = _first_successful_show(client, show_cmds, timeout=timeout)
     if not used:
@@ -1810,7 +1810,7 @@ def main() -> int:
                     client,
                     "sw235372_dm_profile_time_frame",
                     dm_prof_base
-                    + ["test-duration time-frame minutes 1 probe-interval 1 repeat-interval 10", "commit check"]
+                    + ["test-duration time-frame minutes 1 probe-interval 1 repeat-interval 120", "commit check"]
                     + teardown_dm_profile_commands(dm_prof_372),
                 )
             )
@@ -1845,7 +1845,7 @@ def main() -> int:
                         + teardown_dm_profile_commands(pname),
                     )
                 )
-            for probe_int, repeat_int in [(10, 10), (1, 30)]:
+            for probe_int, repeat_int in [(10, 60), (1, 30)]:
                 pname = f"{dm_prof_372}_probes_i{probe_int}_r{repeat_int}"
                 pbase = [
                     "configure",
@@ -1885,7 +1885,7 @@ def main() -> int:
                         client,
                         f"sw235372_dm_profile_time_frame_{mins}min",
                         pbase
-                        + [f"test-duration time-frame minutes {mins} probe-interval 1 repeat-interval 10", "commit check"]
+                        + [f"test-duration time-frame minutes {mins} probe-interval 1 repeat-interval {mins * 120}", "commit check"]
                         + teardown_dm_profile_commands(pname),
                     )
                 )
@@ -1987,7 +1987,7 @@ def main() -> int:
                     client,
                     "sw235372_slm_profile_time_frame",
                     slm_prof_base
-                    + ["test-duration time-frame minutes 1 probe-interval 1 repeat-interval 10", "commit check"]
+                    + ["test-duration time-frame minutes 1 probe-interval 1 repeat-interval 120", "commit check"]
                     + teardown_slm_profile_commands(slm_prof_372),
                 )
             )
@@ -2034,7 +2034,7 @@ def main() -> int:
                         client,
                         f"sw235372_slm_profile_time_frame_{mins}min",
                         sbase
-                        + [f"test-duration time-frame minutes {mins} probe-interval 1 repeat-interval 10", "commit check"]
+                        + [f"test-duration time-frame minutes {mins} probe-interval 1 repeat-interval {mins * 120}", "commit check"]
                         + teardown_slm_profile_commands(sname),
                     )
                 )
@@ -2657,7 +2657,7 @@ def main() -> int:
                 results.append(
                     _run_show_command_test_fallback(
                         client, "show_cfm_tests_proactive_dm",
-                        ["show services performance-monitoring cfm tests proactive two-way-delay-measurement",
+                        ["show services performance-monitoring cfm tests proactive two-way-delay",
                          "show services performance-monitoring cfm tests proactive detail",
                          "show services performance-monitoring cfm tests proactive",
                          "show services performance-monitoring cfm tests"],
@@ -2667,7 +2667,7 @@ def main() -> int:
                 results.append(
                     _run_show_command_test_fallback(
                         client, "show_cfm_tests_proactive_slm",
-                        ["show services performance-monitoring cfm tests proactive two-way-synthetic-loss-measurement",
+                        ["show services performance-monitoring cfm tests proactive two-way-synthetic-loss",
                          "show services performance-monitoring cfm tests proactive detail",
                          "show services performance-monitoring cfm tests proactive",
                          "show services performance-monitoring cfm tests"],
@@ -2677,8 +2677,8 @@ def main() -> int:
                 results.append(
                     _run_show_command_test_fallback(
                         client, "show_cfm_tests_dm_detail",
-                        ["show services performance-monitoring cfm tests proactive two-way-delay-measurement detail",
-                         f"show services performance-monitoring cfm tests proactive two-way-delay-measurement session-name {args.session} detail",
+                        ["show services performance-monitoring cfm tests proactive two-way-delay detail",
+                         f"show services performance-monitoring cfm tests proactive two-way-delay session-name {args.session} detail",
                          "show services performance-monitoring cfm tests proactive detail",
                          "show services performance-monitoring cfm tests proactive",
                          "show services performance-monitoring cfm tests"],
@@ -2688,8 +2688,8 @@ def main() -> int:
                 results.append(
                     _run_show_command_test_fallback(
                         client, "show_cfm_tests_slm_detail",
-                        ["show services performance-monitoring cfm tests proactive two-way-synthetic-loss-measurement detail",
-                         f"show services performance-monitoring cfm tests proactive two-way-synthetic-loss-measurement session-name {args.slm_session} detail",
+                        ["show services performance-monitoring cfm tests proactive two-way-synthetic-loss detail",
+                         f"show services performance-monitoring cfm tests proactive two-way-synthetic-loss session-name {args.slm_session} detail",
                          "show services performance-monitoring cfm tests proactive detail",
                          "show services performance-monitoring cfm tests proactive",
                          "show services performance-monitoring cfm tests"],
@@ -2738,8 +2738,8 @@ def main() -> int:
                 _progress("verify_dm_operational_state")
                 # Try multiple show command variants - device may not support all syntax
                 dm_show_commands = [
-                    f"show services performance-monitoring cfm tests proactive two-way-delay-measurement session-name {args.session} detail",
-                    f"show services performance-monitoring cfm tests proactive two-way-delay-measurement detail",
+                    f"show services performance-monitoring cfm tests proactive two-way-delay session-name {args.session} detail",
+                    f"show services performance-monitoring cfm tests proactive two-way-delay detail",
                     "show services performance-monitoring cfm tests proactive detail",
                     "show services performance-monitoring cfm tests proactive",
                     "show services performance-monitoring cfm tests",
@@ -2777,8 +2777,8 @@ def main() -> int:
                 _progress("verify_slm_operational_state")
                 # Try multiple show command variants - device may not support all syntax
                 slm_show_commands = [
-                    f"show services performance-monitoring cfm tests proactive two-way-synthetic-loss-measurement session-name {args.slm_session} detail",
-                    f"show services performance-monitoring cfm tests proactive two-way-synthetic-loss-measurement detail",
+                    f"show services performance-monitoring cfm tests proactive two-way-synthetic-loss session-name {args.slm_session} detail",
+                    f"show services performance-monitoring cfm tests proactive two-way-synthetic-loss detail",
                     "show services performance-monitoring cfm tests proactive detail",
                     "show services performance-monitoring cfm tests proactive",
                     "show services performance-monitoring cfm tests",
@@ -2832,8 +2832,8 @@ def main() -> int:
                 if not param_change_err:
                     # Try multiple show commands to verify description change
                     verify_show_cmds = [
-                        f"show services performance-monitoring cfm tests proactive two-way-delay-measurement session-name {args.session} detail",
-                        f"show services performance-monitoring cfm tests proactive two-way-delay-measurement detail",
+                        f"show services performance-monitoring cfm tests proactive two-way-delay session-name {args.session} detail",
+                        f"show services performance-monitoring cfm tests proactive two-way-delay detail",
                         "show services performance-monitoring cfm tests proactive detail",
                         "show services performance-monitoring cfm tests proactive",
                         "show services performance-monitoring cfm tests",
@@ -2888,8 +2888,8 @@ def main() -> int:
 
                 # Try multiple show command variants for DM
                 hist_show_cmds = [
-                    f"show services performance-monitoring cfm tests proactive two-way-delay-measurement session-name {args.session} detail",
-                    f"show services performance-monitoring cfm tests proactive two-way-delay-measurement detail",
+                    f"show services performance-monitoring cfm tests proactive two-way-delay session-name {args.session} detail",
+                    f"show services performance-monitoring cfm tests proactive two-way-delay detail",
                     "show services performance-monitoring cfm tests proactive detail",
                     "show services performance-monitoring cfm tests proactive",
                 ]
@@ -2929,8 +2929,8 @@ def main() -> int:
 
                 # Try multiple show command variants for SLM
                 slm_hist_show_cmds = [
-                    f"show services performance-monitoring cfm tests proactive two-way-synthetic-loss-measurement session-name {args.slm_session} detail",
-                    f"show services performance-monitoring cfm tests proactive two-way-synthetic-loss-measurement detail",
+                    f"show services performance-monitoring cfm tests proactive two-way-synthetic-loss session-name {args.slm_session} detail",
+                    f"show services performance-monitoring cfm tests proactive two-way-synthetic-loss detail",
                     "show services performance-monitoring cfm tests proactive detail",
                     "show services performance-monitoring cfm tests proactive",
                 ]
@@ -3046,55 +3046,35 @@ def main() -> int:
                         if args.show_progress:
                             print(f"  Commit failed: {'; '.join(commit_errs[:2])}")
                         if any("in use with session" in e for e in commit_errs):
-                            # MEP conflict detected - DISABLE the conflicting session instead of deleting
                             conflicting_evt_session = extract_conflicting_session_name(commit_errs)
                             retry_log.append(f"  Detected conflict with session: {conflicting_evt_session}")
                             if args.show_progress:
                                 print(f"  Extracted conflicting session: {conflicting_evt_session}")
                             if conflicting_evt_session and event_attempt < max_event_retries - 1:
-                                _progress(f"auto_disable_conflicting_session: {conflicting_evt_session}")
+                                _progress(f"auto_delete_conflicting_session: {conflicting_evt_session}")
                                 if args.show_progress:
-                                    print(f"  Attempting to temporarily disable: {conflicting_evt_session}")
-                                # Disable the conflicting session temporarily
-                                disable_cmds = [
-                                    "configure",
-                                    f"services performance-monitoring cfm two-way-delay-measurement {conflicting_evt_session}",
-                                    "admin-state disabled",
-                                    "exit",
-                                    "commit",
-                                    "exit",
-                                ]
+                                    print(f"  Attempting to delete: {conflicting_evt_session}")
                                 try:
-                                    retry_log.append(f"  Attempting to disable {conflicting_evt_session}...")
-                                    disable_outputs = run_shell_sequence_detailed(client, disable_cmds, timeout=60)
-                                    disable_ok = True
-                                    for cmd, output in disable_outputs:
-                                        raw_outputs.append(f"## DISABLE CMD: {cmd}\n{output}")
-                                        if cmd == "commit":
-                                            err, errs = has_cli_error(output)
-                                            if err:
-                                                disable_ok = False
-                                                retry_log.append(f"  Disable commit failed: {'; '.join(errs)}")
-                                                _progress(f"auto_disable failed: {'; '.join(errs)}")
-                                                if args.show_progress:
-                                                    print(f"  Disable commit failed: {'; '.join(errs)}")
-                                    if disable_ok:
+                                    retry_log.append(f"  Attempting to delete {conflicting_evt_session}...")
+                                    delete_ok, delete_msg = delete_existing_pm_session(client, conflicting_evt_session, timeout=60)
+                                    raw_outputs.append(f"## DELETE CONFLICTING: {conflicting_evt_session}\n{delete_msg}")
+                                    if delete_ok:
                                         disabled_session_for_event = conflicting_evt_session
-                                        retry_log.append(f"  Successfully disabled {conflicting_evt_session}, will retry")
-                                        _progress(f"auto_disable successful, retrying event setup...")
+                                        retry_log.append(f"  Successfully deleted {conflicting_evt_session}, will retry")
+                                        _progress(f"auto_delete successful, retrying event setup...")
                                         if args.show_progress:
-                                            print(f"  Successfully disabled {conflicting_evt_session}, retrying...")
-                                        continue  # Retry the event setup
+                                            print(f"  Successfully deleted {conflicting_evt_session}, retrying...")
+                                        continue
                                     else:
-                                        retry_log.append(f"  Failed to disable, giving up")
+                                        retry_log.append(f"  Failed to delete: {delete_msg}")
                                         if args.show_progress:
-                                            print(f"  Failed to disable conflicting session, giving up.")
+                                            print(f"  Failed to delete conflicting session: {delete_msg}")
                                         break
                                 except Exception as dis_exc:
-                                    retry_log.append(f"  Exception during disable: {dis_exc}")
-                                    _progress(f"auto_disable exception: {dis_exc}")
+                                    retry_log.append(f"  Exception during delete: {dis_exc}")
+                                    _progress(f"auto_delete exception: {dis_exc}")
                                     if args.show_progress:
-                                        print(f"  Exception during disable: {dis_exc}")
+                                        print(f"  Exception during delete: {dis_exc}")
                                     break
                             else:
                                 # No conflict or last attempt - give up
@@ -3203,23 +3183,32 @@ def main() -> int:
                 ]
                 run_shell_sequence_detailed(client, event_teardown_cmds, timeout=60)
 
-                # Re-enable the main test session if we disabled it for the event test
+                # Re-create the main test session if we deleted it for the event test
                 if disabled_session_for_event:
-                    _progress(f"reenable_main_session: {disabled_session_for_event}")
-                    reenable_cmds = [
-                        "configure",
-                        f"services performance-monitoring cfm two-way-delay-measurement {disabled_session_for_event}",
-                        "admin-state enabled",
-                        "exit",
-                        "commit",
-                        "exit",
-                    ]
+                    _progress(f"recreate_main_session: {disabled_session_for_event}")
+                    recreate_cmds = (
+                        ["configure"]
+                        + build_commands(
+                            args.session, args.profile, args.md, args.ma,
+                            args.mep_id, args.target, args.description,
+                            getattr(args, "mep_direction", None),
+                        )
+                        + ["commit", "exit", "exit", "exit", "exit"]
+                    )
                     try:
-                        reenable_outputs = run_shell_sequence_detailed(client, reenable_cmds, timeout=60)
-                        for cmd, output in reenable_outputs:
-                            raw_outputs.append(f"## REENABLE CMD: {cmd}\n{output}")
+                        recreate_outputs = run_shell_sequence_detailed(client, recreate_cmds, timeout=60)
+                        recreate_ok = True
+                        for cmd, output in recreate_outputs:
+                            raw_outputs.append(f"## RECREATE CMD: {cmd}\n{output}")
+                            if cmd == "commit":
+                                err, errs = has_cli_error(output)
+                                if err:
+                                    recreate_ok = False
+                                    _progress(f"recreate commit failed: {'; '.join(errs)}")
+                        if recreate_ok and args.show_progress:
+                            print(f"  Re-created main session {disabled_session_for_event}.")
                     except Exception as reen_exc:
-                        _progress(f"reenable failed: {reen_exc}")
+                        _progress(f"recreate failed: {reen_exc}")
 
             # -----------------------------------------------------------
             # Gap 4: CLI validation -- reject commit on dependency deletion (SW-198127)

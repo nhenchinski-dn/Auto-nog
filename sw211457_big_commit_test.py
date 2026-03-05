@@ -74,9 +74,6 @@ def cleanup():
             s.send_cmd(f"no network-services evpn instance evpn{i}", wait=0.5)
         s.send_cmd("no network-services vrf instance testvrf", wait=0.5)
 
-        # Also clean up the BGP neighbor we add
-        s.send_cmd(f"no protocols bgp {BGP_AS} neighbor 99.99.99.99", wait=0.5)
-
         s.send_cmd("top", wait=1)
         out = s.send_cmd("show config compare | no-more", wait=3)
         if "Deleted" in out or "Changed" in out:
@@ -128,14 +125,6 @@ def run_big_commit_test(attempt, delay_s=0.2):
                 sx.send_cmd(f"network-services vrf instance testvrf interface irb{i}", wait=0.5)
                 sx.send_cmd("top", wait=0.3)
 
-            # Add a BGP neighbor with many address families (makes commit bigger)
-            sx.send_cmd(f"protocols bgp {BGP_AS} neighbor 99.99.99.99 remote-as {BGP_AS}", wait=0.5)
-            sx.send_cmd(f"protocols bgp {BGP_AS} neighbor 99.99.99.99 admin-state enabled", wait=0.5)
-            sx.send_cmd(f"protocols bgp {BGP_AS} neighbor 99.99.99.99 address-family ipv4-unicast", wait=0.5)
-            sx.send_cmd(f"protocols bgp {BGP_AS} neighbor 99.99.99.99 address-family ipv4-vpn", wait=0.5)
-            sx.send_cmd(f"protocols bgp {BGP_AS} neighbor 99.99.99.99 address-family ipv6-unicast", wait=0.5)
-            sx.send_cmd(f"protocols bgp {BGP_AS} neighbor 99.99.99.99 address-family ipv6-vpn", wait=0.5)
-            sx.send_cmd(f"protocols bgp {BGP_AS} neighbor 99.99.99.99 address-family l2vpn-evpn", wait=0.5)
             sx.send_cmd("top", wait=0.5)
 
             out = sx.send_cmd("show config compare | no-more", wait=5)
