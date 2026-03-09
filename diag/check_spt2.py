@@ -11,29 +11,25 @@ chan = ssh.invoke_shell(width=300, height=500)
 time.sleep(2)
 chan.recv(65535)
 
-def run(cmd, wait=3):
+def run(cmd, wait=5):
     chan.send(cmd + "\n")
     time.sleep(wait)
     out = ""
     while chan.recv_ready():
         out += chan.recv(65535).decode("utf-8", errors="replace")
         time.sleep(0.3)
-    print("  [%s]" % cmd)
-    for line in out.strip().split("\n"):
-        s = line.strip()
-        if s and "Q3D-nog" not in s and not s.startswith(cmd[:15]):
-            print("    %s" % s)
+    print("=" * 60)
+    print("CMD: %s" % cmd)
+    print("=" * 60)
+    print(out)
     return out
 
-# First check if ISIS is already configured
-print("=== Check existing ISIS config ===")
-run("show config protocols isis", 5)
-
-# Check ISIS CLI options
-print("\n=== Explore ISIS config ===")
 run("configure", 2)
-run("protocols isis ?", 3)
-run("rollback 0", 2)
-run("exit", 2)
+run("protocols pim ?", 5)
+run("protocols pim spt-switchover ?", 5)
+run("protocols pim address-family ipv4 spt-switchover ?", 5)
+run("top", 1)
+run("show pim spt-switchover", 5)
+run("show pim ?", 5)
 
 ssh.close()

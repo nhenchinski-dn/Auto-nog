@@ -1,0 +1,64 @@
+Connected to WKY1C7VD00008P2
+
+======================================================================
+TEST A: On-demand overlap -> invalid -> recovery to valid
+======================================================================
+  Baseline: last entries = [('2719', 'valid'), ('2720', 'valid'), ('2721', 'valid')]
+  Running on-demand DM (5 probes) to trigger condition #2...
+  On-demand complete.
+  Right after on-demand: last entries = [('2720', 'valid'), ('2721', 'valid'), ('2722', 'invalid')]
+  Waiting 130s for proactive DM to complete a full cycle and recover...
+  After recovery wait: last entries = [('2722', 'invalid'), ('2723', 'valid'), ('2724', 'incomplete')]
+  [   ] [OK] Proactive DM recovers to valid after on-demand completes
+        Before: 1 invalid entries. After wait: 1. Latest=('2724', 'incomplete')
+
+======================================================================
+TEST B: CFM config commit during active proactive measurement
+======================================================================
+  Baseline: last entries = [('2722', 'invalid'), ('2723', 'valid'), ('2724', 'incomplete')]
+  Committing a CFM config change (add dummy crosscheck mep-id 99)...
+  CFM commit done.
+  After CFM commit: last entries = [('2722', 'invalid'), ('2723', 'valid'), ('2724', 'valid')], invalid count = 1
+  Reverting CFM change (remove dummy crosscheck)...
+  Waiting 130s for recovery cycle...
+  After recovery: last entries = [('2725', 'valid'), ('2726', 'valid'), ('2727', 'incomplete')], invalid count = 1
+  [   ] [OK] CFM commit causes transient invalid that recovers
+        During commit: 1 invalid entries. After recovery: 1. System recovers.
+
+======================================================================
+TEST C: Check RMEP status and its effect on measurement validity
+======================================================================
+  RMEP status:
+    ------------------------------------------------------------------------------------------------------------------------------------^
+    ERROR: Unknown word: 'remote-meps'.
+    NCP3-CFM-nog#
+
+  RMEP status (MD-CUST1):
+    --------------------------------------------------------------------------------------------------------------------------------------^
+    ERROR: Unknown word: 'remote-meps'.
+    NCP3-CFM-nog#
+
+======================================================================
+TEST D: SLM validity semantics -- what makes a test 'valid'?
+======================================================================
+  SLM_CLI_TAB: 9 valid, 0 invalid out of 10 entries
+  Latest far-end loss: 100.0%
+  Latest: TX=1, RX=0
+  [???] [OBSERVATION] SLM shows 1 unacknowledged PDUs in latest (possibly mid-cycle)
+        TX=1, RX=0. If this is always mid-cycle, it's a display timing issue.
+
+  Checking xec1e3vr00008 for SLM to fake MAC validity...
+  SLM_CLI_TAB_mep3 (fake MAC): 9 valid, 0 invalid out of 10 entries
+  Far-end loss: 100.0%
+  TX=2, RX=0
+  [???] [OBSERVATION] SLM to unreachable MAC target: 'valid' means measurement completed, not link healthy
+        9 entries marked valid with 0 SLR responses. Per condition #3, only mep-id targets check RMEP status. MAC targets always attempt measurement. Whether 'valid' is correct depends on Y.1731 semantics for measurement completion vs success.
+
+  Checking if threshold violation fires for fake MAC SLM session...
+  [!!!] [BUG] No threshold violation event for SLM with 100% far-end loss
+        SLM to fake MAC has 100% far-end loss, threshold is 23.23%, but no CFM_PROACTIVE_TEST_FAILURE event generated. Logging output (3049 bytes): 'set logging terminal
+local7.err 2025-07-15T03:28:05.744Z ncpl-cfm-nog Management - - - TRANSACTION_'
+
+======================================================================
+ALL CONDITION TESTS COMPLETE
+======================================================================

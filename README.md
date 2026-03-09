@@ -1,104 +1,82 @@
-# Y.1731 DM/SLM CLI and TAB Test
+# Auto-nog — DNOS Test Automation
 
-Automated CLI and TAB-completion tests for Y.1731 **Delay Measurement (DM)** and **Synthetic Loss Measurement (SLM)** on DriveNets devices. Covers profile/session configuration, commit validation, negative cases, and SW-235372 CLI coverage.
+Automated test scripts for DriveNets DNOS features. Covers Y.1731/CFM, PIM/Multicast, QoS, BFD, LACP, CPRL, restart/HA, and more.
 
-**Jira:** SW-235373 (DM CLI), SW-235927 (SLM CLI), SW-235372 (CLI coverage).
+## Repository Structure
 
----
-
-## Important: Your Config Is Preserved
-
-This script **does not use `rollback 0`**. Discovery, validation, cleanup, and commit-check steps only remove the PM sessions/profiles they create. Your candidate config (e.g. `services ethernet-oam connectivity-fault-management`) is left intact.
-
-**Device rollback:** On the device, `rollback 0` only rolls back the candidate (config you are about to commit). To revert older committed configs use `rollback 1`, `rollback 2`, etc. Use `show config committed` (sh con com) to see commit history.
-
----
-
-## Prerequisites
-
-- **Python 3** with `paramiko`:
-  ```bash
-  pip install paramiko
-  ```
-- **Device:** `services ethernet-oam connectivity-fault-management` configured with at least one Maintenance Domain, Maintenance Association, and local MEP (so the script can auto-discover MD/MA/MEP/target).
-- **SSH** access from your machine to the device (port 22).
-
----
+```
+Auto-nog/
+├── tests/               # Test scripts, organized by feature
+│   ├── y1731/           # Y.1731 / CFM / Ethernet OAM (DM, SLM, on-demand, RESTCONF)
+│   ├── multicast/       # PIM ASM/SSM, SPT switchover, mroute scale
+│   ├── sanity/          # QoS, BFD, LACP, CPRL, interface dampening, transceiver
+│   ├── sw211457/        # BGP/EVPN rollback-commit race (SW-211457, SW-241906)
+│   └── restart/         # Warm/cold restart, GI-day validation
+├── setup/               # Device config scripts (ISIS, PIM, sub-interfaces)
+├── diag/                # Diagnostic/check scripts (check_*, diag_*, count_*)
+├── lib/                 # Shared utilities (dnos_cli.py, nm_call.py)
+├── docs/                # Runbooks, guides, checklists, fix summaries
+├── output/              # Test logs, result JSON, CLI captures
+├── scripts/             # Shell scripts (SSH helpers, wrappers)
+├── reference/           # Fetched source code (CFM manager, Cheetah, YANGs)
+└── README.md
+```
 
 ## Quick Start
 
-Run with prompts for host, user, password, and cleanup:
-
 ```bash
-python3 y1731_cli_tab_test.py
+pip install paramiko
 ```
 
-Or pass host and credentials:
+Run any test script directly:
 
 ```bash
-python3 y1731_cli_tab_test.py --host 192.168.1.10 --user dnroot --password YOUR_PASSWORD
+python3 tests/y1731/y1731_cli_tab_test.py --host 192.168.1.10 --user dnroot --password dnroot
+python3 tests/sanity/qos_sanity_test.py
+python3 tests/multicast/test_asm_spt_sw242472.py
 ```
 
-Keep the created config (no cleanup):
+## Key Jira Tickets
 
-```bash
-python3 y1731_cli_tab_test.py --host 192.168.1.10 --no-cleanup
-```
+| Ticket | Area | Scripts |
+|--------|------|---------|
+| SW-141523 | Y.1731 Proactive PM (epic) | `tests/y1731/verify_y1731_bugs.py`, `tests/y1731/y1731_restconf_test.py` |
+| SW-237984 | Y.1731 on-demand stop | `tests/y1731/test_sw237984.py`, `tests/y1731/on_demand_stop_test.py` |
+| SW-242472 | ASM SPT switchover | `tests/multicast/test_asm_spt_sw242472.py`, `tests/multicast/test_asm_spt_negative_sw242472.py` |
+| SW-211457 | BGP/EVPN rollback race | `tests/sw211457/sw211457_test.py` |
+| SW-246192 | RP failure at scale | `tests/multicast/test_rp_failure_scale.py` |
 
----
+## Folder Details
 
-## Options
+### tests/y1731/
+Y.1731 Ethernet OAM tests: CLI/TAB completion, RESTCONF, on-demand DM/SLM, proactive PM, CFM setup, bug verification.
 
-| Option | Description |
-|--------|-------------|
-| `--host` | Device hostname or IP (prompted if omitted) |
-| `--user` | SSH username (default: `dnroot`) |
-| `--password` | SSH password (default: `dnroot`) |
-| `--timeout` | Command timeout in seconds (default: 30) |
-| `--session` | DM session name to create (default: `DM_CLI_TAB`) |
-| `--profile` | DM profile name (default: `DM_PROF_CLI`) |
-| `--slm-session` | SLM session name (default: `SLM_CLI_TAB`) |
-| `--slm-profile` | SLM profile name (default: `SLM_PROF_CLI`) |
-| `--slm-target` | SLM target, e.g. `mep-id 2` (default: same as DM target) |
-| `--slm-pcp` | SLM PCP (default: 5) |
-| `--auto-from-cfm` | Auto-discover MD/MA/MEP/target from CFM config (default: true) |
-| `--no-auto-from-cfm` | Disable discovery; you will be prompted or use overrides |
-| `--md` | Override maintenance-domain name |
-| `--ma` | Override maintenance-association name |
-| `--mep-id` | Override local MEP ID |
-| `--target` | Override DM target, e.g. `mep-id 2` |
-| `--description` | DM session description (default: `cli_tab_test`) |
-| `--slm-description` | SLM session description |
-| `--cleanup` | Remove created DM/SLM config at end |
-| `--no-cleanup` | Do not remove created config (prompted if both omitted) |
-| `--show-details` | Print per-step details (errors/notes) |
-| `--show-progress` | Print `RUNNING: <test>` before each test |
-| `--show-cli-output` | Print raw CLI output from device |
-| `--output-file FILE` | Write raw CLI output to a file |
-| `--output-format table\|lines` | Summary format: table (default) or line-by-line |
+### tests/multicast/
+PIM multicast: ASM/SSM, SPT switchover, RP failure, 400G physical, mroute scale validation.
 
----
+### tests/sanity/
+Feature sanity checks: QoS policies, BFD over BGP, LACP, CPRL rate-limiting, interface dampening, transceiver validation.
 
-## What It Tests
+### tests/sw211457/
+Reproduction and verification scripts for the BGP/EVPN rollback-commit race condition.
 
-- **Discovery:** Reads MD/MA/MEP/target from `show config services ethernet-oam connectivity-fault-management` (or prompts).
-- **DM:** Profile and session create/commit, TAB completion, thresholds, test-duration (probes / time-frame / non-stop), admin-state, description, source/target (mep-id and mac-address).
-- **SLM:** Same style for SLM profiles and sessions.
-- **SW-235372:** CLI coverage for profile knobs and session variants (commit check + teardown, no rollback).
-- **Negative:** Long names/descriptions, invalid MD/MA, non-numeric mep-id/target; expects command or commit-check failure.
-- **Cleanup:** Removes only the script-created DM/SLM sessions and profiles, then commits (no `rollback 0`).
+### tests/restart/
+Node restart tests: warm/cold NCP restart, restart suites, GI-day post-validation.
 
----
+### setup/
+Config-push scripts for ISIS, PIM, sub-interfaces. Used to prepare devices before test execution.
 
-## Output
+### diag/
+Read-only diagnostic scripts for checking device state: PIM trees, mroute counts, interface IPs, ISIS adjacencies, core dumps.
 
-- Default: PASS/FAIL summary table (DM, SLM, Other).
-- `--show-details`: per-step details and errors.
-- `--output-format lines`: line-by-line results instead of tables.
-- `--output-file`: full raw CLI output saved to the given file.
+### lib/
+Shared Python utilities: SSH CLI helper (`dnos_cli.py`), network-mapper MCP caller (`nm_call.py`), connectivity checker.
 
----
+### docs/
+Documentation: test plans, runbooks, bug reports, fix summaries, Y.1731 guides.
 
-## License
+### output/
+Test execution artifacts: `.log` files, result `.json`, CLI captures, QoS summaries. Not intended for manual editing.
 
-Use according to your project’s policy.
+### reference/
+Fetched source code for reference: CFM manager C++ sources, Cheetah YANG models, MIBs.

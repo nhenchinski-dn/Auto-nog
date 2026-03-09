@@ -1,0 +1,1455 @@
+module dn-snmp {
+  namespace "http://drivenets.com/ns/yang/dn-snmp";
+  prefix dn-snmp;
+
+  include dn-snmp-common {
+    revision-date 2017-10-03;
+  }
+  import dn-top {
+    prefix dn-top;
+  }
+  import dn-system {
+    prefix dn-sys;
+  }
+  import dn-interfaces {
+    prefix dn-if;
+  }
+  import dn-network-services {
+    prefix dn-network-services;
+  }
+  import dn-vrf {
+    prefix dn-vrf;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import ietf-netconf-acm {
+    prefix nacm;
+  }
+  import dn-extensions {
+    prefix dn-ex;
+  }
+  import iana-if-type {
+    prefix ianaift;
+  }
+  import ietf-yang-types {
+    prefix yang;
+  }
+  import dn-group {
+    prefix dn-group;
+  }
+
+  organization
+    "DRIVENETS LTD";
+  contact
+    "DRIVENETS Customer Service <mailto:support@drivenets.com>";
+  description
+    "Model for managing SNMP configuration -- augments the DN system YANG";
+
+  revision 2025-10-08 {
+    description
+      "Added dnCfmProactiveTestFailure trap";
+  }
+  revision 2025-09-16 {
+    description
+      "Added inform notification method";
+  }
+  revision 2025-08-27 {
+    description
+      "Added LACP State Change trap";
+  }
+  revision 2025-06-18 {
+    description
+      "Added CFM traps";
+  }
+  revision 2025-05-03 {
+    description
+      "Added apply-groups statement";
+  }
+  revision 2024-09-13 {
+    description
+      "Add OSPF traps";
+  }
+  revision 2024-09-11 {
+    description
+      "Add SR-TE traps support";
+  }
+  revision 2023-06-12 {
+    description
+      "Use leafs for snmp user authentication";
+  }
+  revision 2023-04-04 {
+    description
+      "Increased maximum number of communities from 5 to 10";
+  }
+  revision 2023-01-12 {
+    description
+      "Add max-throughput support for snmp-trap servers";
+  }
+  revision 2022-12-12 {
+    description
+      "Added support for compatibility mode with Cisco for IP address format";
+  }
+  revision 2022-12-01 {
+    description
+      "Interface utilization threshold exceed and clear traps ";
+  }
+  revision 2022-04-12 {
+    description
+      "Changed the authentication 'key' name to 'secret' ";
+  }
+  revision 2021-10-24 {
+    description
+      "Add transceiver RX power alarm and warning CLEAR";
+  }
+  revision 2021-05-03 {
+    description
+      "Add in-band management VRF support";
+  }
+  revision 2021-01-17 {
+    description
+      "Add IPv6 Support";
+  }
+  revision 2020-11-05 {
+    description
+      "Update oid string pattern, Adding ha-manager trap type";
+  }
+  revision 2020-10-15 {
+    description
+      "Added DRIVENETS-FRU-MIB and DRIVENETS-HWMON-MIB traps";
+  }
+  revision 2020-07-09 {
+    description
+      "Adding VRF support";
+  }
+  revision 2020-06-22 {
+    description
+      "Added SNMP maximal packet size";
+  }
+  revision 2020-05-14 {
+    description
+      "Adding trap source port";
+  }
+  revision 2020-03-04 {
+    description
+      "Added leafs for SNMP counters values";
+  }
+  revision 2019-12-22 {
+    description
+      "Update view list configuration";
+  }
+  revision 2019-02-06 {
+    description
+      "Add cos and source-interface configuration";
+  }
+  revision 2018-09-26 {
+    description
+      "Update snmp-server to mandatory, change to trap-servers";
+  }
+  revision 2017-10-03 {
+    description
+      "Initial revision";
+    reference
+      "RFC 7407: A YANG Data Model for SNMP Configuration";
+  }
+
+  identity access {
+    description
+      "access view type";
+  }
+
+  identity read-only {
+    base access;
+    description
+      "read only access view";
+  }
+
+  identity read-write {
+    base access;
+    description
+      "read-write access view";
+  }
+
+  //Trap names
+
+  identity trap-name {
+    description
+      "This is identity of trap name (has unique OID)";
+  }
+
+  identity coldStart {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.6.3.1.1.5.1";
+  }
+
+  identity warmStart {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.6.3.1.1.5.2";
+  }
+
+  identity dnNccFailover {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.9.0.1";
+  }
+
+  identity dnNccSwitchoverUser {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.9.0.2";
+  }
+
+  identity linkDown {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.6.3.1.1.5.3";
+  }
+
+  identity linkUp {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.6.3.1.1.5.4";
+  }
+
+  identity bgpEstablishedNotification {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.15.0.1";
+  }
+
+  identity bgpBackwardTransNotification {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.15.0.2";
+  }
+
+  identity dnBgpEstablished {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.4.0.1";
+  }
+
+  identity dnBgpBackwardTransition {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.4.0.2";
+  }
+
+  identity dnBgpNeighborMaximumPrefixThresholdExceeded {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.4.0.3";
+  }
+
+  identity dnBgpNeighborMaximumPrefixThresholdCleared {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.4.0.4";
+  }
+
+  identity ospfNbrStateChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.14.16.2.2";
+  }
+
+  identity ospfIfAuthFailure {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.14.16.2.6";
+  }
+
+  identity ospfMaxAgeLsa {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.14.16.2.13";
+  }
+
+  identity ospfIfConfigError {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.14.16.2.4";
+  }
+
+  identity ospfTxReTransmit {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.14.16.2.10";
+  }
+
+  identity ospfIfStateChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.14.16.2.16";
+  }
+
+  identity ospfv3NbrStateChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.191.0.2";
+  }
+
+  identity ospfv3IfStateChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.191.0.10";
+  }
+
+  identity ospfRestartStatusChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.14.16.2.18";
+  }
+
+  identity ospfNbrRestartHelperStatusChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.14.16.2.19";
+  }
+
+  identity mplsLdpSessionUp {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.10.166.4.0.3";
+  }
+
+  identity mplsLdpSessionDown {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.10.166.4.0.4";
+  }
+
+  identity dnBfdSessionUp {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.3.0.1";
+  }
+
+  identity dnBfdSessionDown {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.3.0.2";
+  }
+
+  //ISIS traps
+
+  identity isisAdjacencyChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.138.0.17";
+  }
+
+  identity isisAuthenticationFailure {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.138.0.10";
+  }
+
+  identity isisAuthenticationTypeFailure {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.138.0.9";
+  }
+
+  identity isisDatabaseOverload {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.138.0.1";
+  }
+
+  identity isisRejectedAdjacency {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.138.0.13";
+  }
+
+  //RSVP traps
+
+  identity mplsTunnelUp {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.10.166.3.0.1";
+  }
+
+  identity mplsTunnelDown {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.10.166.3.0.2";
+  }
+
+  identity authenticationFailure {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.6.3.1.1.5.5";
+  }
+
+  identity entConfigChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.47.2.0.1";
+  }
+
+  identity mplsTunnelRerouted {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.10.166.3.0.3";
+  }
+
+  identity mplsTunnelReoptimized {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.10.166.3.0.4";
+  }
+
+  identity dnRsvpFrrActive {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.10.0.1";
+  }
+
+  identity dnRsvpFrrInactive {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.10.0.2";
+  }
+
+  //PIM traps
+
+  identity dnPimNeighborUp {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.5.0.1";
+  }
+
+  identity pimNeighborLoss {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.157.0.1";
+  }
+
+  identity dnPimInterfaceUp {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.5.0.2";
+  }
+
+  identity dnPimInterfaceDown {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.5.0.3";
+  }
+
+  identity pimInvalidRegister {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.157.0.2";
+  }
+
+  identity pimInvalidJoinPrune {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.157.0.32";
+  }
+
+  identity pimRPMappingChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.2.1.157.0.4";
+  }
+
+  identity dnFruRemoved {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.6.0.1";
+  }
+
+  identity dnFruInserted {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.6.0.2";
+  }
+
+  identity dnNcpOperStatusChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.6.0.4";
+  }
+
+  identity dnNcfOperStatusChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.6.0.5";
+  }
+
+  identity dnNccOperStatusChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.6.0.6";
+  }
+
+  identity dnNcmOperStatusChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.6.0.7";
+  }
+
+  identity dnHwMonPsuFailed {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.1";
+  }
+
+  identity dnHwMonPsuStateChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.2";
+  }
+
+  identity dnHwMonFanFailed {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.3";
+  }
+
+  identity dnHwMonFanStateChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.4";
+  }
+
+  identity dnHwMonTemperatureStateChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.5";
+  }
+
+  identity dnHwMonTemperatureNormal {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.6";
+  }
+
+  identity dnHwMonPsuInputVoltageLow {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.7";
+  }
+
+  identity dnHwMonPsuInputVoltageHigh {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.8";
+  }
+
+  identity dnHwMonPsuInputVoltageNormal {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.9";
+  }
+
+  identity dnHwMonTransceiverRxPowerNormal {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.10";
+  }
+
+  identity dnHwMonTransceiverRxPowerHigh {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.11";
+  }
+
+  identity dnHwMonTransceiverRxPowerLow {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.12";
+  }
+
+  identity dnHwMonTransceiverRxPowerHighClear {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.13";
+  }
+
+  identity dnHwMonTransceiverRxPowerLowClear {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.14";
+  }
+
+  identity dnHwMonDiskFailed {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.7.0.15";
+  }
+
+  identity dnRsCpuThresholdExceeded {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.8.0.1";
+  }
+
+  identity dnRsCpuThresholdCleared {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.8.0.2";
+  }
+
+  identity dnRsMemThresholdExceeded {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.8.0.3";
+  }
+
+  identity dnRsMemThresholdCleared {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.8.0.4";
+  }
+
+  identity dnRsIfLinkRxThresholdExceeded {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.8.0.5";
+  }
+
+  identity dnRsIfLinkTxThresholdExceeded {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.8.0.6";
+  }
+
+  identity dnRsIfLinkRxThresholdCleared {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.8.0.7";
+  }
+
+  identity dnRsIfLinkTxThresholdCleared {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.8.0.8";
+  }
+
+  // NETPM traps
+
+  identity dnNetpmTestFailure {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.12.0.1";
+  }
+
+  // SR-TE traps
+
+  identity dnSrPolicyUp {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.14.0.1";
+  }
+
+  identity dnSrPolicyDown {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.14.0.1";
+  }
+
+  // CFM traps
+
+  identity dnCfmFaultAlarm {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.15.0.1";
+  }
+
+  identity dnCfmFaultAlarmCleared {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.15.0.2";
+  }
+
+  identity dnCfmProactiveTestFailure {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.15.0.3";
+  }
+
+  // LACP traps
+
+  identity dnLacpInterfaceStateChange {
+    base trap-name;
+    description
+      "MIB OID 1.3.6.1.4.1.49739.2.16.0.1";
+  }
+
+  // Trap types
+
+  identity trap-type {
+    description
+      "This is identity of trap types";
+  }
+
+  identity interface {
+    base trap-type;
+    description
+      "interface trap type";
+  }
+
+  identity system {
+    base trap-type;
+    description
+      "system trap type";
+  }
+
+  identity bgp {
+    base trap-type;
+    description
+      "bgp trap type";
+  }
+
+  identity ospf {
+    base trap-type;
+    description
+      "ospf trap type";
+  }
+
+  identity ospfv3 {
+    base trap-type;
+    description
+      "ospfv3 trap type";
+  }
+
+  identity bfd {
+    base trap-type;
+    description
+      "bfd trap type";
+  }
+
+  identity ldp {
+    base trap-type;
+    description
+      "ldp trap type";
+  }
+
+  identity isis {
+    base trap-type;
+    description
+      "isis trap type";
+  }
+
+  identity rsvp {
+    base trap-type;
+    description
+      "rsvp trap type";
+  }
+
+  identity pim {
+    base trap-type;
+    description
+      "pim trap type";
+  }
+
+  identity platform {
+    base trap-type;
+    description
+      "platform trap type";
+  }
+
+  identity ha-manager {
+    base trap-type;
+    description
+      "ha-manager trap type";
+  }
+
+  identity netpm {
+    base trap-type;
+    description
+      "netpm trap type";
+  }
+
+  identity segment-routing {
+    base trap-type;
+    description
+      "segment-routing trap type";
+  }
+
+  identity cfm {
+    base trap-type;
+    description
+      "cfm trap type";
+  }
+
+  identity lacp {
+    base trap-type;
+    description
+      "lacp trap type";
+  }
+
+  // typedef statements
+
+  typedef view-name {
+    type identifier;
+    description
+      "The view-name type represents an SNMP VACM view name.";
+  }
+
+  typedef version {
+    type enumeration {
+      enum 1 {
+        description
+          "Version 1";
+      }
+      enum 2c {
+        description
+          "Version 2c";
+      }
+      enum 3 {
+        description
+          "Version 3";
+      }
+    }
+  }
+
+  typedef oid {
+    type string {
+      pattern '[12](\.\d+)*';
+    }
+    description
+      "A type defining how OID should look like.";
+  }
+
+  typedef admin-state {
+    type enumeration {
+      enum enabled;
+      enum disabled;
+    }
+  }
+
+  // grouping statements
+
+  grouping trap-server-config {
+    description
+      "Configuration items for snmp trap server";
+    leaf trap-server-ip {
+      type inet:ip-address;
+      mandatory true;
+      description
+        "The IPv4/IPv6 address on which the snmp server listens.";
+    }
+    leaf vrf {
+      type leafref {
+        path "/dn-top:drivenets-top/dn-network-services:network-services/dn-vrf:vrfs/dn-vrf:vrf/dn-vrf:vrf-name";
+      }
+      default "default";
+      description
+        "The vrf name related to the trap server network.";
+      must "('mgmt-ncc-0' or 'mgmt-ncc-1') != current()" {
+        error-message "vrf name shall be default, mgmt0 or any user defined VRF.";
+      }
+    }
+    leaf community-name {
+      type string;
+      mandatory true;
+      description
+        "A community name that can be represented as a
+         YANG string.";
+    }
+    leaf version {
+      description
+        "SNMP version used by the engine.";
+      type version;
+      default "2c";
+    }
+    leaf port {
+      type inet:port-number;
+      description
+        "The UDP port on which the engine listens.
+         If the port is not configured, an engine that
+         acts as a Command Responder uses port 161, and
+         an engine that acts as a Notification Receiver
+         uses port 162.";
+      default "162";
+    }
+    leaf max-throughput {
+      type uint16 {
+        range "1..1000";
+      }
+      description
+        "Maximum numbers of traps that can be sent to
+         the server in one second. If there is a larger
+         number of traps generated then everything above
+         the value of the throughput will be discarded";
+      default "100";
+    }
+    leaf source-interface {
+      type dn-if:base-interface-ref;
+      when "(/dn-top:drivenets-top/dn-if:interfaces/dn-if:interface/dn-if:config-items/dn-if:type = 'ianaift:ethernetCsmacd' or
+            /dn-top:drivenets-top/dn-if:interfaces/dn-if:interface/dn-if:config-items/dn-if:type = 'ianaift:softwareLoopback' or
+            /dn-top:drivenets-top/dn-if:interfaces/dn-if:interface/dn-if:config-items/dn-if:type = 'ianaift:l2vlan' or
+            /dn-top:drivenets-top/dn-if:interfaces/dn-if:interface/dn-if:config-items/dn-if:type = 'ianaift:ieee8023adLag')" {
+        description
+          "target interface must be physical, loopback, bundle or vlan";
+      }
+      description
+        "The name of the source-interface for snmp.";
+    }
+    leaf trap-source-port {
+      description
+        "Outgoing traps source port";
+      type inet:port-number {
+        range "1024..65535";
+      }
+    }
+    leaf admin-state {
+      type admin-state;
+      description
+        "admin-state of SNMP trap-server";
+      default "enabled";
+    }
+    leaf notification-method {
+      type enumeration {
+        enum trap;
+        enum inform;
+      }
+      default "trap";
+    }
+    leaf retries {
+      type uint8 {
+        range "1..5";
+      }
+      default "3";
+      when "../notification-method = 'inform'";
+      description
+        "Set the number of retries";
+    }
+    leaf timeout {
+      type uint8 {
+        range "1..60";
+      }
+      units "seconds";
+      default "10";
+      when "../notification-method = 'inform'";
+      description
+        "Set the timeout";
+    }
+    leaf hold-down {
+      type uint16 {
+        range "0 | 60..1200";
+      }
+      units "seconds";
+      default "300";
+      when "../notification-method = 'inform'";
+      description
+        "Set the hold-down period when know acknowledgements are received for 20 consecutive inform messages";
+    }
+  }
+
+  // data definition statements
+
+  grouping trap-server-top {
+    description
+      "top-level snmp trap server config and state containers";
+    container trap-servers {
+      description
+        "Configuration of the SNMP engine (trap server).";
+      container oper-items {
+        config false;
+        description
+          "State variables for snmp trap server";
+        leaf engine-id {
+          type dn-snmp:engine-id;
+          description
+            "The local SNMP engine's administratively assigned unique
+             identifier.
+             If this leaf is not set, the device automatically
+             calculates an engine ID, as described in RFC 3411.  A
+             server MAY initialize this leaf with the automatically
+             created value.";
+          reference
+            "RFC 3411: An Architecture for Describing Simple Network
+             Management Protocol (SNMP) Management
+             Frameworks.
+             SNMP-FRAMEWORK-MIB.snmpEngineID";
+        }
+      }
+      list trap-server {
+        key "trap-server-ip vrf";
+        max-elements 5;
+        description
+          "Configuration of the transport endpoints on which the
+           engine (trap server) listens.";
+        leaf trap-server-ip {
+          type leafref {
+            path "../config-items/trap-server-ip";
+          }
+          description
+            "The IPv4 address on which the engine listens.";
+        }
+        leaf vrf {
+          type leafref {
+            path "../config-items/vrf";
+          }
+          description
+            "The vrf name related to the trap server network.";
+        }
+        container config-items {
+          description
+            "Configuration data for snmp trap server";
+          uses trap-server-config;
+        }
+        container oper-items {
+          config false;
+          description
+            "State variables for snmp trap server";
+          uses trap-server-config;
+          leaf hold-down-remaining {
+            description
+              "Counts the remaining seconds till the exceeding of the hold-down timer";
+            type uint32;
+            dn-ex:countdown;
+            units "seconds";
+          }
+        }
+        uses dn-group:apply-group;
+      }
+    }
+  }
+
+  grouping secret {
+    leaf secret {
+      type string;
+      mandatory true;
+      nacm:default-deny-all;
+      description
+        "Localized secret specified as a list of colon-specified
+         hexadecimal octets.";
+    }
+  }
+
+  grouping user-list {
+    leaf user-name {
+      type identifier;
+      reference
+        "RFC 3414: User-based Security Model (USM) for version 3
+         of the Simple Network Management Protocol (SNMPv3).
+         SNMP-USER-BASED-SM-MIB.usmUserName";
+    }
+    leaf view-name {
+      type view-name;
+      description
+        "The name of this VACM MIB view.";
+      reference
+        "RFC 3415: View-based Access Control Model (VACM) for
+         the Simple Network Management Protocol (SNMP).
+         SNMP-VIEW-BASED-ACM-MIB.vacmViewTreeFamilyName";
+      default "viewdefault";
+    }
+    container authentication {
+      presence "enables authentication";
+      description
+        "Enables authentication of the user.";
+      uses secret;
+      leaf type {
+        mandatory true;
+        reference
+          "RFC 3414: User-based Security Model (USM) for version 3
+           of the Simple Network Management Protocol (SNMPv3).
+           SNMP-USER-BASED-SM-MIB.usmUserAuthProtocol
+           SNMP-USER-BASED-SM-MIB.usmHMACMD5AuthProtocol
+           SNMP-USER-BASED-SM-MIB.usmHMACSHAAuthProtocol";
+        type enumeration {
+          enum md5;
+          enum sha;
+        }
+      }
+    }
+    container encryption {
+      must '../authentication' {
+        error-message "when privacy (confidentiality) is used, "
+                    + "authentication must also be used";
+      }
+      presence "enables encryption";
+      uses secret;
+      leaf type {
+        reference
+          "RFC 3414: User-based Security Model (USM) for version 3
+           of the Simple Network Management Protocol (SNMPv3).
+           SNMP-USER-BASED-SM-MIB.usmUserAuthProtocol
+           SNMP-USM-AES-MIB.usmAesCfb128Protocol
+           SNMP-USER-BASED-SM-MIB.usmDESPrivProtocol";
+        type enumeration {
+          enum aes;
+          enum des;
+        }
+      }
+    }
+  }
+
+  grouping trap-list {
+    leaf trap-name {
+      type identityref {
+        base trap-name;
+      }
+      description
+        "trap name (has unique OID)";
+    }
+    leaf trap-type {
+      type identityref {
+        base trap-type;
+      }
+      description
+        "trap type family";
+    }
+    leaf enabled {
+      type boolean;
+      default "true";
+      description
+        "Enables the SNMP trap mib.";
+    }
+  }
+
+  grouping mib-list {
+    leaf view-name {
+      type view-name;
+      description
+        "view name";
+    }
+    leaf-list included {
+      type oid;
+      description
+        "mib included from this filter.";
+    }
+    leaf-list excluded {
+      type oid;
+      description
+        "mib excluded from this filter.";
+    }
+  }
+
+  grouping community-list {
+    leaf index {
+      type identifier;
+      description
+        "Index into the community list.";
+      reference
+        "RFC 3584: Coexistence between Version 1, Version 2,
+         and Version 3 of the Internet-standard
+         Network Management Framework.
+         SNMP-COMMUNITY-MIB.snmpCommunityIndex";
+    }
+    leaf vrf {
+      type leafref {
+        path "/dn-top:drivenets-top/dn-network-services:network-services/dn-vrf:vrfs/dn-vrf:vrf/dn-vrf:vrf-name";
+      }
+      default "default";
+      description
+        "The name of the vrf.";
+      must "('mgmt-ncc-0' or 'mgmt-ncc-1') != current()" {
+        error-message "vrf name shall be default, mgmt0 or any user defined VRF.";
+      }
+    }
+    choice name {
+      nacm:default-deny-all;
+      description
+        "The community name, specified as either a string or
+         a binary value.  The binary name is used when the
+         community name contains characters that are not legal
+         in a string.
+         If not set, the value of 'security-name' is operationally
+         used as the snmpCommunityName.";
+      reference
+        "RFC 3584: Coexistence between Version 1, Version 2,
+         and Version 3 of the Internet-standard
+         Network Management Framework.
+         SNMP-COMMUNITY-MIB.snmpCommunityName";
+      leaf text-name {
+        type string;
+        description
+          "A community name that can be represented as a
+           YANG string.";
+      }
+      leaf binary-name {
+        type binary;
+        description
+          "A community name represented as a binary value.";
+      }
+    }
+    leaf view {
+      type view-name;
+      description
+        "The name of snmp community view.";
+      default "viewdefault";
+    }
+    leaf access {
+      type identityref {
+        base access;
+      }
+      description
+        "access type community view";
+      default "read-only";
+    }
+    leaf-list client-list {
+      type inet:ip-prefix;
+      description
+        "White list of snmp community authorized clients";
+    }
+    leaf admin-state {
+      type admin-state;
+      description
+        "Community admin-state of SNMP server";
+      default "enabled";
+    }
+  }
+
+  grouping community-top {
+    description
+      "top-level community config and state containers";
+    container communities {
+      description
+        "top-level community config and state containers.";
+      list community {
+        key "index vrf";
+        max-elements 10;
+        description
+          "List of communities per vrf.";
+        reference
+          "RFC 3584: Coexistence between Version 1, Version 2,
+           and Version 3 of the Internet-standard
+           Network Management Framework.
+           SNMP-COMMUNITY-MIB.snmpCommunityTable";
+        leaf index {
+          type leafref {
+            path "../config-items/index";
+          }
+          description
+            "Index into the community list";
+        }
+        leaf vrf {
+          type leafref {
+            path "../config-items/vrf";
+          }
+          description
+            "The vrf name related to the trap server network.";
+        }
+        container config-items {
+          description
+            "Configuration data for community";
+          uses community-list;
+        }
+        container oper-items {
+          config false;
+          description
+            "State variables for community";
+          uses community-list;
+        }
+        uses dn-group:apply-group;
+      }
+    }
+  }
+
+  grouping trap-top {
+    description
+      "top-level trap config and state containers";
+    container traps {
+      description
+        "top-level trap config and state containers.";
+      list trap {
+        key "trap-name";
+        description
+          "system snmp trap list";
+        leaf trap-name {
+          type leafref {
+            path "../config-items/trap-name";
+          }
+          description
+            "trap name (unique name)";
+        }
+        container config-items {
+          description
+            "Configuration data for trap mibs";
+          uses trap-list;
+        }
+        container oper-items {
+          config false;
+          description
+            "State variables for trap mib";
+          uses trap-list;
+        }
+      }
+    }
+  }
+
+  grouping view-top {
+    description
+      "top-level system snmp view config and state containers";
+    container views {
+      description
+        "top-level system snmp view config and state containers.";
+      list view {
+        key "view-name";
+        description
+          "system snmp view list";
+        leaf view-name {
+          type leafref {
+            path "../config-items/view-name";
+          }
+          description
+            "view name (unique name)";
+        }
+        container config-items {
+          description
+            "Configuration data for view oids";
+          uses mib-list;
+        }
+        container oper-items {
+          config false;
+          description
+            "State variables for view oids";
+          uses mib-list;
+        }
+        uses dn-group:apply-group;
+      }
+    }
+  }
+
+  grouping usm-top {
+    description
+      "top-level usm config and state containers";
+    container usm {
+      description
+        "Configuration of the User-based Security Model.";
+      container local {
+        list user {
+          key "user-name";
+          reference
+            "RFC 3414: User-based Security Model (USM) for version 3
+             of the Simple Network Management Protocol (SNMPv3).
+             SNMP-USER-BASED-SM-MIB.usmUserTable";
+          leaf user-name {
+            type leafref {
+              path "../config-items/user-name";
+            }
+            description
+              "The IPv4 or IPv6 address on which the engine
+               listens.";
+          }
+          container config-items {
+            description
+              "Configuration data for snmp server";
+            uses user-list;
+          }
+          container oper-items {
+            config false;
+            description
+              "State variables for snmp server";
+            uses user-list;
+          }
+          uses dn-group:apply-group;
+        }
+      }
+    }
+  }
+
+  grouping snmp-global {
+    description
+      "Global configuration data for snmp";
+    leaf class-of-service {
+      description
+        "dscp marking for class-of-service configuration";
+      type inet:dscp {
+        range "0..56";
+      }
+      default "16";
+    }
+    leaf max-packet-size {
+      description
+        "Maximal size in bytes of SNMP packet that the router can send, including IP and UDP headers.";
+      type uint16 {
+        range "512..9300";
+      }
+      default "1500";
+    }
+    container compatibility-mode {
+      leaf cisco {
+        description
+          "SNMP Cisco compatibility-mode";
+        type enumeration {
+          enum enabled;
+          enum disabled;
+        }
+        default "enabled";
+      }
+    }
+  }
+
+  grouping snmp-counters {
+    description
+      "SNMP statistics";
+    leaf in-get-pdus {
+      type yang:zero-based-counter32;
+      description
+        "Number of GetRequest PDUs received by the SNMP agent";
+    }
+    leaf in-getnext-pdus {
+      type yang:zero-based-counter32;
+      description
+        "Number of GetNextRequest PDUs received by the SNMP agent";
+    }
+    leaf in-getbulk-pdus {
+      type yang:zero-based-counter32;
+      description
+        "Number of GetBulkRequest PDUs received by the SNMP agent";
+    }
+    leaf out-response-pdus {
+      type yang:zero-based-counter32;
+      description
+        "Number of Response PDUs sent by the SNMP agent";
+    }
+    leaf out-trap-pdus {
+      type yang:zero-based-counter32;
+      description
+        "Number of Response PDUs sent by the SNMP agent";
+    }
+  }
+
+  grouping snmp-global-top {
+    description
+      "top-level global snmp config and state containers";
+    container config-items {
+      description
+        "Global configuration data for snmp";
+      uses snmp-global;
+    }
+    container oper-items {
+      config false;
+      description
+        "Global state variables for snmp";
+      uses snmp-global;
+      uses snmp-counters;
+    }
+  }
+
+  grouping snmp-top {
+    description
+      "top-level snmp config and state containers";
+    container snmp {
+      description
+        "Enclosing container for snmp config and state containers associated with the system";
+      uses snmp-global-top;
+      uses community-top;
+      uses trap-server-top;
+      uses usm-top;
+      uses trap-top;
+      uses view-top;
+    }
+  }
+
+  // augment statements
+
+  augment "/dn-top:drivenets-top/dn-sys:system" {
+    description
+      "Adds SNMP configuration to top system model";
+    uses snmp-top;
+  }
+}

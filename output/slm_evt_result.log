@@ -1,0 +1,4 @@
+Log channel open
+Traceback (most recent call last):
+  File "<string>", line 25, in <module>
+TypeError: run_seq() got an unexpected keyword argument 'timeout'

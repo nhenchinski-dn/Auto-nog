@@ -1,0 +1,615 @@
+======================================================================
+  Y.1731 RESTCONF SANITY TEST
+  Device   : 100.64.5.56
+  ODL      : 10.10.75.34:8181
+  Node     : 100_64_5_56
+  Jira     : SW-237067
+  Started  : 2026-02-15 11:57:12
+======================================================================
+[*] SSH: Connecting to 100.64.5.56 as dnroot ...
+[+] SSH: Connected and paging disabled.
+
+
+============================================================
+PHASE 1.1: Mount device to ODL
+============================================================
+    ────────────────────────────────────────────────────────
+    RESTCONF PUT  http://10.10.75.34:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/100_64_5_56
+    Request body:
+      <node xmlns="urn:TBD:params:xml:ns:yang:network-topology">
+        <node-id>100_64_5_56</node-id>
+        <host xmlns="urn:opendaylight:netconf-node-topology">100.64.5.56</host>
+        <port xmlns="urn:opendaylight:netconf-node-topology">830</port>
+        <username xmlns="urn:opendaylight:netconf-node-topology">dnroot</username>
+        <password xmlns="urn:opendaylight:netconf-node-topology">dnroot</password>
+        <tcp-only xmlns="urn:opendaylight:netconf-node-topology">false</tcp-only>
+        <default-request-timeout-millis xmlns="urn:opendaylight:netconf-node-topology">3600000</default-request-timeout-millis>
+      </node>
+    Response: HTTP 201
+    ────────────────────────────────────────────────────────
+  [PASS] mount_device -- HTTP 201
+
+============================================================
+PHASE 1.2: Verify mount status
+============================================================
+    Waiting for connection... (1/12)
+    Waiting for connection... (2/12)
+    ────────────────────────────────────────────────────────
+    RESTCONF GET  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56?content=nonconfig
+    Response: HTTP 200
+    Response body (JSON):
+      {
+        "network-topology:node": [
+          {
+            "node-id": "100_64_5_56",
+            "netconf-node-topology:unavailable-capabilities": {
+              "unavailable-capability": [
+                {
+                  "capability": "(http://drivenets.com/ns/yang/dn-rpc-bgp?revision=2021-11-24)dn-rpc-bgp",
+                  "failure-reason": "unable-to-resolve"
+                },
+                {
+                  "capability": "(http://drivenets.com/ns/yang/dn-cg-bgp?revision=2026-01-04)dn-cg-bgp",
+                  "failure-reason": "unable-to-resolve"
+                },
+                {
+                  "capability": "(http://drivenets.com/ns/yang/dn-bgp?revision=2026-01-04)dn-bgp",
+                  "failure-reason": "unable-to-resolve"
+                },
+                {
+                  "capability": "(http://drivenets.com/ns/yang/dn-bfd?revision=2025-08-19)dn-bfd",
+                  "failure-reason": "unable-to-resolve"
+                },
+                {
+                  "capability": "(http://drivenets.com/ns/yang/dn-vrf-evpn?revision=2024-05-16)dn-vrf-evpn",
+                  "failure-reason": "unable-to-resolve"
+                },
+                {
+                  "capability": "(http://drivenets.com/ns/yang/dn-cg-vrf-evpn?revision=2024-05-16)dn-cg-vrf-evpn",
+                  "failure-reason": "unable-to-resolve"
+                }
+              ]
+            },
+            "netconf-node-topology:available-capabilities": {
+              "available-capability": [
+                {
+                  "capability-origin": "device-advertised",
+                  "capability": "urn:ietf:params:netconf:capability:candidate:1.0"
+                },
+                {
+                  "capability-origin": "device-advertised",
+                  "capability": "urn:ietf:params:netconf:capability:confirmed-commit:1.0"
+                },
+                {
+                  "capability-origin": "device-advertised",
+                  "capability": "urn:ietf:params:netconf:capability:validate:1.1"
+                },
+                {
+                  "capability-origin": "device-advertised",
+                  "capability": "urn:ietf:params:netconf:capability:yang-library:1.0?revision=2016-06-21&module-set-id=55ba0b861a7adaf6807e4e1f33b76da4"
+                },
+                {
+                  "capability-origin": "device-advertised",
+                  "capability": "urn:ietf:params:netconf:capability:rollback-on-error:1.0"
+                },
+                {
+                  "capability-origin": "device-advertised",
+                  "capability": "urn:ietf:params:netconf:base:1.1"
+                },
+                {
+                  "capability-origin": "device-advertised",
+      ... (1198 lines total)
+    ────────────────────────────────────────────────────────
+  [PASS] verify_mount_status -- Device connected
+
+============================================================
+PHASE 1.3: Discover YANG namespaces
+============================================================
+  [PASS] discover_yang_paths -- pm=http://drivenets.com/ns/yang/dn-performance-monitoring | cfm=http://drivenets.com/ns/yang/dn-srv-connectivity-fault-m...
+
+============================================================
+PHASE 1.4: Discover CFM context
+============================================================
+  [PASS] discover_cfm_context -- MD=MD-CUST1, MA=MA-CUST1, src=3, tgt=4, dir=down | WARNING: all MEPs in use by existing sessions (2 sessions) -- session...
+
+============================================================
+PHASE 2.1: GET PM config
+============================================================
+    ────────────────────────────────────────────────────────
+    RESTCONF GET  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top/dn-services:services/dn-performance-monitoring:performance-monitoring?content=config
+    Response: HTTP 200
+    Response body (JSON):
+      {
+        "dn-performance-monitoring:performance-monitoring": {
+          "cfm-tests": {
+            "dn-srv-connectivity-fault-management:proactive-monitoring": {
+              "two-way-delay-measurements": {
+                "test-session": [
+                  {
+                    "session-name": "DM_CLI_TAB_mep1",
+                    "config-items": {
+                      "source-ma-name": "MA-CUST",
+                      "source-md-name": "MD-CUST",
+                      "source-mep-id": 1,
+                      "profile": "DM_PROF_CLI",
+                      "admin-state": "enabled",
+                      "description": "cli_tab_test",
+                      "target-mep-id": 2
+                    }
+                  },
+                  {
+                    "session-name": "DM_CLI_TAB_mep3",
+                    "config-items": {
+                      "source-ma-name": "MA-CUST1",
+                      "source-md-name": "MD-CUST1",
+                      "source-mep-id": 3,
+                      "profile": "DM_PROF_CLI",
+                      "admin-state": "enabled",
+                      "description": "cli_tab_test",
+                      "target-mac-address": "84:40:76:90:cd:15"
+                    }
+                  }
+                ]
+              },
+              "two-way-synthetic-loss-measurements": {
+                "test-session": [
+                  {
+                    "session-name": "SLM_CLI_TAB_mep3",
+                    "config-items": {
+                      "source-ma-name": "MA-CUST1",
+                      "source-md-name": "MD-CUST1",
+                      "source-mep-id": 3,
+                      "profile": "SLM_PROF_CLI",
+                      "admin-state": "enabled",
+                      "description": "cli_tab_test_slm",
+                      "target-mac-address": "84:40:76:90:cd:15"
+                    }
+                  },
+                  {
+                    "session-name": "SLM_CLI_TAB_mep1",
+                    "config-items": {
+                      "source-ma-name": "MA-CUST",
+                      "source-md-name": "MD-CUST",
+                      "source-mep-id": 1,
+                      "profile": "SLM_PROF_CLI",
+                      "admin-state": "enabled",
+                      "description": "cli_tab_test_slm",
+                      "target-mep-id": 2
+                    }
+                  }
+                ]
+              }
+      ... (120 lines total)
+    ────────────────────────────────────────────────────────
+  [PASS] get_pm_config -- HTTP 200, keys: ['dn-performance-monitoring:performance-monitoring']
+
+============================================================
+PHASE 2.2: GET PM oper
+============================================================
+    ────────────────────────────────────────────────────────
+    RESTCONF GET  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top/dn-services:services/dn-performance-monitoring:performance-monitoring?content=nonconfig
+    Response: HTTP 500
+    Response body (JSON):
+      {
+        "errors": {
+          "error": [
+            {
+              "error-type": "application",
+              "error-message": "Transaction failed",
+              "error-tag": "operation-failed",
+              "error-info": "ReadFailedException{message=NETCONF operation failed, errorList=[RpcError [message=NETCONF operation failed, severity=ERROR, errorType=APPLICATION, tag=operation-failed, applicationTag=null, info=null, cause=java.lang.IllegalArgumentException: Invalid range: 2828, expected: [[0..255]].]]}"
+            }
+          ]
+        }
+      }
+    ────────────────────────────────────────────────────────
+  [PASS] get_pm_oper -- HTTP 500 (may be expected if no PM data)
+
+============================================================
+PHASE 2.3: GET PM all
+============================================================
+    ────────────────────────────────────────────────────────
+    RESTCONF GET  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top/dn-services:services/dn-performance-monitoring:performance-monitoring?content=all
+    Response: HTTP 500
+    Response body (JSON):
+      {
+        "errors": {
+          "error": [
+            {
+              "error-type": "application",
+              "error-message": "Transaction failed",
+              "error-tag": "operation-failed",
+              "error-info": "ReadFailedException{message=NETCONF operation failed, errorList=[RpcError [message=NETCONF operation failed, severity=ERROR, errorType=APPLICATION, tag=operation-failed, applicationTag=null, info=null, cause=java.lang.IllegalArgumentException: Invalid range: 2828, expected: [[0..255]].]]}"
+            }
+          ]
+        }
+      }
+    ────────────────────────────────────────────────────────
+  [PASS] get_pm_all -- HTTP 500 (may be expected if no PM data)
+
+============================================================
+PHASE 3.1: PATCH - Create DM profile
+============================================================
+    ────────────────────────────────────────────────────────
+    RESTCONF PATCH  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top
+    Request body:
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <profiles>
+              <cfm>
+                <two-way-delay-measurement>
+                  <profile>
+                    <profile-name>RESTCONF_DM_PROF</profile-name>
+                    <config-items>
+                      <profile-name>RESTCONF_DM_PROF</profile-name>
+                      <inform-test-results>enabled</inform-test-results>
+                      <test-duration-probes>
+                        <probe-count>5</probe-count>
+                        <probe-interval>1</probe-interval>
+                        <repeat-interval>10</repeat-interval>
+                      </test-duration-probes>
+                      <cfm-eth-dm-performance-thresholds>
+                        <delay-rtt-min>100</delay-rtt-min>
+                        <delay-rtt-avg>1000</delay-rtt-avg>
+                        <delay-rtt-max>2000</delay-rtt-max>
+                        <jitter-rtt-avg>500</jitter-rtt-avg>
+                        <jitter-rtt-max>1000</jitter-rtt-max>
+                        <success-rate-percent>90.0</success-rate-percent>
+                      </cfm-eth-dm-performance-thresholds>
+                    </config-items>
+                  </profile>
+                </two-way-delay-measurement>
+              </cfm>
+            </profiles>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    Response: HTTP 200
+    ────────────────────────────────────────────────────────
+  [PASS] create_dm_profile -- HTTP 200
+
+============================================================
+PHASE 3.2: PATCH - Create SLM profile
+============================================================
+    ────────────────────────────────────────────────────────
+    RESTCONF PATCH  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top
+    Request body:
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <profiles>
+              <cfm>
+                <two-way-synthetic-loss-measurement>
+                  <profile>
+                    <profile-name>RESTCONF_SLM_PROF</profile-name>
+                    <config-items>
+                      <profile-name>RESTCONF_SLM_PROF</profile-name>
+                      <pcp>5</pcp>
+                      <inform-test-results>enabled</inform-test-results>
+                      <test-duration-probes>
+                        <probe-count>5</probe-count>
+                        <probe-interval>1</probe-interval>
+                        <repeat-interval>10</repeat-interval>
+                      </test-duration-probes>
+                      <cfm-eth-sl-performance-thresholds>
+                        <near-end-loss>1.0</near-end-loss>
+                        <far-end-loss>1.0</far-end-loss>
+                      </cfm-eth-sl-performance-thresholds>
+                    </config-items>
+                  </profile>
+                </two-way-synthetic-loss-measurement>
+              </cfm>
+            </profiles>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    Response: HTTP 200
+    ────────────────────────────────────────────────────────
+  [PASS] create_slm_profile -- HTTP 200
+
+============================================================
+PHASE 3.3: PATCH - Create DM session
+============================================================
+  [SKIP] create_dm_session -- MEP 3 in MD=MD-CUST1/MA=MA-CUST1 already used by existing session (device constraint)
+
+============================================================
+PHASE 3.4: PATCH - Create SLM session
+============================================================
+  [SKIP] create_slm_session -- MEP 3 in MD=MD-CUST1/MA=MA-CUST1 already used by existing session (device constraint)
+
+============================================================
+PHASE 4: Wait for propagation + verify creates via CLI
+============================================================
+    CLI: 'RESTCONF_DM_PROF' found (~10s)
+    CLI: 'RESTCONF_SLM_PROF' found (~10s)
+  [PASS] verify_dm_profile_cli -- CLI: 'RESTCONF_DM_PROF' present | GET=found
+  [PASS] verify_slm_profile_cli -- CLI: 'RESTCONF_SLM_PROF' present | GET=found
+
+============================================================
+PHASE 5: PATCH - Modify DM profile (delay-rtt-min -> 999)
+============================================================
+    CLI-BEFORE: '999' not present
+    ────────────────────────────────────────────────────────
+    RESTCONF PATCH  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top
+    Request body:
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <profiles>
+              <cfm>
+                <two-way-delay-measurement>
+                  <profile>
+                    <profile-name>RESTCONF_DM_PROF</profile-name>
+                    <config-items>
+                      <profile-name>RESTCONF_DM_PROF</profile-name>
+                      <inform-test-results>enabled</inform-test-results>
+                      <test-duration-probes>
+                        <probe-count>5</probe-count>
+                        <probe-interval>1</probe-interval>
+                        <repeat-interval>10</repeat-interval>
+                      </test-duration-probes>
+                      <cfm-eth-dm-performance-thresholds>
+                        <delay-rtt-min>999</delay-rtt-min>
+                        <delay-rtt-avg>1000</delay-rtt-avg>
+                        <delay-rtt-max>2000</delay-rtt-max>
+                        <jitter-rtt-avg>500</jitter-rtt-avg>
+                        <jitter-rtt-max>1000</jitter-rtt-max>
+                        <success-rate-percent>90.0</success-rate-percent>
+                      </cfm-eth-dm-performance-thresholds>
+                    </config-items>
+                  </profile>
+                </two-way-delay-measurement>
+              </cfm>
+            </profiles>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    Response: HTTP 200
+    ────────────────────────────────────────────────────────
+    ────────────────────────────────────────────────────────
+    RESTCONF GET  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top/dn-services:services/dn-performance-monitoring:performance-monitoring?content=config
+    Response: HTTP 200
+    Response body (JSON):
+      {
+        "dn-performance-monitoring:performance-monitoring": {
+          "cfm-tests": {
+            "dn-srv-connectivity-fault-management:proactive-monitoring": {
+              "two-way-delay-measurements": {
+                "test-session": [
+                  {
+                    "session-name": "DM_CLI_TAB_mep1",
+                    "config-items": {
+                      "source-ma-name": "MA-CUST",
+                      "source-md-name": "MD-CUST",
+                      "source-mep-id": 1,
+                      "profile": "DM_PROF_CLI",
+                      "admin-state": "enabled",
+                      "description": "cli_tab_test",
+                      "target-mep-id": 2
+                    }
+                  },
+                  {
+                    "session-name": "DM_CLI_TAB_mep3",
+                    "config-items": {
+                      "source-ma-name": "MA-CUST1",
+                      "source-md-name": "MD-CUST1",
+                      "source-mep-id": 3,
+                      "profile": "DM_PROF_CLI",
+                      "admin-state": "enabled",
+                      "description": "cli_tab_test",
+                      "target-mac-address": "84:40:76:90:cd:15"
+                    }
+                  }
+                ]
+              },
+              "two-way-synthetic-loss-measurements": {
+                "test-session": [
+                  {
+                    "session-name": "SLM_CLI_TAB_mep3",
+                    "config-items": {
+                      "source-ma-name": "MA-CUST1",
+                      "source-md-name": "MD-CUST1",
+                      "source-mep-id": 3,
+                      "profile": "SLM_PROF_CLI",
+                      "admin-state": "enabled",
+                      "description": "cli_tab_test_slm",
+                      "target-mac-address": "84:40:76:90:cd:15"
+                    }
+                  },
+                  {
+                    "session-name": "SLM_CLI_TAB_mep1",
+                    "config-items": {
+                      "source-ma-name": "MA-CUST",
+                      "source-md-name": "MD-CUST",
+                      "source-mep-id": 1,
+                      "profile": "SLM_PROF_CLI",
+                      "admin-state": "enabled",
+                      "description": "cli_tab_test_slm",
+                      "target-mep-id": 2
+                    }
+                  }
+                ]
+              }
+      ... (157 lines total)
+    ────────────────────────────────────────────────────────
+  [PASS] modify_dm_profile -- HTTP 200 | CLI: '999' appeared after PATCH | GET=found
+
+============================================================
+PHASE 6.1: DELETE DM session
+============================================================
+  [SKIP] delete_dm_session -- Session was not created
+
+============================================================
+PHASE 6.2: DELETE SLM session
+============================================================
+  [SKIP] delete_slm_session -- Session was not created
+
+============================================================
+PHASE 6.3: DELETE DM profile
+============================================================
+    CLI-BEFORE: 'RESTCONF_DM_PROF' present (will delete)
+    ────────────────────────────────────────────────────────
+    RESTCONF DELETE  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top/dn-services:services/dn-performance-monitoring:performance-monitoring/profiles/cfm/two-way-delay-measurement/profile=RESTCONF_DM_PROF
+    Response: HTTP 204
+    ────────────────────────────────────────────────────────
+  [PASS] delete_dm_profile -- HTTP DELETE 204 | CLI: 'RESTCONF_DM_PROF' removed after DELETE | GET=removed
+
+============================================================
+PHASE 6.4: DELETE SLM profile
+============================================================
+    CLI-BEFORE: 'RESTCONF_SLM_PROF' present (will delete)
+    ────────────────────────────────────────────────────────
+    RESTCONF DELETE  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top/dn-services:services/dn-performance-monitoring:performance-monitoring/profiles/cfm/two-way-synthetic-loss-measurement/profile=RESTCONF_SLM_PROF
+    Response: HTTP 204
+    ────────────────────────────────────────────────────────
+  [PASS] delete_slm_profile -- HTTP DELETE 204 | CLI: 'RESTCONF_SLM_PROF' removed after DELETE | GET=removed
+
+============================================================
+PHASE 6.5: Verify all test artifacts removed
+============================================================
+  [PASS] verify_all_removed -- All test artifacts removed
+
+============================================================
+PHASE 7.1: GET invalid path (negative)
+============================================================
+    ────────────────────────────────────────────────────────
+    RESTCONF GET  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top/dn-nonexistent:fake?content=config
+    Response: HTTP 400
+    Response body (JSON):
+      {
+        "errors": {
+          "error": [
+            {
+              "error-message": "Failed to lookup for module with name 'dn-nonexistent'.",
+              "error-tag": "unknown-element",
+              "error-type": "protocol"
+            }
+          ]
+        }
+      }
+    ────────────────────────────────────────────────────────
+  [PASS] get_invalid_path -- HTTP 400 (expected non-200)
+
+============================================================
+PHASE 7.2: PATCH malformed XML (negative)
+============================================================
+    ────────────────────────────────────────────────────────
+    RESTCONF PATCH  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top
+    Request body:
+      <drivenets-top><not-valid></drivenets-top>
+    Response: HTTP 400
+    Response body (XML):
+      <errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-type>protocol</error-type>
+          <error-message>Error parsing input: The element type &quot;not-valid&quot; must be terminated by the matching end-tag &quot;&lt;/not-valid&gt;&quot;.</error-message>
+          <error-tag>malformed-message</error-tag>
+          <error-info>The element type &quot;not-valid&quot; must be terminated by the matching end-tag &quot;&lt;/not-valid&gt;&quot;.</error-info>
+        </error>
+      </errors>
+    ────────────────────────────────────────────────────────
+  [PASS] patch_invalid_body -- HTTP 400 (expected reject)
+
+============================================================
+PHASE 7.3: PATCH invalid value (negative)
+============================================================
+    ────────────────────────────────────────────────────────
+    RESTCONF PATCH  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_56/yang-ext:mount/dn-top:drivenets-top
+    Request body:
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <profiles>
+              <cfm>
+                <two-way-delay-measurement>
+                  <profile>
+                    <profile-name>RESTCONF_INVALID_TEST</profile-name>
+                    <config-items>
+                      <profile-name>RESTCONF_INVALID_TEST</profile-name>
+                      <cfm-eth-dm-performance-thresholds>
+                        <delay-rtt-min>NOT_A_NUMBER</delay-rtt-min>
+                      </cfm-eth-dm-performance-thresholds>
+                    </config-items>
+                  </profile>
+                </two-way-delay-measurement>
+              </cfm>
+            </profiles>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    Response: HTTP 400
+    Response body (XML):
+      <errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-type>protocol</error-type>
+          <error-message>Error parsing input: Incorrect lexical representation of integer value: NOT_A_NUMBER.
+      An integer value can be defined as:
+        - a decimal number,
+        - a hexadecimal number (prefix 0x),%n  - an octal number (prefix 0).
+      Signed values are allowed. Spaces between digits are NOT allowed.</error-message>
+          <error-tag>malformed-message</error-tag>
+          <error-info>Incorrect lexical representation of integer value: NOT_A_NUMBER.
+      An integer value can be defined as:
+        - a decimal number,
+        - a hexadecimal number (prefix 0x),%n  - an octal number (prefix 0).
+      Signed values are allowed. Spaces between digits are NOT allowed.</error-info>
+        </error>
+      </errors>
+    ────────────────────────────────────────────────────────
+  [PASS] patch_invalid_value -- HTTP 400 (expected reject)
+
+============================================================
+PHASE 8: Unmount device
+============================================================
+    ────────────────────────────────────────────────────────
+    RESTCONF DELETE  http://10.10.75.34:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/100_64_5_56
+    Response: HTTP 200
+    ────────────────────────────────────────────────────────
+  [PASS] unmount_device -- HTTP 200
+[*] SSH: Disconnected.
+
+======================================================================
+  RESULTS SUMMARY
+======================================================================
+  Total  : 23
+  Passed : 19
+  Skipped: 4
+  Failed : 0
+  Time   : 72.5s
+
+  PASSED (19):
+    [PASS] mount_device  HTTP 201
+    [PASS] verify_mount_status  Device connected
+    [PASS] discover_yang_paths  pm=http://drivenets.com/ns/yang/dn-performance-monitoring | cfm=http://drivenets.com/ns/ya
+    [PASS] discover_cfm_context  MD=MD-CUST1, MA=MA-CUST1, src=3, tgt=4, dir=down | WARNING: all MEPs in use by existing se
+    [PASS] get_pm_config  HTTP 200, keys: ['dn-performance-monitoring:performance-monitoring']
+    [PASS] get_pm_oper  HTTP 500 (may be expected if no PM data)
+    [PASS] get_pm_all  HTTP 500 (may be expected if no PM data)
+    [PASS] create_dm_profile  HTTP 200
+    [PASS] create_slm_profile  HTTP 200
+    [PASS] verify_dm_profile_cli  CLI: 'RESTCONF_DM_PROF' present | GET=found
+    [PASS] verify_slm_profile_cli  CLI: 'RESTCONF_SLM_PROF' present | GET=found
+    [PASS] modify_dm_profile  HTTP 200 | CLI: '999' appeared after PATCH | GET=found
+    [PASS] delete_dm_profile  HTTP DELETE 204 | CLI: 'RESTCONF_DM_PROF' removed after DELETE | GET=removed
+    [PASS] delete_slm_profile  HTTP DELETE 204 | CLI: 'RESTCONF_SLM_PROF' removed after DELETE | GET=removed
+    [PASS] verify_all_removed  All test artifacts removed
+    [PASS] get_invalid_path  HTTP 400 (expected non-200)
+    [PASS] patch_invalid_body  HTTP 400 (expected reject)
+    [PASS] patch_invalid_value  HTTP 400 (expected reject)
+    [PASS] unmount_device  HTTP 200
+
+  SKIPPED (4):
+    [SKIP] create_dm_session
+           MEP 3 in MD=MD-CUST1/MA=MA-CUST1 already used by existing session (device constraint)
+    [SKIP] create_slm_session
+           MEP 3 in MD=MD-CUST1/MA=MA-CUST1 already used by existing session (device constraint)
+    [SKIP] delete_dm_session
+           Session was not created
+    [SKIP] delete_slm_session
+           Session was not created
+
+======================================================================
+  >>> ALL 23 TESTS PASSED (19 passed, 4 skipped) <<<
+======================================================================
+

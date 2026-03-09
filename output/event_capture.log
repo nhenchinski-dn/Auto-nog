@@ -1,0 +1,9 @@
+Session created, waiting 20s for threshold violations...
+=== RAW EVENT OUTPUT ===
+local7.warning 2026-02-26T06:17:49.262Z NCP3-CFM-nog CFM-OAM - - - CFM_PROACTIVE_TEST_FAILURE:CFM proactive TWO_WAY_DELAY_MEASUREMENT test session EVT_CAPTURE_S (ID: 2710) initiated from MEP 4 in MA MA-CUST1 under MD MD-CUST1 in level 3 has failed due to a violation of the configured FRAME_DELAY_TWO_WAY_MAX threshold of 1us. Recorded value: 4us. Test completed at: 2026-02-26 06:17:49 +0000
+local7.warning 2026-02-26T06:17:59.262Z NCP3-CFM-nog CFM-OAM - - - CFM_PROACTIVE_TEST_FAILURE:CFM proactive TWO_WAY_DELAY_MEASUREMENT test session EVT_CAPTURE_S (ID: 2712) initiated from MEP 4 in MA MA-CUST1 under MD MD-CUST1 in level 3 has failed due to a violation of the configured FRAME_DELAY_TWO_WAY_MAX threshold of 1us. Recorded value: 4us. Test completed at: 2026-02-26 06:17:59 +0000
+local7.warning 2026-02-26T06:18:09.262Z NCP3-CFM-nog CFM-OAM - - - CFM_PROACTIVE_TEST_FAILURE:CFM proactive TWO_WAY_DELAY_MEASUREMENT test session EVT_CAPTURE_S (ID: 2713) initiated from MEP 4 in MA MA-CUST1 under MD MD-CUST1 in level 3 has failed due to a violation of the configured FRAME_DELAY_TWO_WAY_MAX threshold of 1us. Recorded value: 4us. Test completed at: 2026-02-26 06:18:09 +0000
+
+=== END EVENT OUTPUT ===
+Total bytes: 1182
+DONE

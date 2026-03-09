@@ -1,0 +1,23 @@
+RUNNING: discover_cfm_context
+Read CFM config via 'show config services ethernet-oam connectivity-fault-management', but couldn't find maintenance-domain/association lines to parse.
+--- Output sample ---
+DRIVENETS CLI Loading...
+                        
+Infra-R202-CL32# show config services ethernet-oam connectivity-fault-management 
+[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Kt
+
+# Infra-R202-CL32 config-start [18-Feb-2026 06:35:56 UTC]
+
+
+# Infra-R202-CL32 config-end
+
+Infra-R202-CL32#
+CFM discovery failed; prompting for MD/MA/MEP/targets.
+Maintenance-domain (MD) name: Traceback (most recent call last):
+  File "/home/dn/y1731_cli_tab_test.py", line 3732, in <module>
+    raise SystemExit(main())
+  File "/home/dn/y1731_cli_tab_test.py", line 1755, in main
+    args.md = _prompt_nonempty("Maintenance-domain (MD) name: ")
+  File "/home/dn/y1731_cli_tab_test.py", line 1395, in _prompt_nonempty
+    raw = input(label).strip()
+EOFError: EOF when reading a line

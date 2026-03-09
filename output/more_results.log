@@ -1,0 +1,91 @@
+Connected to WKY1C7VD00008P2
+
+======================================================================
+HISTORIC DM RESULTS (DM_CLI_TAB)
+======================================================================
+  show services performance-monitoring cfm tests proactive two-way-delay-measurement DM_CLI_TAB historic | no-more
+  -----------------------------------------------------------------------^
+  ERROR: Unknown word: 'two-way-delay-measurement'.
+  NCP3-CFM-nog#
+
+======================================================================
+HISTORIC SLM RESULTS (SLM_CLI_TAB)
+======================================================================
+  show services performance-monitoring cfm tests proactive two-way-synthetic-loss-measurement SLM_CLI_TAB historic | no-more
+  -----------------------------------------------------------------------^
+  ERROR: Unknown word: 'two-way-synthetic-loss-measurement'.
+  NCP3-CFM-nog#
+
+======================================================================
+SYSTEM EVENTS (CFM)
+======================================================================
+  show system events service-name cfm | no-more
+  --------------------------^
+  ERROR: Unknown word: 'events'.
+  NCP3-CFM-nog#
+
+======================================================================
+PROACTIVE DM DETAIL (DM_CLI_TAB)
+======================================================================
+  show services performance-monitoring cfm tests proactive two-way-delay-measurement DM_CLI_TAB results | no-more
+  -----------------------------------------------------------------------^
+  ERROR: Unknown word: 'two-way-delay-measurement'.
+  NCP3-CFM-nog#
+
+======================================================================
+PROACTIVE SLM DETAIL (SLM_CLI_TAB)
+======================================================================
+  show services performance-monitoring cfm tests proactive two-way-synthetic-loss-measurement SLM_CLI_TAB results | no-more
+  -----------------------------------------------------------------------^
+  ERROR: Unknown word: 'two-way-synthetic-loss-measurement'.
+  NCP3-CFM-nog#
+
+======================================================================
+ON-DEMAND TEST RESULTS
+======================================================================
+  show services performance-monitoring cfm tests on-demand | no-more
+  e
+  CFM On-Demand Performance Monitoring Sessions:
+  | Test Name            | Test Type                  | MD Name   | MA Name   | MEP-ID   | Target   | Last Run                  | Status   |
+  |----------------------+----------------------------+-----------+-----------+----------+----------+---------------------------+----------|
+  | LB-MD-CUST-MA-CUST-2 | loopback                   | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-24 23:50:56 +0000 | Invalid  |
+  | LT-MD-CUST-MA-CUST-2 | linktrace                  | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-24 23:50:59 +0000 | Valid    |
+  | DM-MD-CUST-MA-CUST-2 | two-way-delay-measurement  | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-24 23:50:52 +0000 | Valid    |
+  | SL-MD-CUST-MA-CUST-2 | two-way-synthetic-loss     | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-24 23:50:54 +0000 | Invalid  |
+  Test Type Counters:
+  Loopback tests: 1
+  Linktrace tests: 1
+  Two-way delay measurement tests: 1
+  Two-way synthetic loss measurement tests: 1
+  Total displayed tests: 4
+  NCP3-CFM-nog#
+
+======================================================================
+BOUNDARY VALUE TESTS
+======================================================================
+  [PASS] success-rate 0.0: expected=OK actual=OK
+  [PASS] success-rate 100.0: expected=OK actual=OK
+  [PASS] success-rate 100.1: expected=ERR actual=ERR
+  [PASS] success-rate -1: expected=ERR actual=ERR
+  [FAIL] delay-rtt-avg 0: expected=OK actual=ERR
+    ERROR: profile 'BNDRY_TEST' 'inform-test-results' enabled without configured thresholds.
+  [FAIL] delay-rtt-avg 4294967295: expected=OK actual=ERR
+    ERROR: profile 'BNDRY_TEST' 'inform-test-results' enabled without configured thresholds.
+  [PASS] delay-rtt-avg 4294967296: expected=ERR actual=ERR
+
+======================================================================
+ON-DEMAND DM TEST (live)
+======================================================================
+  run ethernet-oam cfm on-demand two-way-delay-measurement maintenance-domain MD-CUST maintenance-association MA-CUST mep-id 2 target mep-id 1 count 3
+  ---------------------------------------------^
+  ERROR: Unknown word: 'two-way-delay-measurement'.
+  NCP3-CFM-nog#
+  show services performance-monitoring cfm tests on-demand two-way-delay-measurement DM-MD-CUST-MA-CUST-2 results | no-more
+  -----------------------------------------------------------------------^
+  ERROR: Unknown word: 'two-way-delay-measurement'.
+  NCP3-CFM-nog#
+  request ethernet-oam cfm on-demand stop all
+  No ongoing on-demand CFM tests found.
+  NCP3-CFM-nog#
+
+DONE

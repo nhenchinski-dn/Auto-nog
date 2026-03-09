@@ -1,0 +1,115 @@
+=== TAB completion: show services performance-monitoring cfm tests proactive ? ===
+  show services performance-monitoring cfm tests proactive
+  <CR>
+  two-way-delay
+  two-way-synthetic-loss
+  NCP3-CFM-nog# show services performance-monitoring cfm tests proactive 
+  CFM Proactive Performance Monitoring Sessions:
+  | Test Name          | Test Type                  | MD Name   | MA Name   | MEP-ID   | Target   | Last Run                  | Status   |
+  |--------------------+----------------------------+-----------+-----------+----------+----------+---------------------------+----------|
+  | DM_CLI_TAB         | two-way-delay-measurement  | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-26 05:28:34 +0000 | Ongoing  |
+  | SLM_CLI_TAB        | two-way-synthetic-loss     | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-26 05:29:14 +0000 | Ongoing  |
+  Test Type Counters:
+  Two-way delay measurement tests: 1
+  Two-way synthetic loss measurement tests: 1
+  Total displayed tests: 2
+  NCP3-CFM-nog#
+
+=== TAB completion: show system ? ===
+  show system
+  <CR>
+  details                   Displays system extended information
+  name                      Displays name of the system
+  process                   Displays process information
+  uptime                    Displays system uptime information
+  ----------------
+  aaa-servers               Displays AAA servers
+  alarms                    Display system alarms data
+  backplane                 Displays backplane information
+  cli-alias                 Shows list of all configured aliases
+  clock                     Display clock information
+  commit                    Display current commit confirm activity or running commit by other users and system commit history
+  cprl                      Displays CPRL information and statistics
+  diagnostics               Displays system diagnosis status
+  dns                       Displays DNS configuration
+  event-manager             Displays Event Manager Policies
+  ftp                       Displays FTP server sessions
+  grpc                      Displays gRPC server configuration
+  hardware                  Displays detailed information about the system's hardware
+  icmp                      Displays ICMP information and statistics
+  install                   Displays information about last system installation task
+  integrity-report          Displays system integrity-report generation status
+  ipv4                      Displays ipv4 statistics
+  ldap-servers              Displays LDAP servers
+  logging                   Displays logging information
+  login                     Displays login data
+  ncc                       Displays ncc information
+  ncf                       Displays ncf information
+  ncm                       Displays ncm information
+  ncp                       Displays ncp information
+  netconf                   Displays netconf information
+  npu-resources             Shows system resources usage and statistics
+  nst                       Displays NST information
+  ntp                       Displays network time protocol configuration and status
+  patches                   Displays detailed information about patches in current, revert and target stacks.
+  platform                  Platform information
+  revert-stack              Displays the last last revert-stack pre-check
+  security                  Displays security features
+  sessions                  Displays TCP and UDP sessions per system
+  snmp                      Displays SNMP information
+  ssh                       Displays ssh information
+  stack                     Show current, revert and target stacks.
+  sztp                      Displays SZTP information
+  target-stack              Show target stacks.
+  tech-support              Displays tech-support system config and status
+  telemetry                 Displays Telemetry Dial-Out configuration
+  telnet                    Displays telnet server and client session
+  utilization               Shows system utilization limits
+  version                   Displays system version information
+  yang-schemas              Displays system yang schemas table
+  NCP3-CFM-nog# show system 
+  System Name: NCP3-CFM-nog, System-Id: a0d46e9e-2e2a-4ad3-89fe-fb622f3e772f
+  System Type: SA-36CD-S, Family: NCR
+  Enterprise-Id: 49739
+  Description: DRIVENETS Network Cloud Router
+  System status: running
+  System Start Time: 24-Feb-2026 01:26:22 UTC
+  System Uptime: 2 days, 4:03:06
+  System Boot Uptime: 2 days, 4:03:55
+  Version: DNOS [26.2.0] build [38_priv], Copyright 2025 DRIVENETS LTD.
+  Patch: N/A
+  Environment:
+  Location: N/A
+  Floor: N/A
+  Rack: N/A
+  Contact: support@drivenets.com
+  Fabric Minimum Links: N/A
+  Fabric Minimum NCF: N/A
+  Dynamic Fabric State: N/A
+  NCC switchovers: 0
+  Last NCC switchover: N/A
+  Escalation-stop-failovers
+  Max-failover(remaining): 2(2)
+  -- More -- (Press q to quit)
+
+=== show services performance-monitoring cfm tests DM_CLI_TAB ? ===
+  show services performance-monitoring cfm tests DM_CLI_TAB
+  NCP3-CFM-nog# show services performance-monitoring cfm tests DM_CLI_TAB 
+  -------------------------------------------------------------^
+  ERROR: Unknown word: 'DM_CLI_TAB'.
+  NCP3-CFM-nog#
+
+=== show services performance-monitoring cfm tests session-name DM_CLI_TAB ? ===
+  show services performance-monitoring cfm tests session-name DM_CLI_TAB
+  NCP3-CFM-nog# show services performance-monitoring cfm tests session-name DM_CLI_TAB 
+  -------------------------------------------------------------^
+  ERROR: Unknown word: 'session-name'.
+  NCP3-CFM-nog#
+
+=== show services performance-monitoring cfm ? ===
+  show services performance-monitoring cfm
+  tests
+  NCP3-CFM-nog# show services performance-monitoring cfm 
+  ERROR: Incomplete command.
+  NCP3-CFM-nog#
+DONE

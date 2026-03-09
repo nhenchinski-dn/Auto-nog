@@ -1,0 +1,88 @@
+
+######################################################################
+# TESTING DEVICE: WKY1C7VD00008P2
+######################################################################
+
+--- BC-5: repeat-interval overlap validation ---
+  [FAIL] BC-5: repeat-interval overlap: DEVICE REJECTS overlap config (good behavior) - NOT A BUG
+
+--- BC-7: Profile deletion after session deletion ---
+  Using context: MD=MD-CUST, MA=MA-CUST, MEP=2, target=1
+  Created profile 'BC7_DEL_TEST_PROF' and session 'BC7_DEL_TEST_SESS', committed.
+  Deleted session 'BC7_DEL_TEST_SESS', committed. Now trying to delete profile...
+  [FAIL] BC-7: Profile deletion after session deletion: DEVICE ACCEPTS profile deletion after session removal - NOT A BUG (or fixed)
+
+--- BC-10: Source line with/without direction ---
+  Found MEPs: [('MD-CUST', 'MA-CUST', '2', 'up'), ('MD-CUST1', 'MA-CUST1', '4', 'down')]
+
+  Testing MEP 2 (up) WITHOUT direction keyword...
+  Testing MEP 2 (up) WITH direction up...
+  [FAIL] BC-10: Direction for MEP 2 (up): Both fail - MEP may already be in use. No-dir err: commit check
+ERROR: Source MD MD-CUST MA MA-CUST LMEP 2 in use with session DM_CLI_TAB.
+NCP3-CFM-
+
+--- BC-9: On-demand stop with no active tests ---
+  [PASS] BC-9: Stop with no active tests: Device correctly reports 'no ongoing tests'. Output: request ethernet-oam cfm on-demand stop all
+No ongoing on-demand CFM tests found.
+
+NCP3-CFM-no
+
+--- BC-3: Check for orphaned test profiles ---
+  [FAIL] BC-3: Orphaned test profiles: No orphaned test profiles found. Total profiles: ['DM_PROF_CLI', 'test', 'SLM_PROF_CLI']
+
+======================================================================
+RESULTS SUMMARY: WKY1C7VD00008P2
+======================================================================
+  [CHECK] BC-5: repeat-interval overlap
+  [CHECK] BC-7: Profile deletion after session deletion
+  [CHECK] BC-10: Direction for MEP 2 (up)
+  [OK] BC-9: Stop with no active tests
+  [CHECK] BC-3: Orphaned test profiles
+
+  Bugs confirmed: 0
+  Not bugs: 2
+  Other: 3
+
+######################################################################
+# TESTING DEVICE: xec1e3vr00008
+######################################################################
+
+--- BC-5: repeat-interval overlap validation ---
+  [FAIL] BC-5: repeat-interval overlap: DEVICE REJECTS overlap config (good behavior) - NOT A BUG
+
+--- BC-7: Profile deletion after session deletion ---
+  Using context: MD=MD-CUST, MA=MA-CUST, MEP=1, target=2
+  Created profile 'BC7_DEL_TEST_PROF' and session 'BC7_DEL_TEST_SESS', committed.
+  Deleted session 'BC7_DEL_TEST_SESS', committed. Now trying to delete profile...
+  [FAIL] BC-7: Profile deletion after session deletion: DEVICE ACCEPTS profile deletion after session removal - NOT A BUG (or fixed)
+
+--- BC-10: Source line with/without direction ---
+  Found MEPs: [('MD-CUST', 'MA-CUST', '1', 'up'), ('MD-CUST1', 'MA-CUST1', '3', 'down')]
+
+  Testing MEP 1 (up) WITHOUT direction keyword...
+  Testing MEP 1 (up) WITH direction up...
+  [FAIL] BC-10: Direction for MEP 1 (up): Both fail - MEP may already be in use. No-dir err: commit check
+ERROR: Source MD MD-CUST MA MA-CUST LMEP 1 in use with session DM_CLI_TAB.
+ncpl-cfm-
+
+--- BC-9: On-demand stop with no active tests ---
+  [PASS] BC-9: Stop with no active tests: Device correctly reports 'no ongoing tests'. Output: request ethernet-oam cfm on-demand stop all
+No ongoing on-demand CFM tests found.
+
+ncpl-cfm-no
+
+--- BC-3: Check for orphaned test profiles ---
+  [PASS] BC-3: Orphaned test profiles: BUG CONFIRMED: 1 orphaned profiles found: ['VERIFY_241287']
+
+======================================================================
+RESULTS SUMMARY: xec1e3vr00008
+======================================================================
+  [CHECK] BC-5: repeat-interval overlap
+  [CHECK] BC-7: Profile deletion after session deletion
+  [CHECK] BC-10: Direction for MEP 1 (up)
+  [OK] BC-9: Stop with no active tests
+  [BUG] BC-3: Orphaned test profiles
+
+  Bugs confirmed: 1
+  Not bugs: 2
+  Other: 2

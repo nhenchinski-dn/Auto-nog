@@ -1,0 +1,100 @@
+======================================================================
+SW-243596: Q3D Multicast | ASM Happy Flow
+======================================================================
+
+--- Steps 1-4: Configuration Verification ---
+
+  [PASS] S1: PIM-SM on source interface (ge800-0/0/31)
+
+  [PASS] S1: PIM-SM on receiver interface (ge800-0/0/10)
+
+  [PASS] S2: Static RP 8.8.8.8 with group PIM
+
+  [PASS] S3: PIM enabled on loopback lo1
+
+  [PASS] S4: Multicast rpf-intact enabled
+
+  [PASS] S1: Interface ge800-0/0/31 has IP 3.5.0.1
+
+  [PASS] S1: Interface ge800-0/0/10 has IP 3.5.1.1
+
+  [PASS] S1: Interface lo1 has IP 8.8.8.8
+
+
+--- Steps 5-6: Verify (*,G) Shared Tree ---
+
+  [PASS] S6a: (*,G) shared tree exists for 239.1.1.1
+
+  [PASS] S6b: (*,G) RP address is 8.8.8.8
+
+  [PASS] S6c: (*,G) incoming interface is lo1 (RP)
+
+  [PASS] S6d: (*,G) outgoing interface is ge800-0/0/10 (receiver)
+
+
+--- Steps 7-8: Verify (S,G) SPT Switchover ---
+
+  [FAIL] S8a: (S,G) entry created for (3.5.0.2, 239.1.1.1)
+    Evidence: SPT switchover from RPT
+
+  [FAIL] S8b: (S,G) incoming interface is ge800-0/0/31 (source)
+
+  [FAIL] S8c: (S,G) outgoing interface is ge800-0/0/10 (receiver)
+
+
+--- Step 9: Verify Traffic Forwarding ---
+
+  [FAIL] S9a: Traffic forwarding via (*,G)
+    Evidence: Rate: 0.0 Mbps (via shared tree)
+
+  [FAIL] S9b: Correct IIF (ge800-0/0/31) and OIF (ge800-0/0/10)
+
+  [PASS] S9c: No wrong RPF packets
+    Evidence: Wrong RPF: 0
+
+
+--- Step 10: Validate PIM Neighbors ---
+
+  [PASS] S10a: PIM neighbor on source interface (ge800-0/0/31)
+    Evidence: Neighbor: 3.5.0.2
+
+  [PASS] S10b: PIM neighbor on receiver interface (ge800-0/0/10)
+    Evidence: Neighbor: 3.5.1.2
+
+
+--- System Health ---
+
+  [PASS] SYS: No active system alarms
+    Evidence: 0 alarms
+
+
+======================================================================
+RESULTS SUMMARY - SW-243596 ASM Happy Flow
+======================================================================
+  [+] S1: PIM-SM on source interface (ge800-0/0/31)
+  [+] S1: PIM-SM on receiver interface (ge800-0/0/10)
+  [+] S2: Static RP 8.8.8.8 with group PIM
+  [+] S3: PIM enabled on loopback lo1
+  [+] S4: Multicast rpf-intact enabled
+  [+] S1: Interface ge800-0/0/31 has IP 3.5.0.1
+  [+] S1: Interface ge800-0/0/10 has IP 3.5.1.1
+  [+] S1: Interface lo1 has IP 8.8.8.8
+  [+] S6a: (*,G) shared tree exists for 239.1.1.1
+  [+] S6b: (*,G) RP address is 8.8.8.8
+  [+] S6c: (*,G) incoming interface is lo1 (RP)
+  [+] S6d: (*,G) outgoing interface is ge800-0/0/10 (receiver)
+  [X] S8a: (S,G) entry created for (3.5.0.2, 239.1.1.1) (SPT switchover from RPT)
+  [X] S8b: (S,G) incoming interface is ge800-0/0/31 (source)
+  [X] S8c: (S,G) outgoing interface is ge800-0/0/10 (receiver)
+  [X] S9a: Traffic forwarding via (*,G) (Rate: 0.0 Mbps (via shared tree))
+  [X] S9b: Correct IIF (ge800-0/0/31) and OIF (ge800-0/0/10)
+  [+] S9c: No wrong RPF packets (Wrong RPF: 0)
+  [+] S10a: PIM neighbor on source interface (ge800-0/0/31) (Neighbor: 3.5.0.2)
+  [+] S10b: PIM neighbor on receiver interface (ge800-0/0/10) (Neighbor: 3.5.1.2)
+  [+] SYS: No active system alarms (0 alarms)
+
+Total: 16 PASS / 5 FAIL out of 21
+======================================================================
+
+*** Steps 11-12 require Spirent source stop/resume ***
+*** Tell me when you stop the source traffic for Step 11 ***

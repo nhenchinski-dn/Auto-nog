@@ -1,0 +1,308 @@
+
+######################################################################
+# DEVICE: WKY1C7VD00008P2
+# Using: MD-CUST1/MA-CUST1 MEP 4 -> target 3
+######################################################################
+
+======================================================================
+TEST 1: Threshold violation event (CFM_PROACTIVE_TEST_FAILURE)
+======================================================================
+  Opened logging terminal channel.
+  Created low-threshold DM session (FEAT_LOW_THRESH_S), waiting for probes...
+  Logging channel captured 796 bytes.
+  [   ] [OK] Threshold event generated
+        CFM_PROACTIVE_TEST_FAILURE event detected in logging terminal.
+  [!!!] [BUG] Threshold event missing required fields
+        CFM_PROACTIVE_TEST_FAILURE event is missing: ['test-name', 'test-type', 'md-name', 'ma-name', 'mep-id']
+
+  Session detail:
+    CFM Proactive Two-Way Delay Measurement Session: FEAT_LOW_THRESH_S (Detailed)
+    Test Session: FEAT_LOW_THRESH_S, Session ID: 9
+    Description: Two-Way Delay measurement between MEP 4 and MEP 3
+    Admin state: enabled, Profile: FEAT_LOW_THRESH_P
+    Inform Test Results: enabled
+    Maintenance Domain: MD-CUST1, Maintenance Association: MA-CUST1, MEP-ID: 4
+    Source Interface: ge400-0/0/33.1, Source MAC: 84:40:76:90:cd:15
+    Target: N/A (MEP-ID 3)
+    PCP: N/A
+    Count: 3 probes, Interval: 1 second, Timeout: 2 seconds
+    Overall test duration: 3 seconds, Repeat Interval: 5 seconds
+    Uptime: 0 days, 0:00:27
+    Historical Test Results (Last 10):
+    | Index   | Start Time                | End Time                  | Status     |
+    |---------+---------------------------+---------------------------+------------|
+    | 2681    | 2026-02-26 05:59:34 +0000 | 2026-02-26 05:59:39 +0000 | valid      |
+    | 2682    | 2026-02-26 05:59:44 +0000 | 2026-02-26 05:59:49 +0000 | valid      |
+    | 2683    | 2026-02-26 05:59:54 +0000 |                           | incomplete |
+    Latest Test Results (Index 2683):
+    Start time: 2026-02-26 05:59:54 +0000
+    End time:
+    Measurement validity: incomplete
+    DMM PDUs transmitted: 1
+    DMR PDUs received:    1
+    Success rate:         100.0%
+    Round-trip delay statistics (microseconds):
+    Minimum: 4 usec, Maximum: 4 usec, Average: 4 usec
+    Last delay: 4 usec
+    Delay variation statistics (microseconds):
+    IFDV Average: 0 usec, IFDV Maximum: 0 usec
+    Last jitter: 0 usec
+    NCP3-CFM-nog#
+
+======================================================================
+TEST 2: Profile modification while session is active
+======================================================================
+  Session active. Waiting 5s for initial probes...
+  Baseline indices: ['2688']
+  Modifying profile threshold from 5000 -> 1 (should trigger violation)...
+  Profile modification committed successfully.
+  Post-mod indices: ['2694']
+  [   ] [OK] Profile modification persisted in config
+        Threshold changed to 1 in config.
+
+======================================================================
+TEST 3: SLM session targeting non-existent MAC
+======================================================================
+  SLM_CLI_TAB detail:
+    CFM Proactive Synthetic Loss Measurement Session: SLM_CLI_TAB (Detailed)
+    Test Session: SLM_CLI_TAB, Session ID: 2
+    Description: Synthetic Loss measurement between MEP 2 and MEP 1
+    Admin state: enabled, Profile: SLM_PROF_CLI
+    Inform Test Results: enabled
+    Maintenance Domain: MD-CUST, Maintenance Association: MA-CUST, MEP-ID: 2
+    Source Interface: ge400-0/0/24.100, Source MAC: 84:40:76:90:cd:0c
+    Target: N/A (MEP-ID 1)
+    PCP: 5
+    Count: 5 probes, Interval: 1 second, Timeout: 2 seconds
+    Overall test duration: 5 seconds, Repeat Interval: 10 seconds
+    Uptime: 1 day, 4:24:45
+    Historical Test Results (Last 10):
+    | Index   | Start Time                | End Time                  | Status     |
+    |---------+---------------------------+---------------------------+------------|
+    | 10877   | 2026-02-26 06:01:34 +0000 | 2026-02-26 06:01:40 +0000 | valid      |
+    | 10878   | 2026-02-26 06:01:44 +0000 | 2026-02-26 06:01:50 +0000 | valid      |
+    | 10879   | 2026-02-26 06:01:54 +0000 | 2026-02-26 06:02:00 +0000 | valid      |
+    | 10880   | 2026-02-26 06:02:04 +0000 | 2026-02-26 06:02:10 +0000 | valid      |
+    | 10881   | 2026-02-26 06:02:14 +0000 | 2026-02-26 06:02:20 +0000 | valid      |
+    | 10882   | 2026-02-26 06:02:24 +0000 | 2026-02-26 06:02:30 +0000 | valid      |
+    | 10883   | 2026-02-26 06:02:34 +0000 | 2026-02-26 06:02:40 +0000 | valid      |
+    | 10884   | 2026-02-26 06:02:44 +0000 | 2026-02-26 06:02:50 +0000 | valid      |
+    | 10885   | 2026-02-26 06:02:54 +0000 | 2026-02-26 06:03:00 +0000 | valid      |
+    | 10886   | 2026-02-26 06:03:04 +0000 |                           | incomplete |
+    Latest Test Results (Index 10886):
+    Start time: 2026-02-26 06:03:04 +0000
+    End time:
+    Measurement validity:     incomplete
+    SLM PDUs transmitted:     3
+    SLR PDUs received:        2
+    Remote SLM PDUs received: 2
+    Unacknowledged SLR PDUs:  1
+    Frame loss statistics:
+    Near-end loss count: 0
+    Near-end loss percentage: 0%
+    Far-end loss count: 1
+    Far-end loss percentage: 33.33%
+    Flow counters:
+    Local TXFCl: 2
+    Local RXFCl: 2
+    Last SLR TXFCf: 1
+    Last SLR TXFCb: 54457
+    NCP3-CFM-nog#
+  [!!!] [BUG] SLM far-end loss 33.33% between connected MEPs
+        Far-end loss should be 0% between directly connected MEPs with healthy link.
+
+======================================================================
+TEST 4: On-demand test interference with proactive session
+======================================================================
+  Before on-demand: last 3 indices = [('2684', 'valid'), ('2687', 'valid'), ('2693', 'incomplete')]
+  Running on-demand DM (10 probes)...
+    run ethernet-oam cfm on-demand delay-measurement two-way maintenance-domain MD-CUST maintenance-association MA-CUST target mep-id 1 count 10
+    Transmitted DMM PDUs: 1, Received DMR PDUs: 1
+    Transmitted DMM PDUs: 2, Received DMR PDUs: 2
+    Transmitted DMM PDUs: 3, Received DMR PDUs: 3
+    Transmitted DMM PDUs: 3, Received DMR PDUs: 3
+    Transmitted DMM PDUs: 5, Received DMR PDUs: 5
+    Transmitted DMM PDUs: 6, Received DMR PDUs: 6
+    Transmitted DMM PDUs: 7, Received DMR PDUs: 7
+    Transmitted DMM PDUs: 8, Received DMR PDUs: 8
+    Transmitted DMM PDUs: 9, Received DMR PDUs: 9
+    Transmitted DMM PDUs: 10, Received DMR PDUs: 10
+    Transmitted DMM PDUs: 10, Received DMR PDUs: 10
+    Transmitted DMM PDUs: 10, Received DMR PDUs: 10
+    DMM PDUs transmitted: 10, Valid DMR PDUs received: 10, Success rate is 100.0 percent (10/10)
+    Round-trip-delay (min/avg/max): 13/13/13 usec
+    Jitter: 0 usec, Maximum delay variation: 0 usec
+  After on-demand: last 3 indices = [('2687', 'valid'), ('2693', 'valid'), ('2698', 'invalid')]
+  [!!!] [BUG] On-demand test causes proactive test entries to go invalid
+        Proactive DM indices ['2698'] became 'invalid' during on-demand DM test. On-demand and proactive should not interfere with each other.
+
+======================================================================
+TEST 5: Admin-state disable/enable on DM_CLI_TAB
+======================================================================
+  Before: status=valid, uptime=1 day, 4:47:59
+  Disabling session...
+  Session disabled (or not visible when disabled).
+  Re-enabling session...
+  After re-enable: uptime=0 days, 0:00:15
+  [   ] [OK] Session resumed after admin-state toggle
+        Session back to active. Uptime before: 1 day, 4:47:59, after: 0 days, 0:00:15
+  [   ] [OK] Historic index counter preserved
+        Last index: 2699
+
+======================================================================
+TEST 6: Invalid references and edge cases
+======================================================================
+
+  6a: Session with non-existent profile reference
+  [   ] [OK] Non-existent profile reference rejected at commit
+        Device correctly rejects invalid profile reference.
+
+  6b: Session with non-existent MD
+  [   ] [OK] Non-existent MD/MA/MEP rejected at commit
+        Device correctly rejects invalid CFM context.
+
+  6c: Attempt to create session with duplicate name (DM_CLI_TAB)
+
+  6d: Session name with special characters
+    'test@session': ACCEPTED!
+  [???] [OBSERVATION] Special char session name 'test@session' accepted
+        May cause issues in RESTCONF/YANG path encoding.
+
+[FATAL] WKY1C7VD00008P2: Socket is closed
+Traceback (most recent call last):
+  File "/home/dn/feature_bug_hunt.py", line 676, in main
+    tester.test_invalid_refs(ctx["md"], ctx["ma"], ctx["mep"], ctx["target"])
+  File "/home/dn/feature_bug_hunt.py", line 570, in test_invalid_refs
+    self.run_seq(["exit", "exit", "exit", "exit", "exit"], timeout=5)
+  File "/home/dn/feature_bug_hunt.py", line 30, in run_seq
+    ch.send(cmd + "\n")
+  File "/home/dn/.local/lib/python3.10/site-packages/paramiko/channel.py", line 799, in send
+    return self._send(s, m)
+  File "/home/dn/.local/lib/python3.10/site-packages/paramiko/channel.py", line 1196, in _send
+    raise socket.error("Socket is closed")
+OSError: Socket is closed
+
+######################################################################
+# DEVICE: xec1e3vr00008
+# Using: MD-CUST1/MA-CUST1 MEP 3 -> target 4
+######################################################################
+
+======================================================================
+TEST 1: Threshold violation event (CFM_PROACTIVE_TEST_FAILURE)
+======================================================================
+  Opened logging terminal channel.
+  MEP in use, need to free it first.
+  MEP in use, trying with MD-CUST MEP for threshold test...
+
+======================================================================
+TEST 2: Profile modification while session is active
+======================================================================
+
+======================================================================
+TEST 3: SLM session targeting non-existent MAC
+======================================================================
+  SLM to MAC 22:22:22:22:22:22 detail:
+    CFM Proactive Synthetic Loss Measurement Session: SLM_CLI_TAB_mep3 (Detailed)
+    Test Session: SLM_CLI_TAB_mep3, Session ID: 3
+    Description: Synthetic Loss measurement between MEP 3 and 22:22:22:22:22:22
+    Admin state: enabled, Profile: SLM_PROF_CLI
+    Inform Test Results: enabled
+    Maintenance Domain: MD-CUST1, Maintenance Association: MA-CUST1, MEP-ID: 3
+    Source Interface: ge100-0/0/70.1, Source MAC: 84:40:76:bd:58:22
+    Target: 22:22:22:22:22:22
+    PCP: 5
+    Count: 5 probes, Interval: 1 second, Timeout: 2 seconds
+    Overall test duration: 5 seconds, Repeat Interval: 10 seconds
+    Uptime: 0 days, 23:40:45
+    Historical Test Results (Last 10):
+    | Index   | Start Time                | End Time                  | Status     |
+    |---------+---------------------------+---------------------------+------------|
+    | 17079   | 2025-07-15 07:56:40 +0000 | 2025-07-15 07:56:46 +0000 | valid      |
+    | 17081   | 2025-07-15 07:56:50 +0000 | 2025-07-15 07:56:56 +0000 | valid      |
+    | 17083   | 2025-07-15 07:57:00 +0000 | 2025-07-15 07:57:06 +0000 | valid      |
+    | 17085   | 2025-07-15 07:57:10 +0000 | 2025-07-15 07:57:16 +0000 | valid      |
+    | 17087   | 2025-07-15 07:57:20 +0000 | 2025-07-15 07:57:26 +0000 | valid      |
+    | 17089   | 2025-07-15 07:57:30 +0000 | 2025-07-15 07:57:36 +0000 | valid      |
+    | 17091   | 2025-07-15 07:57:40 +0000 | 2025-07-15 07:57:46 +0000 | valid      |
+    | 17093   | 2025-07-15 07:57:50 +0000 | 2025-07-15 07:57:56 +0000 | valid      |
+    | 17095   | 2025-07-15 07:58:00 +0000 | 2025-07-15 07:58:06 +0000 | valid      |
+    | 17097   | 2025-07-15 07:58:10 +0000 | 2025-07-15 07:58:16 +0000 | valid      |
+    Latest Test Results (Index 17097):
+    Start time: 2025-07-15 07:58:10 +0000
+    End time: 2025-07-15 07:58:16 +0000
+    Measurement validity:     valid
+    SLM PDUs transmitted:     5
+    SLR PDUs received:        0
+    Remote SLM PDUs received: 0
+    Unacknowledged SLR PDUs:  5
+    Frame loss statistics:
+    Near-end loss count: 0
+    Near-end loss percentage: 0%
+    Far-end loss count: 5
+    Far-end loss percentage: 100.0%
+    Flow counters:
+    Local TXFCl: 4
+    Local RXFCl: 0
+    Last SLR TXFCf: 0
+    Last SLR TXFCb: 0
+    ncpl-cfm-nog#
+  [???] [OBSERVATION] SLM to fake MAC: 0 responses received
+        TX=5, RX=0. Session shows ongoing even with 0% success against non-existent MAC.
+  [!!!] [BUG] SLM session reports 'valid' with 0% success to fake MAC
+        Session targeting non-existent MAC 22:22:22:22:22:22 should not report valid status.
+
+======================================================================
+TEST 4: On-demand test interference with proactive session
+======================================================================
+  Before on-demand: last 3 indices = [('17095', 'valid'), ('17097', 'valid'), ('17099', 'incomplete')]
+  Running on-demand DM (10 probes)...
+    run ethernet-oam cfm on-demand delay-measurement two-way maintenance-domain MD-CUST maintenance-association MA-CUST target mep-id 2 count 10
+  After on-demand: last 3 indices = [('17097', 'valid'), ('17099', 'valid'), ('17101', 'incomplete')]
+  [   ] [OK] On-demand test did not interfere with proactive
+        No new invalid entries in proactive session during on-demand test.
+
+======================================================================
+TEST 5: Admin-state disable/enable on DM_CLI_TAB
+======================================================================
+  Before: status=valid, uptime=0 days, 23:05:49
+  Disabling session...
+  Session disabled (or not visible when disabled).
+  Re-enabling session...
+  After re-enable: uptime=0 days, 0:00:16
+  [   ] [OK] Session resumed after admin-state toggle
+        Session back to active. Uptime before: 0 days, 23:05:49, after: 0 days, 0:00:16
+  [   ] [OK] Historic index counter preserved
+        Last index: 17114
+
+======================================================================
+TEST 6: Invalid references and edge cases
+======================================================================
+
+  6a: Session with non-existent profile reference
+  [   ] [OK] Non-existent profile reference rejected at commit
+        Device correctly rejects invalid profile reference.
+
+  6b: Session with non-existent MD
+  [   ] [OK] Non-existent MD/MA/MEP rejected at commit
+        Device correctly rejects invalid CFM context.
+
+  6c: Attempt to create session with duplicate name (DM_CLI_TAB)
+
+  6d: Session name with special characters
+    'test@session': ACCEPTED!
+  [???] [OBSERVATION] Special char session name 'test@session' accepted
+        May cause issues in RESTCONF/YANG path encoding.
+
+[FATAL] xec1e3vr00008: Socket is closed
+Traceback (most recent call last):
+  File "/home/dn/feature_bug_hunt.py", line 676, in main
+    tester.test_invalid_refs(ctx["md"], ctx["ma"], ctx["mep"], ctx["target"])
+  File "/home/dn/feature_bug_hunt.py", line 570, in test_invalid_refs
+    self.run_seq(["exit", "exit", "exit", "exit", "exit"], timeout=5)
+  File "/home/dn/feature_bug_hunt.py", line 30, in run_seq
+    ch.send(cmd + "\n")
+  File "/home/dn/.local/lib/python3.10/site-packages/paramiko/channel.py", line 799, in send
+    return self._send(s, m)
+  File "/home/dn/.local/lib/python3.10/site-packages/paramiko/channel.py", line 1196, in _send
+    raise socket.error("Socket is closed")
+OSError: Socket is closed
