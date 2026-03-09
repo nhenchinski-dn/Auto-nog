@@ -1,0 +1,45 @@
+*5. Scale Limits (Important)*
+
+* Proactive scale:
+* ~1000 (or 1024, to be confirmed) sessions
+* One session per local MA
+* At scale:
+* 1000 SLM + 1000 DM simultaneously is valid
+* Scale testing should include:
+* Verifying sessions actually run and report, not just configure
+* Aggressive intervals (e.g., 1s) to stress the system
+* HA testing on top of scale, not separately
+
+*Test Steps*
+
+# Configure responder MEPs up to 1000 for ETH-DM.
+# Configure responder MEPs up to 1000 for ETH-SLM.
+# Commit and verify responder list size.
+# Under the same MA, attempt to configure two responder sessions for ETH-DM (if supported).
+# Commit and capture validation result.
+# Repeat for ETH-SLM.
+# Remove the extra responder and commit to confirm recovery.
+
+*Pass Criteria*
+
+* Up to 1000 responder sessions per system are accepted for DM and SLM.
+* Only one responder session is allowed per MA for DM and SLM; second session rejected with clear validation error.
+* Responder status shows operational without errors.
+
+*Commands legend*
+
+{noformat}services ethernet-oam connectivity-fault-management maintenance-domains <MD> maintenance-associations <MA> local-mep <ID> interface <IF>{noformat}
+
+*Show commands legend*
+
+{noformat}show services performance-monitoring cfm tests{noformat}
+
+*Variants*
+
+* Distribute responders across multiple MAs.
+* Repeat with DM vs SLM.
+
+*Negative Testing Flows*
+
+* 1001st responder session should fail with explicit validation error.
+* Second responder session for same MA should fail commit.

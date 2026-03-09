@@ -1,0 +1,106 @@
+
+======================================================================
+QA BREAK-IT TESTS v2
+======================================================================
+
+[BASELINE]  [show interfaces bundle-200]  [show pim neighbors | count]  [show pim tree]  [show system alarms]
+  bundle_up=True, neighbors=-1, SG=True, alarms_clean=True
+
+======================================================================
+BT1: Rapid member flapping (5 quick cycles, both members)
+======================================================================
+
+  cycle 1/5: disable...enable...
+  cycle 2/5: disable...enable...
+  cycle 3/5: disable...enable...
+  cycle 4/5: disable...enable...
+  cycle 5/5: disable...enable...
+  waiting 30s stabilize...  [show interfaces bundle-200]  [show system alarms] up=True, alarms_clean=True
+
+  >>> BT1_rapid_flap: PASS up=True, alarms=True
+
+======================================================================
+BT2: Delete bundle-200.2 (OIF) while PIM is active
+======================================================================
+  [show interfaces bundle-200]  [show system alarms]
+  After delete: up=True, alarms_clean=True
+  Re-creating bundle-200.2...
+  [show interfaces bundle-200]  [show pim neighbors | count]  [show system alarms]  After recreate: up=True, neighbors=-1, alarms_clean=True
+
+  >>> BT2_delete_subif: PASS post_del_up=True, post_recreate_up=True
+
+======================================================================
+BT3: Change IP on bundle-200.2 while PIM is active
+======================================================================
+  [show system alarms]  After IP change to 3.5.99.1: alarms_clean=True
+  [show interfaces bundle-200]  [show pim neighbors | count]  [show system alarms]  After restore to 3.5.1.1: up=True, neighbors=-1, alarms_clean=True
+
+  >>> BT3_change_ip: PASS 
+
+======================================================================
+BT4: Rapid PIM enable/disable on bundle-200.2 (5 cycles)
+======================================================================
+  cycle 1/5...  cycle 2/5...  cycle 3/5...  cycle 4/5...  cycle 5/5...  [show interfaces bundle-200]  [show system alarms]
+  After PIM cycling: up=True, alarms_clean=True
+
+  >>> BT4_pim_rapid_cycle: PASS 
+
+======================================================================
+BT5: Try to delete bundle-200 while sub-ifs still configured
+======================================================================
+  commit check rejected: True
+
+  >>> BT5_delete_bundle: PASS (correctly rejected) 
+
+======================================================================
+BT6: Hot-move ge800-0/0/10 from bundle-200 to new bundle-201
+======================================================================
+  commit check error: False
+  [show interfaces bundle-200]  [show interfaces bundle-201]  [show system alarms]  After hot-move: b200_up=True, b201_up=True, alarms_clean=True
+  Moving back...
+  [show interfaces bundle-200]  After move-back: up=True
+
+  >>> BT6_hot_move: PASS b200=True, b201=True
+
+======================================================================
+BT7: Change VLAN ID on bundle-200.2 from 2 to 999 while PIM active
+======================================================================
+  VLAN change commit check error: False
+  [show system alarms]  After VLAN change: alarms_clean=True
+  [show interfaces bundle-200]  [show system alarms]  After restore: up=False, alarms_clean=True
+
+  >>> BT7_change_vlan: PASS 
+
+======================================================================
+BT8: Nuclear option - remove ALL config in single commit, then rebuild
+======================================================================
+  Nuking everything in one commit...
+  [show interfaces bundle-200]  [show system alarms]  After nuke: up=False (expect down), alarms_clean=None
+  Rebuilding from scratch...
+  Waiting 40s for full recovery...
+  [show interfaces bundle-200]  [show pim neighbors | count]  [show pim tree]  [show system alarms]  After rebuild: up=False, neighbors=-1, SG=False, alarms_clean=True
+
+  >>> BT8_nuke_rebuild: ISSUE nuked_down=True, rebuilt_up=False, sg=False
+
+======================================================================
+FINAL HEALTH CHECK
+======================================================================
+  [show interfaces bundle-200]  [show pim neighbors | count]  [show pim tree]  [show system alarms]  Final: bundle_up=False, neighbors=-1, SG=False, alarms_clean=True
+
+======================================================================
+QA BREAK-IT SUMMARY
+======================================================================
+      BT1_rapid_flap: PASS
+      BT2_delete_subif: PASS
+      BT3_change_ip: PASS
+      BT4_pim_rapid_cycle: PASS
+      BT5_delete_bundle: PASS (correctly rejected)
+      BT6_hot_move: PASS
+      BT7_change_vlan: PASS
+  !!! BT8_nuke_rebuild: ISSUE
+
+  ISSUES FOUND: 1
+    [BT8_nuke_rebuild] nuked_down=True, rebuilt_up=False, sg=False
+======================================================================
+
+ALL BREAK TESTS COMPLETE

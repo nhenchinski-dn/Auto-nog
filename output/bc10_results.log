@@ -1,0 +1,15 @@
+
+== WKY1C7VD00008P2: MEP 4 (down) ==
+  NO direction:
+    -> OK
+  WITH direction down:
+    -> ERROR
+       ERROR: Command failed
+
+== xec1e3vr00008: MEP 3 (down) ==
+  NO direction:
+    -> ERROR
+       ERROR: Source MD MD-CUST1 MA MA-CUST1 LMEP 3 in use with session DM_CLI_TAB_mep3.
+  WITH direction down:
+    -> ERROR
+       ERROR: Command failed

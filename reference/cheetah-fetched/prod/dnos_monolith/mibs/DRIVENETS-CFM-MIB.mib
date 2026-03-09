@@ -1,0 +1,1809 @@
+DRIVENETS-CFM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32, Unsigned32
+        FROM SNMPv2-SMI                 -- RFC 2578
+    TEXTUAL-CONVENTION, MacAddress, DateAndTime,
+    DisplayString
+        FROM SNMPv2-TC                  -- RFC 2579
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF                -- RFC 2580
+    dnMibs
+        FROM DRIVENETS-SMI;
+
+-- =====================================================================
+-- MODULE-IDENTITY
+-- =====================================================================
+
+dnCfm MODULE-IDENTITY
+    LAST-UPDATED "202508100000Z"           -- 10 Aug 2025 00:00 UTC
+    ORGANIZATION "DriveNets Ltd."
+    CONTACT-INFO
+        "DriveNets Customer Support
+         E-mail: support@drivenets.com
+         Web:    https://www.drivenets.com"
+    DESCRIPTION
+        "Connectivity-Fault-Management (CFM) MIB for DriveNets NOS.
+         Implements:
+           - IEEE 802.1ag fault-alarm notifications
+           - ITU-T Y.1731 performance monitoring.
+
+         Copyright (c) 2025 DriveNets Ltd.  All rights reserved."
+    REVISION     "202508100000Z"
+    DESCRIPTION
+        "Added support for proactive two-way ETH-DM and ETH-SLM performance
+         monitoring tests."
+    REVISION     "202507130000Z"
+    DESCRIPTION
+        "Initial version supporting IEEE 802.1ag fault alarm notification
+         and Y.1731 performance monitoring objects for on-demand tests."
+    ::= { dnMibs 15 }
+
+-- =====================================================================
+-- OID TOPOLOGY
+-- =====================================================================
+
+dnCfmNotifications OBJECT IDENTIFIER ::= { dnCfm 0 }
+dnCfmObjects       OBJECT IDENTIFIER ::= { dnCfm 1 }
+dnCfmConformance   OBJECT IDENTIFIER ::= { dnCfm 2 }
+
+-- =====================================================================
+-- TEXTUAL CONVENTIONS
+-- =====================================================================
+
+DnCfmNameString ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "Reusable DisplayString for MD/MA names."
+    SYNTAX       DisplayString (SIZE (1..255))
+
+DnCfmMdLevel ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION  "Maintenance Domain level (0..7)."
+    SYNTAX       Integer32 (0..7)
+
+DnCfmMdIndex ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION  "Maintenance Domain index."
+    SYNTAX       Unsigned32
+
+DnCfmMaIndex ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION  "Maintenance Association index (unique within MD)."
+    SYNTAX       Unsigned32
+
+DnCfmMepId ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION  "Maintenance Association End-Point identifier (1..8191)."
+    SYNTAX       Integer32 (1..8191)
+
+DnCfmMepIdOrNone ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "A MEP Identifier (1..8191) or zero.
+         The value 0 indicates 'not applicable or unknown' (e.g., when
+         the remote endpoint is addressed by MAC instead of MEP-ID)."
+    SYNTAX       Integer32 (0..8191)
+
+DnCfmPcp ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "IEEE 802.1p Priority Code Point (PCP). Valid values are 0..7."
+    SYNTAX       Integer32 (0..7)
+
+DnCfmHighestDefectPri ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Highest priority defect observed by a MEP's Fault Notification
+         Generator (FNG).  Priorities (low->high):
+           none(0)          - no defect present
+           defRDICCM(1)     - remote defect indicated by other MEP
+           defMACstatus(2)  - MAC reports transmission disabled
+           defRemoteCCM(3)  - missing CCM from remote MEP
+           defErrorCCM(4)   - invalid CCM received
+           defXconCCM(5)    - CCM received with wrong MA/MD"
+    REFERENCE
+        "IEEE 802.1ag / ITU-T Y.1731 defect and FNG behavior."
+    SYNTAX       INTEGER {
+        none(0),
+        defRDICCM(1),
+        defMACstatus(2),
+        defRemoteCCM(3),
+        defErrorCCM(4),
+        defXconCCM(5)
+    }
+
+DnCfmDelayMeasurementPduCount ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION  "Count of DMM/DMR PDUs."
+    SYNTAX       Unsigned32
+
+DnCfmSyntheticLossPduCount ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION  "Count of SLM/SLR PDUs."
+    SYNTAX       Unsigned32
+
+DnCfmMicroseconds ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION  "Time interval in microseconds."
+    SYNTAX       Unsigned32
+
+DnCfmSeconds ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION  "Time interval in seconds."
+    SYNTAX       Unsigned32
+
+DnPercentHundredths ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d-2"
+    STATUS       current
+    DESCRIPTION  "Percentage in hundredths (two decimal places).
+                  E.g., the value 8030 represents 80.30%."
+    SYNTAX       Unsigned32 (0..10000)
+
+-- =====================================================================
+-- ON-DEMAND DELAY-MEASUREMENT (DM) INFO TABLE (report-only)
+-- =====================================================================
+
+dnCfmOnDemandDmTestInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DnCfmOnDemandDmTestInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Report-only rows describing the active or most-recent on-demand
+         ETH-DM test for a given {MD, MA, MEP}. Rows are created and
+         removed by the agent; SNMP managers cannot configure tests."
+    ::= { dnCfmObjects 1 }
+
+dnCfmOnDemandDmTestInfoEntry OBJECT-TYPE
+    SYNTAX      DnCfmOnDemandDmTestInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An on-demand Delay-Measurement (DM) test (report-only)."
+    INDEX { dnCfmOnDemandDmMdIndex, dnCfmOnDemandDmMaIndex, dnCfmOnDemandDmMepId }
+    ::= { dnCfmOnDemandDmTestInfoTable 1 }
+
+DnCfmOnDemandDmTestInfoEntry ::= SEQUENCE {
+    dnCfmOnDemandDmMdIndex          DnCfmMdIndex,
+    dnCfmOnDemandDmMaIndex          DnCfmMaIndex,
+    dnCfmOnDemandDmMepId            DnCfmMepId,
+    dnCfmOnDemandDmSourceMdName     DnCfmNameString,
+    dnCfmOnDemandDmSourceMaName     DnCfmNameString,
+    dnCfmOnDemandDmTargetType       INTEGER,
+    dnCfmOnDemandDmTargetMacAddress MacAddress,
+    dnCfmOnDemandDmTargetMepId      DnCfmMepIdOrNone,
+    dnCfmOnDemandDmSourceInterface  DisplayString,
+    dnCfmOnDemandDmSourceMacAddress MacAddress,
+    dnCfmOnDemandDmStartTime        DateAndTime,
+    dnCfmOnDemandDmEndTime          DateAndTime,
+    dnCfmOnDemandDmCount            DnCfmDelayMeasurementPduCount,
+    dnCfmOnDemandDmInterval         DnCfmSeconds,
+    dnCfmOnDemandDmTimeout          DnCfmSeconds,
+    dnCfmOnDemandDmPcp              DnCfmPcp
+}
+
+dnCfmOnDemandDmMdIndex OBJECT-TYPE
+    SYNTAX      DnCfmMdIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Domain index."
+    ::= { dnCfmOnDemandDmTestInfoEntry 1 }
+
+dnCfmOnDemandDmMaIndex OBJECT-TYPE
+    SYNTAX      DnCfmMaIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Association index (unique within MD)."
+    ::= { dnCfmOnDemandDmTestInfoEntry 2 }
+
+dnCfmOnDemandDmMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "MEP identifier (1..8191)."
+    ::= { dnCfmOnDemandDmTestInfoEntry 3 }
+
+dnCfmOnDemandDmSourceMdName OBJECT-TYPE
+    SYNTAX      DnCfmNameString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source Maintenance Domain name."
+    ::= { dnCfmOnDemandDmTestInfoEntry 4 }
+
+dnCfmOnDemandDmSourceMaName OBJECT-TYPE
+    SYNTAX      DnCfmNameString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source Maintenance Association name."
+    ::= { dnCfmOnDemandDmTestInfoEntry 5 }
+
+dnCfmOnDemandDmTargetType OBJECT-TYPE
+    SYNTAX      INTEGER { macAddress(1), mepId(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Target address type."
+    ::= { dnCfmOnDemandDmTestInfoEntry 6 }
+
+dnCfmOnDemandDmTargetMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION 
+        "Target MAC address. When dnCfmOnDemandDmTargetType is mepId(2),
+         this object is set to 00:00:00:00:00:00."
+    ::= { dnCfmOnDemandDmTestInfoEntry 7 }
+
+dnCfmOnDemandDmTargetMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepIdOrNone
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Target MEP ID. If TargetType is mepId(2), MUST be 1..8191.
+         If TargetType is macAddress(1), this is 0 unless the agent
+         can unambiguously resolve the remote MEP-ID."
+    ::= { dnCfmOnDemandDmTestInfoEntry 8 }
+
+dnCfmOnDemandDmSourceInterface OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source interface name."
+    ::= { dnCfmOnDemandDmTestInfoEntry 9 }
+
+dnCfmOnDemandDmSourceMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source MAC address."
+    ::= { dnCfmOnDemandDmTestInfoEntry 10 }
+
+dnCfmOnDemandDmStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp encoded per DateAndTime (RFC 2579) for the start time of a test.
+         The agent SHOULD use UTC ('Z'); a timezone offset MAY be supplied."
+    ::= { dnCfmOnDemandDmTestInfoEntry 11 }
+
+dnCfmOnDemandDmEndTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp encoded per DateAndTime (RFC 2579) for the end time of a test.
+         The agent SHOULD use UTC ('Z'); a timezone offset MAY be supplied."
+    ::= { dnCfmOnDemandDmTestInfoEntry 12 }
+
+dnCfmOnDemandDmCount OBJECT-TYPE
+    SYNTAX      DnCfmDelayMeasurementPduCount (1..65535)
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of DMM probes to send."
+    ::= { dnCfmOnDemandDmTestInfoEntry 13 }
+
+dnCfmOnDemandDmInterval OBJECT-TYPE
+    SYNTAX      DnCfmSeconds (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Inter-probe interval."
+    ::= { dnCfmOnDemandDmTestInfoEntry 14 }
+
+dnCfmOnDemandDmTimeout OBJECT-TYPE
+    SYNTAX      DnCfmSeconds (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Timeout awaiting DMR replies."
+    ::= { dnCfmOnDemandDmTestInfoEntry 15 }
+
+dnCfmOnDemandDmPcp OBJECT-TYPE
+    SYNTAX      DnCfmPcp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "802.1p priority for probes."
+    ::= { dnCfmOnDemandDmTestInfoEntry 16 }
+
+-- =====================================================================
+-- ON-DEMAND ETH-DM RESULT TABLE (report-only)
+-- =====================================================================
+
+dnCfmOnDemandDmTestResultsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DnCfmOnDemandDmTestResultsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Results of on-demand ETH-DM tests (report-only). 
+         There is exactly one row per {MD,MA,MEP} reflecting 
+         the most recent test. Subsequent runs overwrite this entry."
+    ::= { dnCfmObjects 2 }
+
+dnCfmOnDemandDmTestResultsEntry OBJECT-TYPE
+    SYNTAX      DnCfmOnDemandDmTestResultsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Statistics for the on-demand ETH-DM test."
+    AUGMENTS    { dnCfmOnDemandDmTestInfoEntry }
+    ::= { dnCfmOnDemandDmTestResultsTable 1 }
+
+DnCfmOnDemandDmTestResultsEntry ::= SEQUENCE {
+    dnCfmOnDemandDmMeasurementValidity   INTEGER,
+    dnCfmOnDemandDmDmmTransmitted        DnCfmDelayMeasurementPduCount,
+    dnCfmOnDemandDmDmrReceived           DnCfmDelayMeasurementPduCount,
+    dnCfmOnDemandDmSuccessRatePercent    DnPercentHundredths,
+    dnCfmOnDemandDmFrameDelayTwoWayMin   DnCfmMicroseconds,
+    dnCfmOnDemandDmFrameDelayTwoWayAvg   DnCfmMicroseconds,
+    dnCfmOnDemandDmFrameDelayTwoWayMax   DnCfmMicroseconds,
+    dnCfmOnDemandDmIfdvTwoWayAvg         DnCfmMicroseconds,
+    dnCfmOnDemandDmIfdvTwoWayMax         DnCfmMicroseconds
+}
+
+dnCfmOnDemandDmMeasurementValidity OBJECT-TYPE
+    SYNTAX      INTEGER { valid(1), invalid(2), incomplete(3) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Validity of the measurement set."
+    ::= { dnCfmOnDemandDmTestResultsEntry 1 }
+
+dnCfmOnDemandDmDmmTransmitted OBJECT-TYPE
+    SYNTAX      DnCfmDelayMeasurementPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of DMM PDUs transmitted."
+    ::= { dnCfmOnDemandDmTestResultsEntry 2 }
+
+dnCfmOnDemandDmDmrReceived OBJECT-TYPE
+    SYNTAX      DnCfmDelayMeasurementPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of valid DMR PDUs received."
+    ::= { dnCfmOnDemandDmTestResultsEntry 3 }
+
+dnCfmOnDemandDmSuccessRatePercent OBJECT-TYPE
+    SYNTAX      DnPercentHundredths
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Success rate = (dnCfmOnDemandDmDmrReceived / dnCfmOnDemandDmDmmTransmitted) x 100.
+         The value reported is the conceptual percent multiplied by 100 and rounded to the
+         nearest integer (i.e., hundredths of a percent; e.g., 95.90% -> 9590)."
+    ::= { dnCfmOnDemandDmTestResultsEntry 4 }
+
+dnCfmOnDemandDmFrameDelayTwoWayMin OBJECT-TYPE
+    SYNTAX      DnCfmMicroseconds
+    UNITS       "microseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Minimum two-way frame delay."
+    ::= { dnCfmOnDemandDmTestResultsEntry 5 }
+
+dnCfmOnDemandDmFrameDelayTwoWayAvg OBJECT-TYPE
+    SYNTAX      DnCfmMicroseconds
+    UNITS       "microseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Average two-way frame delay."
+    ::= { dnCfmOnDemandDmTestResultsEntry 6 }
+
+dnCfmOnDemandDmFrameDelayTwoWayMax OBJECT-TYPE
+    SYNTAX      DnCfmMicroseconds
+    UNITS       "microseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Maximum two-way frame delay."
+    ::= { dnCfmOnDemandDmTestResultsEntry 7 }
+
+dnCfmOnDemandDmIfdvTwoWayAvg OBJECT-TYPE
+    SYNTAX      DnCfmMicroseconds
+    UNITS       "microseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Average two-way IFDV."
+    ::= { dnCfmOnDemandDmTestResultsEntry 8 }
+
+dnCfmOnDemandDmIfdvTwoWayMax OBJECT-TYPE
+    SYNTAX      DnCfmMicroseconds
+    UNITS       "microseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Maximum two-way IFDV."
+    ::= { dnCfmOnDemandDmTestResultsEntry 9 }
+
+-- =====================================================================
+-- ON-DEMAND ETH-SLM INFO TABLE (report-only)
+-- =====================================================================
+
+dnCfmOnDemandSlmTestInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DnCfmOnDemandSlmTestInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Report-only rows describing the active or most-recent on-demand
+         ETH-SLM test for a given {MD, MA, MEP}. Rows are created and
+         removed by the agent; SNMP managers cannot configure tests."
+    ::= { dnCfmObjects 3 }
+
+dnCfmOnDemandSlmTestInfoEntry OBJECT-TYPE
+    SYNTAX      DnCfmOnDemandSlmTestInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An on-demand Synthetic-Loss-Measurement (SLM) test (report-only)."
+    INDEX { dnCfmOnDemandSlmMdIndex, dnCfmOnDemandSlmMaIndex, dnCfmOnDemandSlmMepId }
+    ::= { dnCfmOnDemandSlmTestInfoTable 1 }
+
+DnCfmOnDemandSlmTestInfoEntry ::= SEQUENCE {
+    dnCfmOnDemandSlmMdIndex          DnCfmMdIndex,
+    dnCfmOnDemandSlmMaIndex          DnCfmMaIndex,
+    dnCfmOnDemandSlmMepId            DnCfmMepId,
+    dnCfmOnDemandSlmSourceMdName     DnCfmNameString,
+    dnCfmOnDemandSlmSourceMaName     DnCfmNameString,
+    dnCfmOnDemandSlmTargetType       INTEGER,
+    dnCfmOnDemandSlmTargetMacAddress MacAddress,
+    dnCfmOnDemandSlmTargetMepId      DnCfmMepIdOrNone,
+    dnCfmOnDemandSlmSourceInterface  DisplayString,
+    dnCfmOnDemandSlmSourceMacAddress MacAddress,
+    dnCfmOnDemandSlmStartTime        DateAndTime,
+    dnCfmOnDemandSlmEndTime          DateAndTime,
+    dnCfmOnDemandSlmCount            DnCfmSyntheticLossPduCount,
+    dnCfmOnDemandSlmInterval         DnCfmSeconds,
+    dnCfmOnDemandSlmTimeout          DnCfmSeconds,
+    dnCfmOnDemandSlmPcp              DnCfmPcp
+}
+
+dnCfmOnDemandSlmMdIndex OBJECT-TYPE
+    SYNTAX      DnCfmMdIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Domain index."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 1 }
+
+dnCfmOnDemandSlmMaIndex OBJECT-TYPE
+    SYNTAX      DnCfmMaIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Association index (unique within MD)."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 2 }
+
+dnCfmOnDemandSlmMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "MEP identifier (1..8191)."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 3 }
+
+dnCfmOnDemandSlmSourceMdName OBJECT-TYPE
+    SYNTAX      DnCfmNameString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source Maintenance Domain name."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 4 }
+
+dnCfmOnDemandSlmSourceMaName OBJECT-TYPE
+    SYNTAX      DnCfmNameString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source Maintenance Association name."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 5 }
+
+dnCfmOnDemandSlmTargetType OBJECT-TYPE
+    SYNTAX      INTEGER { macAddress(1), mepId(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Target address type."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 6 }
+
+dnCfmOnDemandSlmTargetMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION 
+        "Target MAC address. When dnCfmOnDemandSlmTargetType is mepId(2),
+         this object is set to 00:00:00:00:00:00."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 7 }
+
+dnCfmOnDemandSlmTargetMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepIdOrNone
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Target MEP ID. If TargetType is mepId(2), MUST be 1..8191.
+         If TargetType is macAddress(1), this is 0 unless the agent
+         can unambiguously resolve the remote MEP-ID."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 8 }
+
+dnCfmOnDemandSlmSourceInterface OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source interface name."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 9 }
+
+dnCfmOnDemandSlmSourceMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source MAC address."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 10 }
+
+dnCfmOnDemandSlmStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp encoded per DateAndTime (RFC 2579) for the start time of a test.
+         The agent SHOULD use UTC ('Z'); a timezone offset MAY be supplied."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 11 }
+
+dnCfmOnDemandSlmEndTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp encoded per DateAndTime (RFC 2579) for the end time of a test.
+         The agent SHOULD use UTC ('Z'); a timezone offset MAY be supplied."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 12 }
+
+dnCfmOnDemandSlmCount OBJECT-TYPE
+    SYNTAX      DnCfmSyntheticLossPduCount (1..65535)
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of SLM probes to send."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 13 }
+
+dnCfmOnDemandSlmInterval OBJECT-TYPE
+    SYNTAX      DnCfmSeconds (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Inter-probe interval."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 14 }
+
+dnCfmOnDemandSlmTimeout OBJECT-TYPE
+    SYNTAX      DnCfmSeconds (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Timeout awaiting SLR replies."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 15 }
+
+dnCfmOnDemandSlmPcp OBJECT-TYPE
+    SYNTAX      DnCfmPcp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "802.1p priority for probes."
+    ::= { dnCfmOnDemandSlmTestInfoEntry 16 }
+
+-- =====================================================================
+-- ON-DEMAND ETH-SLM RESULT TABLE (report-only)
+-- =====================================================================
+
+dnCfmOnDemandSlmTestResultsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DnCfmOnDemandSlmTestResultsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Results of on-demand ETH-SLM tests (report-only).
+         There is exactly one row per {MD,MA,MEP} reflecting
+         the most recent test. Subsequent runs overwrite this entry."
+    ::= { dnCfmObjects 4 }
+
+dnCfmOnDemandSlmTestResultsEntry OBJECT-TYPE
+    SYNTAX      DnCfmOnDemandSlmTestResultsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Statistics for the on-demand ETH-SLM test."
+    AUGMENTS    { dnCfmOnDemandSlmTestInfoEntry }
+    ::= { dnCfmOnDemandSlmTestResultsTable 1 }
+
+DnCfmOnDemandSlmTestResultsEntry ::= SEQUENCE {
+    dnCfmOnDemandSlmMeasurementValidity      INTEGER,
+    dnCfmOnDemandSlmSyntheticLossPdusSent    DnCfmSyntheticLossPduCount,
+    dnCfmOnDemandSlmSyntheticLossPdusReceived DnCfmSyntheticLossPduCount,
+    dnCfmOnDemandSlmSentPdusReceivedByRemoteMep DnCfmSyntheticLossPduCount,
+    dnCfmOnDemandSlmMissingSlr               DnCfmSyntheticLossPduCount,
+    dnCfmOnDemandSlmLocalTxfclValue          Unsigned32,
+    dnCfmOnDemandSlmLocalRxfclValue          Unsigned32,
+    dnCfmOnDemandSlmLastSlrTxfcfTc           Unsigned32,
+    dnCfmOnDemandSlmLastSlrTxfcbTc           Unsigned32,
+    dnCfmOnDemandSlmFrameLossNearEndCount    Unsigned32,
+    dnCfmOnDemandSlmFrameLossNearEndPercent  DnPercentHundredths,
+    dnCfmOnDemandSlmFrameLossFarEndCount     Unsigned32,
+    dnCfmOnDemandSlmFrameLossFarEndPercent   DnPercentHundredths
+}
+
+dnCfmOnDemandSlmMeasurementValidity OBJECT-TYPE
+    SYNTAX      INTEGER { valid(1), invalid(2), incomplete(3) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Validity of the measurement set."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 1 }
+
+dnCfmOnDemandSlmSyntheticLossPdusSent OBJECT-TYPE
+    SYNTAX      DnCfmSyntheticLossPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of SLM PDUs transmitted."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 2 }
+
+dnCfmOnDemandSlmSyntheticLossPdusReceived OBJECT-TYPE
+    SYNTAX      DnCfmSyntheticLossPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of valid SLR PDUs received."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 3 }
+
+dnCfmOnDemandSlmSentPdusReceivedByRemoteMep OBJECT-TYPE
+    SYNTAX      DnCfmSyntheticLossPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of SLM PDUs received by remote MEP."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 4 }
+
+dnCfmOnDemandSlmMissingSlr OBJECT-TYPE
+    SYNTAX      DnCfmSyntheticLossPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of SLR PDUs that were not received from the remote MEP.
+         Calculated as [SLM PDUs sent] - [valid SLR PDUs received] for this 
+         test, or 0 if no SLM were sent."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 5 }
+
+dnCfmOnDemandSlmLocalTxfclValue OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Local TXFCl value."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 6 }
+
+dnCfmOnDemandSlmLocalRxfclValue OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Local RXFCl value."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 7 }
+
+dnCfmOnDemandSlmLastSlrTxfcfTc OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Last received SLR TXFCf(tc) value."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 8 }
+
+dnCfmOnDemandSlmLastSlrTxfcbTc OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Last received SLR TXFCb(tc) value."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 9 }
+
+dnCfmOnDemandSlmFrameLossNearEndCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Near-end frame loss count."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 10 }
+
+dnCfmOnDemandSlmFrameLossNearEndPercent OBJECT-TYPE
+    SYNTAX      DnPercentHundredths
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Near-end frame loss percentage.
+         The value reported is the conceptual percent multiplied by 100 and rounded to the
+         nearest integer (i.e., hundredths of a percent; e.g., 95.90% -> 9590)."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 11 }
+
+dnCfmOnDemandSlmFrameLossFarEndCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Far-end frame loss count."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 12 }
+
+dnCfmOnDemandSlmFrameLossFarEndPercent OBJECT-TYPE
+    SYNTAX      DnPercentHundredths
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Far-end frame loss percentage.
+         The value reported is the conceptual percent multiplied by 100 and rounded to the
+         nearest integer (i.e., hundredths of a percent; e.g., 95.90% -> 9590)."
+    ::= { dnCfmOnDemandSlmTestResultsEntry 13 }
+
+-- =====================================================================
+-- TRAP PARAMETER SCALARS (used only in notifications)
+-- =====================================================================
+
+dnCfmTrapMdLevel OBJECT-TYPE
+    SYNTAX      DnCfmMdLevel
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Maintenance Domain level (0..7) associated with the notification."
+    ::= { dnCfmObjects 5 }
+
+dnCfmTrapMdName OBJECT-TYPE
+    SYNTAX      DnCfmNameString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "MD name associated with a CFM notification."
+    ::= { dnCfmObjects 6 }
+
+dnCfmTrapMaName OBJECT-TYPE
+    SYNTAX      DnCfmNameString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "MA name associated with a CFM notification (unique within MD)."
+    ::= { dnCfmObjects 7 }
+
+
+dnCfmTrapHighestDefectPri OBJECT-TYPE
+    SYNTAX      DnCfmHighestDefectPri
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Highest-priority defect reported in a CFM notification.
+         For dnCfmFaultAlarmCleared this MUST be none(0)."
+    ::= { dnCfmObjects 8 }
+
+-- =====================================================================
+-- TRAP PARAMETERS FOR THRESHOLD VIOLATIONS
+-- =====================================================================
+
+dnCfmTrapThresholdType OBJECT-TYPE
+    SYNTAX      INTEGER {
+        frameDelayTwoWayMin(1),
+        frameDelayTwoWayAvg(2),
+        frameDelayTwoWayMax(3),
+        ifdvTwoWayAvg(4),
+        ifdvTwoWayMax(5),
+        successRatePercent(6),
+        frameLossNearEndPercent(7),
+        frameLossFarEndPercent(8)
+    }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Type of performance monitoring threshold that was violated:
+           - frameDelayTwoWayMin/Avg/Max: ETH-DM delay thresholds
+           - ifdvTwoWayAvg/Max: ETH-DM jitter thresholds
+           - successRatePercent: ETH-DM success rate threshold
+           - frameLossNearEndPercent: ETH-SLM near-end loss threshold
+           - frameLossFarEndPercent: ETH-SLM far-end loss threshold"
+    ::= { dnCfmObjects 9 }
+
+dnCfmTrapThresholdValue OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Configured threshold value that was violated. Units depend on
+         dnCfmTrapThresholdType:
+           - microseconds for frameDelayTwoWayMin/Avg/Max (types 1-3)
+           - microseconds for ifdvTwoWayAvg/Max (types 4-5)
+           - hundredths of percent for successRatePercent (type 6)
+           - hundredths of percent for frameLossNearEndPercent/FarEndPercent (types 7-8)"
+    ::= { dnCfmObjects 10 }
+
+dnCfmTrapMeasuredValue OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Measured value that violated the threshold. Units depend on
+         dnCfmTrapThresholdType:
+           - microseconds for frameDelayTwoWayMin/Avg/Max (types 1-3)
+           - microseconds for ifdvTwoWayAvg/Max (types 4-5)
+           - hundredths of percent for successRatePercent (type 6)
+           - hundredths of percent for frameLossNearEndPercent/FarEndPercent (types 7-8)"
+    ::= { dnCfmObjects 11 }
+
+dnCfmTrapMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepId
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "MEP identifier associated with a CFM proactive test failure
+         notification. This identifies the source MEP that detected
+         the threshold violation."
+    ::= { dnCfmObjects 12 }
+
+dnCfmTrapSessionType OBJECT-TYPE
+    SYNTAX      INTEGER { ethDm(1), ethSlm(2) }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Type of proactive test session that detected the threshold violation:
+           ethDm(1)  - Delay Measurement (ETH-DM) session
+           ethSlm(2) - Synthetic Loss Measurement (ETH-SLM) session"
+    ::= { dnCfmObjects 13 }
+
+dnCfmTrapSessionId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Session identifier of the proactive test that detected the
+         threshold violation. This is either an ETH-DM or ETH-SLM session ID
+         depending on dnCfmTrapSessionType."
+    ::= { dnCfmObjects 14 }
+
+-- =====================================================================
+-- PROACTIVE ETH-DM SESSION TABLE (report-only)
+-- =====================================================================
+
+dnCfmProactiveDmSessionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DnCfmProactiveDmSessionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Proactive ETH-DM test sessions state (report-only)."
+    ::= { dnCfmObjects 15 }
+
+dnCfmProactiveDmSessionEntry OBJECT-TYPE
+    SYNTAX      DnCfmProactiveDmSessionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A proactive Delay-Measurement session (report-only).
+         Rows are created and removed by the agent; SNMP managers
+         cannot create or destroy sessions via SET operations."
+    INDEX { dnCfmProactiveDmMdIndex, dnCfmProactiveDmMaIndex, dnCfmProactiveDmMepId,
+            dnCfmProactiveDmSessionId }
+    ::= { dnCfmProactiveDmSessionTable 1 }
+
+DnCfmProactiveDmSessionEntry ::= SEQUENCE {
+    dnCfmProactiveDmMdIndex             DnCfmMdIndex,
+    dnCfmProactiveDmMaIndex             DnCfmMaIndex,
+    dnCfmProactiveDmMepId               DnCfmMepId,
+    dnCfmProactiveDmSessionId           Unsigned32,
+    dnCfmProactiveDmSourceMdName        DnCfmNameString,
+    dnCfmProactiveDmSourceMaName        DnCfmNameString,
+    dnCfmProactiveDmTargetType          INTEGER,
+    dnCfmProactiveDmTargetMacAddress    MacAddress,
+    dnCfmProactiveDmTargetMepId         DnCfmMepIdOrNone,
+    dnCfmProactiveDmSourceInterface     DisplayString,
+    dnCfmProactiveDmSourceMacAddress    MacAddress,
+    dnCfmProactiveDmComputationInterval DnCfmSeconds,
+    dnCfmProactiveDmCount               DnCfmDelayMeasurementPduCount,
+    dnCfmProactiveDmInterval            DnCfmSeconds,
+    dnCfmProactiveDmTimeout             DnCfmSeconds,
+    dnCfmProactiveDmPcp                 DnCfmPcp
+}
+
+dnCfmProactiveDmMdIndex OBJECT-TYPE
+    SYNTAX      DnCfmMdIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Domain index."
+    ::= { dnCfmProactiveDmSessionEntry 1 }
+
+dnCfmProactiveDmMaIndex OBJECT-TYPE
+    SYNTAX      DnCfmMaIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Association index (unique within MD)."
+    ::= { dnCfmProactiveDmSessionEntry 2 }
+
+dnCfmProactiveDmMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "MEP identifier (1..8191)."
+    ::= { dnCfmProactiveDmSessionEntry 3 }
+
+dnCfmProactiveDmSessionId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Delay Measurement session identifier."
+    ::= { dnCfmProactiveDmSessionEntry 4 }
+
+dnCfmProactiveDmSourceMdName OBJECT-TYPE
+    SYNTAX      DnCfmNameString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source Maintenance Domain name."
+    ::= { dnCfmProactiveDmSessionEntry 5 }
+
+dnCfmProactiveDmSourceMaName OBJECT-TYPE
+    SYNTAX      DnCfmNameString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source Maintenance Association name."
+    ::= { dnCfmProactiveDmSessionEntry 6 }
+
+dnCfmProactiveDmTargetType OBJECT-TYPE
+    SYNTAX      INTEGER { macAddress(1), mepId(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Target address type."
+    ::= { dnCfmProactiveDmSessionEntry 7 }
+
+dnCfmProactiveDmTargetMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Target MAC address. When dnCfmProactiveDmTargetType is mepId(2),
+         this object is set to 00:00:00:00:00:00."
+    ::= { dnCfmProactiveDmSessionEntry 8 }
+
+dnCfmProactiveDmTargetMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepIdOrNone
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Target MEP ID. If TargetType is mepId(2), MUST be 1..8191.
+         If TargetType is macAddress(1), this is 0 unless the agent
+         can unambiguously resolve the remote MEP-ID."
+    ::= { dnCfmProactiveDmSessionEntry 9 }
+
+dnCfmProactiveDmSourceInterface OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source interface name."
+    ::= { dnCfmProactiveDmSessionEntry 10 }
+
+dnCfmProactiveDmSourceMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source MAC address."
+    ::= { dnCfmProactiveDmSessionEntry 11 }
+
+dnCfmProactiveDmComputationInterval OBJECT-TYPE
+    SYNTAX      DnCfmSeconds
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Computation interval."
+    ::= { dnCfmProactiveDmSessionEntry 12 }
+
+dnCfmProactiveDmCount OBJECT-TYPE
+    SYNTAX      DnCfmDelayMeasurementPduCount (1..65535)
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of probes per computation interval."
+    ::= { dnCfmProactiveDmSessionEntry 13 }
+
+dnCfmProactiveDmInterval OBJECT-TYPE
+    SYNTAX      DnCfmSeconds (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Inter-probe interval."
+    ::= { dnCfmProactiveDmSessionEntry 14 }
+
+dnCfmProactiveDmTimeout OBJECT-TYPE
+    SYNTAX      DnCfmSeconds (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Timeout awaiting DMR replies."
+    ::= { dnCfmProactiveDmSessionEntry 15 }
+
+dnCfmProactiveDmPcp OBJECT-TYPE
+    SYNTAX      DnCfmPcp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "802.1p priority for probes."
+    ::= { dnCfmProactiveDmSessionEntry 16 }
+
+-- =====================================================================
+-- PROACTIVE ETH-DM RESULT TABLE (report-only)
+-- =====================================================================
+
+dnCfmProactiveDmResultTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DnCfmProactiveDmResultEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Results for proactive ETH-DM test sessions (report-only)."
+    ::= { dnCfmObjects 16 }
+
+dnCfmProactiveDmResultEntry OBJECT-TYPE
+    SYNTAX      DnCfmProactiveDmResultEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A set of ETH-DM statistics for one computation interval (report-only)."
+    INDEX { dnCfmProactiveDmResultMdIndex, dnCfmProactiveDmResultMaIndex, dnCfmProactiveDmResultMepId,
+            dnCfmProactiveDmResultSessionId, dnCfmProactiveDmResultIndex }
+    ::= { dnCfmProactiveDmResultTable 1 }
+
+DnCfmProactiveDmResultEntry ::= SEQUENCE {
+    dnCfmProactiveDmResultMdIndex           DnCfmMdIndex,
+    dnCfmProactiveDmResultMaIndex           DnCfmMaIndex,
+    dnCfmProactiveDmResultMepId             DnCfmMepId,
+    dnCfmProactiveDmResultSessionId         Unsigned32,
+    dnCfmProactiveDmResultIndex             Unsigned32,
+    dnCfmProactiveDmStartTime               DateAndTime,
+    dnCfmProactiveDmEndTime                 DateAndTime,
+    dnCfmProactiveDmMeasurementValidity     INTEGER,
+    dnCfmProactiveDmDmmTransmitted          DnCfmDelayMeasurementPduCount,
+    dnCfmProactiveDmDmrReceived             DnCfmDelayMeasurementPduCount,
+    dnCfmProactiveDmSuccessRatePercent      DnPercentHundredths,
+    dnCfmProactiveDmFrameDelayTwoWayMin     DnCfmMicroseconds,
+    dnCfmProactiveDmFrameDelayTwoWayAvg     DnCfmMicroseconds,
+    dnCfmProactiveDmFrameDelayTwoWayMax     DnCfmMicroseconds,
+    dnCfmProactiveDmIfdvTwoWayAvg           DnCfmMicroseconds,
+    dnCfmProactiveDmIfdvTwoWayMax           DnCfmMicroseconds
+}
+
+dnCfmProactiveDmResultMdIndex OBJECT-TYPE
+    SYNTAX      DnCfmMdIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Domain index."
+    ::= { dnCfmProactiveDmResultEntry 1 }
+
+dnCfmProactiveDmResultMaIndex OBJECT-TYPE
+    SYNTAX      DnCfmMaIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Association index."
+    ::= { dnCfmProactiveDmResultEntry 2 }
+
+dnCfmProactiveDmResultMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "MEP identifier."
+    ::= { dnCfmProactiveDmResultEntry 3 }
+
+dnCfmProactiveDmResultSessionId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Delay Measurement session identifier."
+    ::= { dnCfmProactiveDmResultEntry 4 }
+
+dnCfmProactiveDmResultIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..9)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Measurement result index for this computation interval.
+         The index increments for each completed computation interval
+         and wraps at the fixed maximum of the last 10 results.
+         Older results are aged out when the maximum limit is reached."
+    ::= { dnCfmProactiveDmResultEntry 5 }
+
+dnCfmProactiveDmStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION 
+        "Timestamp encoded per DateAndTime (RFC 2579) for the start of a computation interval. 
+         The agent SHOULD use UTC ('Z'); a timezone offset MAY be supplied."
+    ::= { dnCfmProactiveDmResultEntry 6 }
+
+dnCfmProactiveDmEndTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION 
+        "Timestamp encoded per DateAndTime (RFC 2579) for the end of a computation interval. 
+         The agent SHOULD use UTC ('Z'); a timezone offset MAY be supplied."
+    ::= { dnCfmProactiveDmResultEntry 7 }
+
+dnCfmProactiveDmMeasurementValidity OBJECT-TYPE
+    SYNTAX      INTEGER { valid(1), invalid(2), incomplete(3) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Validity of the measurement set."
+    ::= { dnCfmProactiveDmResultEntry 8 }
+
+dnCfmProactiveDmDmmTransmitted OBJECT-TYPE
+    SYNTAX      DnCfmDelayMeasurementPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of DMM PDUs transmitted."
+    ::= { dnCfmProactiveDmResultEntry 9 }
+
+dnCfmProactiveDmDmrReceived OBJECT-TYPE
+    SYNTAX      DnCfmDelayMeasurementPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of valid DMR PDUs received."
+    ::= { dnCfmProactiveDmResultEntry 10 }
+
+dnCfmProactiveDmSuccessRatePercent OBJECT-TYPE
+    SYNTAX      DnPercentHundredths
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Success rate = (dnCfmProactiveDmDmrReceived / dnCfmProactiveDmDmmTransmitted) x 100.
+         The value reported is the conceptual percent multiplied by 100 and rounded to the 
+         nearest integer (i.e., hundredths of a percent; e.g., 95.90% -> 9590)."
+    ::= { dnCfmProactiveDmResultEntry 11 }
+
+dnCfmProactiveDmFrameDelayTwoWayMin OBJECT-TYPE
+    SYNTAX      DnCfmMicroseconds
+    UNITS       "microseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Minimum two-way frame delay."
+    ::= { dnCfmProactiveDmResultEntry 12 }
+
+dnCfmProactiveDmFrameDelayTwoWayAvg OBJECT-TYPE
+    SYNTAX      DnCfmMicroseconds
+    UNITS       "microseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Average two-way frame delay."
+    ::= { dnCfmProactiveDmResultEntry 13 }
+
+dnCfmProactiveDmFrameDelayTwoWayMax OBJECT-TYPE
+    SYNTAX      DnCfmMicroseconds
+    UNITS       "microseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Maximum two-way frame delay."
+    ::= { dnCfmProactiveDmResultEntry 14 }
+
+dnCfmProactiveDmIfdvTwoWayAvg OBJECT-TYPE
+    SYNTAX      DnCfmMicroseconds
+    UNITS       "microseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Average two-way Inter-Frame Delay Variation (IFDV)."
+    ::= { dnCfmProactiveDmResultEntry 15 }
+
+dnCfmProactiveDmIfdvTwoWayMax OBJECT-TYPE
+    SYNTAX      DnCfmMicroseconds
+    UNITS       "microseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Maximum two-way IFDV."
+    ::= { dnCfmProactiveDmResultEntry 16 }
+
+-- =====================================================================
+-- PROACTIVE ETH-SLM SESSION TABLE (report-only)
+-- =====================================================================
+
+dnCfmProactiveSlmSessionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DnCfmProactiveSlmSessionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Proactive ETH-SLM test sessions state (report-only)."
+    ::= { dnCfmObjects 17 }
+
+dnCfmProactiveSlmSessionEntry OBJECT-TYPE
+    SYNTAX      DnCfmProactiveSlmSessionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A proactive Synthetic-Loss-Measurement session (report-only).
+         Rows are created and removed by the agent; SNMP managers
+         cannot create or destroy sessions via SET operations."
+    INDEX { dnCfmProactiveSlmMdIndex, dnCfmProactiveSlmMaIndex, dnCfmProactiveSlmMepId,
+            dnCfmProactiveSlmSessionId }
+    ::= { dnCfmProactiveSlmSessionTable 1 }
+
+DnCfmProactiveSlmSessionEntry ::= SEQUENCE {
+    dnCfmProactiveSlmMdIndex             DnCfmMdIndex,
+    dnCfmProactiveSlmMaIndex             DnCfmMaIndex,
+    dnCfmProactiveSlmMepId               DnCfmMepId,
+    dnCfmProactiveSlmSessionId           Unsigned32,
+    dnCfmProactiveSlmSourceMdName        DnCfmNameString,
+    dnCfmProactiveSlmSourceMaName        DnCfmNameString,
+    dnCfmProactiveSlmTargetType          INTEGER,
+    dnCfmProactiveSlmTargetMacAddress    MacAddress,
+    dnCfmProactiveSlmTargetMepId         DnCfmMepIdOrNone,
+    dnCfmProactiveSlmSourceInterface     DisplayString,
+    dnCfmProactiveSlmSourceMacAddress    MacAddress,
+    dnCfmProactiveSlmComputationInterval DnCfmSeconds,
+    dnCfmProactiveSlmCount               DnCfmSyntheticLossPduCount,
+    dnCfmProactiveSlmInterval            DnCfmSeconds,
+    dnCfmProactiveSlmTimeout             DnCfmSeconds,
+    dnCfmProactiveSlmPcp                 DnCfmPcp
+}
+
+dnCfmProactiveSlmMdIndex OBJECT-TYPE
+    SYNTAX      DnCfmMdIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Domain index."
+    ::= { dnCfmProactiveSlmSessionEntry 1 }
+
+dnCfmProactiveSlmMaIndex OBJECT-TYPE
+    SYNTAX      DnCfmMaIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Association index (unique within MD)."
+    ::= { dnCfmProactiveSlmSessionEntry 2 }
+
+dnCfmProactiveSlmMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "MEP identifier (1..8191)."
+    ::= { dnCfmProactiveSlmSessionEntry 3 }
+
+dnCfmProactiveSlmSessionId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Synthetic Loss Measurement session identifier."
+    ::= { dnCfmProactiveSlmSessionEntry 4 }
+
+dnCfmProactiveSlmSourceMdName OBJECT-TYPE
+    SYNTAX      DnCfmNameString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source Maintenance Domain name."
+    ::= { dnCfmProactiveSlmSessionEntry 5 }
+
+dnCfmProactiveSlmSourceMaName OBJECT-TYPE
+    SYNTAX      DnCfmNameString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source Maintenance Association name."
+    ::= { dnCfmProactiveSlmSessionEntry 6 }
+
+dnCfmProactiveSlmTargetType OBJECT-TYPE
+    SYNTAX      INTEGER { macAddress(1), mepId(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Target address type."
+    ::= { dnCfmProactiveSlmSessionEntry 7 }
+
+dnCfmProactiveSlmTargetMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Target MAC address. When dnCfmProactiveSlmTargetType is mepId(2),
+         this object is set to 00:00:00:00:00:00."
+    ::= { dnCfmProactiveSlmSessionEntry 8 }
+
+dnCfmProactiveSlmTargetMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepIdOrNone
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Target MEP ID. If TargetType is mepId(2), MUST be 1..8191.
+         If TargetType is macAddress(1), this is 0 unless the agent
+         can unambiguously resolve the remote MEP-ID."
+    ::= { dnCfmProactiveSlmSessionEntry 9 }
+
+dnCfmProactiveSlmSourceInterface OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source interface name."
+    ::= { dnCfmProactiveSlmSessionEntry 10 }
+
+dnCfmProactiveSlmSourceMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Source MAC address."
+    ::= { dnCfmProactiveSlmSessionEntry 11 }
+
+dnCfmProactiveSlmComputationInterval OBJECT-TYPE
+    SYNTAX      DnCfmSeconds
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Computation interval."
+    ::= { dnCfmProactiveSlmSessionEntry 12 }
+
+dnCfmProactiveSlmCount OBJECT-TYPE
+    SYNTAX      DnCfmSyntheticLossPduCount (1..65535)
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of SLM probes per computation interval."
+    ::= { dnCfmProactiveSlmSessionEntry 13 }
+
+dnCfmProactiveSlmInterval OBJECT-TYPE
+    SYNTAX      DnCfmSeconds (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Inter-probe interval."
+    ::= { dnCfmProactiveSlmSessionEntry 14 }
+
+dnCfmProactiveSlmTimeout OBJECT-TYPE
+    SYNTAX      DnCfmSeconds (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Timeout awaiting SLR replies."
+    ::= { dnCfmProactiveSlmSessionEntry 15 }
+
+dnCfmProactiveSlmPcp OBJECT-TYPE
+    SYNTAX      DnCfmPcp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "802.1p priority for probes."
+    ::= { dnCfmProactiveSlmSessionEntry 16 }
+
+-- =====================================================================
+-- PROACTIVE ETH-SLM RESULT TABLE (report-only)
+-- =====================================================================
+
+dnCfmProactiveSlmResultTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DnCfmProactiveSlmResultEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Results for proactive ETH-SLM test sessions (report-only)."
+    ::= { dnCfmObjects 18 }
+
+dnCfmProactiveSlmResultEntry OBJECT-TYPE
+    SYNTAX      DnCfmProactiveSlmResultEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A set of ETH-SLM statistics for one computation interval (report-only)."
+    INDEX { dnCfmProactiveSlmResultMdIndex, dnCfmProactiveSlmResultMaIndex, dnCfmProactiveSlmResultMepId,
+            dnCfmProactiveSlmResultSessionId, dnCfmProactiveSlmResultIndex }
+    ::= { dnCfmProactiveSlmResultTable 1 }
+
+DnCfmProactiveSlmResultEntry ::= SEQUENCE {
+    dnCfmProactiveSlmResultMdIndex                  DnCfmMdIndex,
+    dnCfmProactiveSlmResultMaIndex                  DnCfmMaIndex,
+    dnCfmProactiveSlmResultMepId                    DnCfmMepId,
+    dnCfmProactiveSlmResultSessionId                Unsigned32,
+    dnCfmProactiveSlmResultIndex                    Unsigned32,
+    dnCfmProactiveSlmStartTime                      DateAndTime,
+    dnCfmProactiveSlmEndTime                        DateAndTime,
+    dnCfmProactiveSlmMeasurementValidity            INTEGER,
+    dnCfmProactiveSlmSyntheticLossPdusSent          DnCfmSyntheticLossPduCount,
+    dnCfmProactiveSlmSyntheticLossPdusReceived      DnCfmSyntheticLossPduCount,
+    dnCfmProactiveSlmSentPdusReceivedByRemoteMep    DnCfmSyntheticLossPduCount,
+    dnCfmProactiveSlmMissingSlr                     DnCfmSyntheticLossPduCount,
+    dnCfmProactiveSlmLocalTxfclValue                Unsigned32,
+    dnCfmProactiveSlmLocalRxfclValue                Unsigned32,
+    dnCfmProactiveSlmLastSlrTxfcfTc                 Unsigned32,
+    dnCfmProactiveSlmLastSlrTxfcbTc                 Unsigned32,
+    dnCfmProactiveSlmFrameLossNearEndCount          Unsigned32,
+    dnCfmProactiveSlmFrameLossNearEndPercent        DnPercentHundredths,
+    dnCfmProactiveSlmFrameLossFarEndCount           Unsigned32,
+    dnCfmProactiveSlmFrameLossFarEndPercent         DnPercentHundredths
+}
+
+dnCfmProactiveSlmResultMdIndex OBJECT-TYPE
+    SYNTAX      DnCfmMdIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Domain index."
+    ::= { dnCfmProactiveSlmResultEntry 1 }
+
+dnCfmProactiveSlmResultMaIndex OBJECT-TYPE
+    SYNTAX      DnCfmMaIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Maintenance Association index."
+    ::= { dnCfmProactiveSlmResultEntry 2 }
+
+dnCfmProactiveSlmResultMepId OBJECT-TYPE
+    SYNTAX      DnCfmMepId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "MEP identifier."
+    ::= { dnCfmProactiveSlmResultEntry 3 }
+
+dnCfmProactiveSlmResultSessionId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Synthetic Loss Measurement session identifier."
+    ::= { dnCfmProactiveSlmResultEntry 4 }
+
+dnCfmProactiveSlmResultIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..9)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Measurement result index for this computation interval.
+         The index increments for each completed computation interval
+         and wraps at the fixed maximum of the last 10 results.
+         Older results are aged out when the maximum limit is reached."
+    ::= { dnCfmProactiveSlmResultEntry 5 }
+
+dnCfmProactiveSlmStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION 
+        "Timestamp encoded per DateAndTime (RFC 2579) for the start of a computation interval. 
+         The agent SHOULD use UTC ('Z'); a timezone offset MAY be supplied."
+    ::= { dnCfmProactiveSlmResultEntry 6 }
+
+dnCfmProactiveSlmEndTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION 
+        "Timestamp encoded per DateAndTime (RFC 2579) for the end of a computation interval. 
+         The agent SHOULD use UTC ('Z'); a timezone offset MAY be supplied."
+    ::= { dnCfmProactiveSlmResultEntry 7 }
+
+dnCfmProactiveSlmMeasurementValidity OBJECT-TYPE
+    SYNTAX      INTEGER { valid(1), invalid(2), incomplete(3) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Validity of the measurement set."
+    ::= { dnCfmProactiveSlmResultEntry 8 }
+
+dnCfmProactiveSlmSyntheticLossPdusSent OBJECT-TYPE
+    SYNTAX      DnCfmSyntheticLossPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of SLM PDUs transmitted."
+    ::= { dnCfmProactiveSlmResultEntry 9 }
+
+dnCfmProactiveSlmSyntheticLossPdusReceived OBJECT-TYPE
+    SYNTAX      DnCfmSyntheticLossPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of valid SLR PDUs received."
+    ::= { dnCfmProactiveSlmResultEntry 10 }
+
+dnCfmProactiveSlmSentPdusReceivedByRemoteMep OBJECT-TYPE
+    SYNTAX      DnCfmSyntheticLossPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Number of SLM PDUs received by remote MEP."
+    ::= { dnCfmProactiveSlmResultEntry 11 }
+
+dnCfmProactiveSlmMissingSlr OBJECT-TYPE
+    SYNTAX      DnCfmSyntheticLossPduCount
+    UNITS       "PDUs"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of SLR PDUs that were not received from the remote MEP.
+         Calculated as [SLM PDUs sent] - [valid SLR PDUs received] for this 
+         computation interval, or 0 if no SLM were sent."
+    ::= { dnCfmProactiveSlmResultEntry 12 }
+
+dnCfmProactiveSlmLocalTxfclValue OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Local TXFCl value."
+    ::= { dnCfmProactiveSlmResultEntry 13 }
+
+dnCfmProactiveSlmLocalRxfclValue OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Local RXFCl value."
+    ::= { dnCfmProactiveSlmResultEntry 14 }
+
+dnCfmProactiveSlmLastSlrTxfcfTc OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Last received SLR TXFCf(tc) value."
+    ::= { dnCfmProactiveSlmResultEntry 15 }
+
+dnCfmProactiveSlmLastSlrTxfcbTc OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Last received SLR TXFCb(tc) value."
+    ::= { dnCfmProactiveSlmResultEntry 16 }
+
+dnCfmProactiveSlmFrameLossNearEndCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Near-end frame loss count."
+    ::= { dnCfmProactiveSlmResultEntry 17 }
+
+dnCfmProactiveSlmFrameLossNearEndPercent OBJECT-TYPE
+    SYNTAX      DnPercentHundredths
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Near-end frame loss percentage.
+         The value reported is the conceptual percent multiplied by 100 and rounded to the 
+         nearest integer (i.e., hundredths of a percent; e.g., 95.90% -> 9590)."
+    ::= { dnCfmProactiveSlmResultEntry 18 }
+
+dnCfmProactiveSlmFrameLossFarEndCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "frames"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Far-end frame loss count."
+    ::= { dnCfmProactiveSlmResultEntry 19 }
+
+dnCfmProactiveSlmFrameLossFarEndPercent OBJECT-TYPE
+    SYNTAX      DnPercentHundredths
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Far-end frame loss percentage.
+         The value reported is the conceptual percent multiplied by 100 and rounded to the 
+         nearest integer (i.e., hundredths of a percent; e.g., 95.90% -> 9590)."
+    ::= { dnCfmProactiveSlmResultEntry 20 }
+
+-- =====================================================================
+-- NOTIFICATIONS
+-- =====================================================================
+
+dnCfmFaultAlarm NOTIFICATION-TYPE
+    OBJECTS {
+        dnCfmTrapMdLevel,
+        dnCfmTrapMdName,
+        dnCfmTrapMaName,
+        dnCfmTrapHighestDefectPri
+    }
+    STATUS      current
+    DESCRIPTION
+        "Sent when any MEP enters a persistent defect state in the MA."
+    ::= { dnCfmNotifications 1 }
+
+dnCfmFaultAlarmCleared NOTIFICATION-TYPE
+    OBJECTS {
+        dnCfmTrapMdLevel,
+        dnCfmTrapMdName,
+        dnCfmTrapMaName,
+        dnCfmTrapHighestDefectPri
+    }
+    STATUS      current
+    DESCRIPTION
+        "Sent when all defect conditions have cleared for the MA
+         (i.e., all MEPs in the MA are non-defective). For this
+         notification dnCfmTrapHighestDefectPri MUST be none(0)."
+    ::= { dnCfmNotifications 2 }
+
+dnCfmProactiveTestFailure NOTIFICATION-TYPE
+    OBJECTS {
+        dnCfmTrapMdLevel,
+        dnCfmTrapMdName,
+        dnCfmTrapMaName,
+        dnCfmTrapMepId,
+        dnCfmTrapSessionType,
+        dnCfmTrapSessionId,
+        dnCfmTrapThresholdType,
+        dnCfmTrapThresholdValue,
+        dnCfmTrapMeasuredValue
+    }
+    STATUS      current
+    DESCRIPTION
+        "Sent when a CFM proactive performance monitoring test detects a
+         threshold violation. The notification includes:
+           - MD/MA/level context (domain, association, level)
+           - MEP identifier (source MEP that detected the violation)
+           - Session details (type: ETH-DM or ETH-SLM, and session ID)
+           - Threshold details (which metric, configured threshold, measured value)"
+    ::= { dnCfmNotifications 3 }
+
+-- =====================================================================
+-- CONFORMANCE (groups & compliance)
+-- =====================================================================
+
+dnCfmCompliances OBJECT IDENTIFIER ::= { dnCfmConformance 1 }
+dnCfmGroups      OBJECT IDENTIFIER ::= { dnCfmConformance 2 }
+
+dnCfmCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION "Compliance statement for DriveNets CFM implementation."
+    MODULE
+        MANDATORY-GROUPS {
+            dnCfmNotificationsGroup,
+            dnCfmProactiveDmSessionGroup,
+            dnCfmProactiveDmResultsGroup,
+            dnCfmProactiveSlmSessionGroup,
+            dnCfmProactiveSlmResultsGroup,
+            dnCfmOnDemandDmInfoGroup,
+            dnCfmOnDemandDmResultsGroup,
+            dnCfmOnDemandSlmInfoGroup,
+            dnCfmOnDemandSlmResultsGroup
+        }
+    ::= { dnCfmCompliances 1 }
+
+dnCfmNotificationsGroup NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        dnCfmFaultAlarm,
+        dnCfmFaultAlarmCleared,
+        dnCfmProactiveTestFailure
+    }
+    STATUS      current
+    DESCRIPTION "CFM notifications supported by the agent."
+    ::= { dnCfmGroups 1 }
+
+dnCfmProactiveDmSessionGroup OBJECT-GROUP
+    OBJECTS {
+        dnCfmProactiveDmSourceMdName,
+        dnCfmProactiveDmSourceMaName,
+        dnCfmProactiveDmTargetType,
+        dnCfmProactiveDmTargetMacAddress,
+        dnCfmProactiveDmTargetMepId,
+        dnCfmProactiveDmSourceInterface,
+        dnCfmProactiveDmSourceMacAddress,
+        dnCfmProactiveDmComputationInterval,
+        dnCfmProactiveDmCount,
+        dnCfmProactiveDmInterval,
+        dnCfmProactiveDmTimeout,
+        dnCfmProactiveDmPcp
+    }
+    STATUS      current
+    DESCRIPTION "Objects for proactive ETH-DM test session."
+    ::= { dnCfmGroups 6 }
+
+dnCfmProactiveDmResultsGroup OBJECT-GROUP
+    OBJECTS {
+        dnCfmProactiveDmStartTime,
+        dnCfmProactiveDmEndTime,
+        dnCfmProactiveDmMeasurementValidity,
+        dnCfmProactiveDmDmmTransmitted,
+        dnCfmProactiveDmDmrReceived,
+        dnCfmProactiveDmSuccessRatePercent,
+        dnCfmProactiveDmFrameDelayTwoWayMin,
+        dnCfmProactiveDmFrameDelayTwoWayAvg,
+        dnCfmProactiveDmFrameDelayTwoWayMax,
+        dnCfmProactiveDmIfdvTwoWayAvg,
+        dnCfmProactiveDmIfdvTwoWayMax
+    }
+    STATUS      current
+    DESCRIPTION "Objects for proactive ETH-DM test results."
+    ::= { dnCfmGroups 7 }
+
+dnCfmProactiveSlmSessionGroup OBJECT-GROUP
+    OBJECTS {
+        dnCfmProactiveSlmSourceMdName,
+        dnCfmProactiveSlmSourceMaName,
+        dnCfmProactiveSlmTargetType,
+        dnCfmProactiveSlmTargetMacAddress,
+        dnCfmProactiveSlmTargetMepId,
+        dnCfmProactiveSlmSourceInterface,
+        dnCfmProactiveSlmSourceMacAddress,
+        dnCfmProactiveSlmComputationInterval,
+        dnCfmProactiveSlmCount,
+        dnCfmProactiveSlmInterval,
+        dnCfmProactiveSlmTimeout,
+        dnCfmProactiveSlmPcp
+    }
+    STATUS      current
+    DESCRIPTION "Objects for proactive ETH-SLM test session."
+    ::= { dnCfmGroups 8 }
+
+dnCfmProactiveSlmResultsGroup OBJECT-GROUP
+    OBJECTS {
+        dnCfmProactiveSlmStartTime,
+        dnCfmProactiveSlmEndTime,
+        dnCfmProactiveSlmMeasurementValidity,
+        dnCfmProactiveSlmSyntheticLossPdusSent,
+        dnCfmProactiveSlmSyntheticLossPdusReceived,
+        dnCfmProactiveSlmSentPdusReceivedByRemoteMep,
+        dnCfmProactiveSlmMissingSlr,
+        dnCfmProactiveSlmLocalTxfclValue,
+        dnCfmProactiveSlmLocalRxfclValue,
+        dnCfmProactiveSlmLastSlrTxfcfTc,
+        dnCfmProactiveSlmLastSlrTxfcbTc,
+        dnCfmProactiveSlmFrameLossNearEndCount,
+        dnCfmProactiveSlmFrameLossNearEndPercent,
+        dnCfmProactiveSlmFrameLossFarEndCount,
+        dnCfmProactiveSlmFrameLossFarEndPercent
+    }
+    STATUS      current
+    DESCRIPTION "Objects for proactive ETH-SLM test results."
+    ::= { dnCfmGroups 9 }
+
+dnCfmOnDemandDmInfoGroup OBJECT-GROUP
+    OBJECTS {
+        dnCfmOnDemandDmSourceMdName,
+        dnCfmOnDemandDmSourceMaName,
+        dnCfmOnDemandDmTargetType,
+        dnCfmOnDemandDmTargetMacAddress,
+        dnCfmOnDemandDmTargetMepId,
+        dnCfmOnDemandDmSourceInterface,
+        dnCfmOnDemandDmSourceMacAddress,
+        dnCfmOnDemandDmStartTime,
+        dnCfmOnDemandDmEndTime,
+        dnCfmOnDemandDmCount,
+        dnCfmOnDemandDmInterval,
+        dnCfmOnDemandDmTimeout,
+        dnCfmOnDemandDmPcp
+    }
+    STATUS      current
+    DESCRIPTION "Objects describing on-demand ETH-DM tests (report-only)."
+    ::= { dnCfmGroups 2 }
+
+dnCfmOnDemandDmResultsGroup OBJECT-GROUP
+    OBJECTS {
+        dnCfmOnDemandDmMeasurementValidity,
+        dnCfmOnDemandDmDmmTransmitted,
+        dnCfmOnDemandDmDmrReceived,
+        dnCfmOnDemandDmSuccessRatePercent,
+        dnCfmOnDemandDmFrameDelayTwoWayMin,
+        dnCfmOnDemandDmFrameDelayTwoWayAvg,
+        dnCfmOnDemandDmFrameDelayTwoWayMax,
+        dnCfmOnDemandDmIfdvTwoWayAvg,
+        dnCfmOnDemandDmIfdvTwoWayMax
+    }
+    STATUS      current
+    DESCRIPTION "Objects reporting on-demand ETH-DM results."
+    ::= { dnCfmGroups 3 }
+
+dnCfmOnDemandSlmInfoGroup OBJECT-GROUP
+    OBJECTS {
+        dnCfmOnDemandSlmSourceMdName,
+        dnCfmOnDemandSlmSourceMaName,
+        dnCfmOnDemandSlmTargetType,
+        dnCfmOnDemandSlmTargetMacAddress,
+        dnCfmOnDemandSlmTargetMepId,
+        dnCfmOnDemandSlmSourceInterface,
+        dnCfmOnDemandSlmSourceMacAddress,
+        dnCfmOnDemandSlmStartTime,
+        dnCfmOnDemandSlmEndTime,
+        dnCfmOnDemandSlmCount,
+        dnCfmOnDemandSlmInterval,
+        dnCfmOnDemandSlmTimeout,
+        dnCfmOnDemandSlmPcp
+    }
+    STATUS      current
+    DESCRIPTION "Objects describing on-demand ETH-SLM tests (report-only)."
+    ::= { dnCfmGroups 4 }
+
+dnCfmOnDemandSlmResultsGroup OBJECT-GROUP
+    OBJECTS {
+        dnCfmOnDemandSlmMeasurementValidity,
+        dnCfmOnDemandSlmSyntheticLossPdusSent,
+        dnCfmOnDemandSlmSyntheticLossPdusReceived,
+        dnCfmOnDemandSlmSentPdusReceivedByRemoteMep,
+        dnCfmOnDemandSlmMissingSlr,
+        dnCfmOnDemandSlmLocalTxfclValue,
+        dnCfmOnDemandSlmLocalRxfclValue,
+        dnCfmOnDemandSlmLastSlrTxfcfTc,
+        dnCfmOnDemandSlmLastSlrTxfcbTc,
+        dnCfmOnDemandSlmFrameLossNearEndCount,
+        dnCfmOnDemandSlmFrameLossNearEndPercent,
+        dnCfmOnDemandSlmFrameLossFarEndCount,
+        dnCfmOnDemandSlmFrameLossFarEndPercent
+    }
+    STATUS      current
+    DESCRIPTION "Objects reporting on-demand ETH-SLM results."
+    ::= { dnCfmGroups 5 }
+
+END

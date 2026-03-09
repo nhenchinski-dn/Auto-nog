@@ -1,0 +1,63 @@
+=== show ... proactive two-way-delay session-name DM_CLI_TAB | no-more ===
+  show services performance-monitoring cfm tests proactive two-way-delay session-name DM_CLI_TAB | no-more
+  ERROR: Incomplete command.
+  NCP3-CFM-nog#
+
+=== show ... proactive two-way-synthetic-loss session-name SLM_CLI_TAB | no-more ===
+  show services performance-monitoring cfm tests proactive two-way-synthetic-loss session-name SLM_CLI_TAB | no-more
+  ERROR: Incomplete command.
+  NCP3-CFM-nog#
+
+=== show system logging | no-more (first 50 lines) ===
+  show system logging | no-more
+  Logging Files Parameters:
+  system-events.log
+  - Rotate-files: 10
+  - File-size: 10 [MB]
+  Accounting.log
+  - Rotate-files: 20
+  - File-size: 10 [MB]
+  Syslog Parameters:
+  Facility: local7
+  Class-of-service: 16
+  Source-interface: -
+  Suppress-list:
+  Chronological-ordering reorder: disabled
+  Chronological-ordering max-delay: 5
+  Timestamp-format utc-normalize: enabled
+  Kernel events logging severity: critical
+  Exported event-groups:
+  | Event-groups    | Exported Severity   |
+  |-----------------+---------------------|
+  | system          | warning             |
+  | monitoring      | warning             |
+  | fib-manager     | warning             |
+  | management      | warning             |
+  | aaa             | warning             |
+  | services        | warning             |
+  | netpm           | warning             |
+  | qos             | warning             |
+  | rib             | warning             |
+  | lacp            | warning             |
+  | lldp            | warning             |
+  | vrrp            | warning             |
+  | syncer          | warning             |
+  | interfaces      | warning             |
+  | platform        | warning             |
+  | isis            | warning             |
+  | ospf            | warning             |
+  | segment-routing | warning             |
+  | rsvp            | warning             |
+  | pcep            | warning             |
+  | bgp             | warning             |
+  | multicast       | warning             |
+  | pim             | warning             |
+  | msdp            | warning             |
+  | mpls            | warning             |
+  | static-route    | warning             |
+  | tcp             | warning             |
+  | mpls-oam        | warning             |
+  | efm-oam         | warning             |
+  | cfm-oam         | warning             |
+  ... (62 total lines)
+DONE

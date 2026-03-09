@@ -1,0 +1,33 @@
+=== show ... proactive two-way-delay ? ===
+  show services performance-monitoring cfm tests proactive two-way-delay
+  session-name          Session name
+  NCP3-CFM-nog# show services performance-monitoring cfm tests proactive two-way-delay 
+  ERROR: Incomplete command.
+  NCP3-CFM-nog#
+
+=== show ... proactive two-way-delay DM_CLI_TAB | no-more ===
+  show services performance-monitoring cfm tests proactive two-way-delay DM_CLI_TAB | no-more
+  -------------------------------------------------------------------------------------^
+  ERROR: Unknown word: 'DM_CLI_TAB'.
+  NCP3-CFM-nog#
+
+=== show system logging | match CFM | no-more ===
+  show system logging | match CFM | no-more
+  ------------------------------------^
+  ERROR: Unknown word: 'match'.
+  NCP3-CFM-nog#
+
+=== show system logging | match PROACTIVE | no-more ===
+  show system logging | match PROACTIVE | no-more
+  ------------------------------------^
+  ERROR: Unknown word: 'match'.
+  NCP3-CFM-nog#
+
+=== show system alarms | no-more ===
+  show system alarms | no-more
+  System Totals Critical: 0  Major: 0  Minor: 0 Warning: 0
+  0 alarms currently active
+  | Name                                                          | Module Name        | Resource                               | Alarm Raised Time   | Severity | Alarm Message                          | Operator State |
+  +---------------------------------------------------------------+--------------------+----------------------------------------+---------------------+----------+----------------------------------------+----------------+
+  NCP3-CFM-nog#
+DONE

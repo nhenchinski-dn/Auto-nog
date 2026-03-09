@@ -1,0 +1,60 @@
+=== HISTORIC RESULTS ===
+CMD: show services performance-monitoring cfm tests proactive two-way-delay-measurement session-name DM_CLI_TAB detail | no-more
+  ERR: ERROR: Unknown word: 'two-way-delay-measurement'.
+CMD: show services performance-monitoring cfm tests proactive detail | no-more
+  ERR: ERROR: Unknown word: 'detail'.
+CMD: show services performance-monitoring cfm tests proactive | no-more
+  show services performance-monitoring cfm tests proactive | no-more
+  e
+  CFM Proactive Performance Monitoring Sessions:
+  | Test Name          | Test Type                  | MD Name   | MA Name   | MEP-ID   | Target   | Last Run                  | Status   |
+  |--------------------+----------------------------+-----------+-----------+----------+----------+---------------------------+----------|
+  | DM_CLI_TAB         | two-way-delay-measurement  | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-26 05:27:24 +0000 | Ongoing  |
+  | SLM_CLI_TAB        | two-way-synthetic-loss     | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-26 05:28:04 +0000 | Ongoing  |
+  Test Type Counters:
+  Two-way delay measurement tests: 1
+  Two-way synthetic loss measurement tests: 1
+  Total displayed tests: 2
+  NCP3-CFM-nog#
+
+=== SYSTEM EVENTS ===
+CMD: show system event-log | match CFM | no-more
+  ERR: ERROR: Unknown word: 'event-log'.
+CMD: show system events | match CFM | no-more
+  ERR: ERROR: Unknown word: 'events'.
+CMD: show log messages | match CFM | no-more
+  ERR: ERROR: Unknown word: 'log'.
+
+=== ON-DEMAND DM ===
+  run ethernet-oam cfm on-demand delay-measurement two-way maintenance-domain MD-CUST maintenance-association MA-CUST target mep-id 1 count 3
+  Two-way ETH-DM request to 84:40:76:bd:58:fb (MEP-ID 1), from Interface ge400-0/0/24.100 MEP-ID 2 (84:40:76:90:cd:0c)
+  Sending 3 Y.1731 ETH-DM probes, PCP: 7, interval: 1 second, timeout: 2 seconds
+  Transmitted DMM PDUs: 1, Received DMR PDUs: 1
+  Transmitted DMM PDUs: 2, Received DMR PDUs: 2
+  Transmitted DMM PDUs: 3, Received DMR PDUs: 3
+  Transmitted DMM PDUs: 3, Received DMR PDUs: 3
+  Transmitted DMM PDUs: 3, Received DMR PDUs: 3
+  --- Delay measurement statistics ---
+  DMM PDUs transmitted: 3, Valid DMR PDUs received: 3, Success rate is 100.0 percent (3/3)
+  Round-trip-delay (min/avg/max): 13/13/13 usec
+  Jitter: 0 usec, Maximum delay variation: 0 usec
+  NCP3-CFM-nog#
+
+=== ON-DEMAND RESULTS ===
+  show services performance-monitoring cfm tests on-demand | no-more
+  e
+  CFM On-Demand Performance Monitoring Sessions:
+  | Test Name            | Test Type                  | MD Name   | MA Name   | MEP-ID   | Target   | Last Run                  | Status   |
+  |----------------------+----------------------------+-----------+-----------+----------+----------+---------------------------+----------|
+  | LB-MD-CUST-MA-CUST-2 | loopback                   | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-24 23:50:56 +0000 | Invalid  |
+  | LT-MD-CUST-MA-CUST-2 | linktrace                  | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-24 23:50:59 +0000 | Valid    |
+  | DM-MD-CUST-MA-CUST-2 | two-way-delay-measurement  | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-26 05:28:32 +0000 | Valid    |
+  | SL-MD-CUST-MA-CUST-2 | two-way-synthetic-loss     | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-24 23:50:54 +0000 | Invalid  |
+  Test Type Counters:
+  Loopback tests: 1
+  Linktrace tests: 1
+  Two-way delay measurement tests: 1
+  Two-way synthetic loss measurement tests: 1
+  Total displayed tests: 4
+  NCP3-CFM-nog#
+DONE

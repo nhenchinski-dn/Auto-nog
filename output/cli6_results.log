@@ -1,0 +1,98 @@
+=== SLM DETAIL ===
+  show services performance-monitoring cfm tests proactive two-way-synthetic-loss session-name SLM_CLI_TAB detail | no-more
+  CFM Proactive Synthetic Loss Measurement Session: SLM_CLI_TAB (Detailed)
+  Test Session: SLM_CLI_TAB, Session ID: 2
+  Description: Synthetic Loss measurement between MEP 2 and MEP 1
+  Admin state: enabled, Profile: SLM_PROF_CLI
+  Inform Test Results: enabled
+  Maintenance Domain: MD-CUST, Maintenance Association: MA-CUST, MEP-ID: 2
+  Source Interface: ge400-0/0/24.100, Source MAC: 84:40:76:90:cd:0c
+  Target: N/A (MEP-ID 1)
+  PCP: 5
+  Count: 5 probes, Interval: 1 second, Timeout: 2 seconds
+  Overall test duration: 5 seconds, Repeat Interval: 10 seconds
+  Uptime: 1 day, 3:53:36
+  Historical Test Results (Last 10):
+  | Index   | Start Time                | End Time                  | Status     |
+  |---------+---------------------------+---------------------------+------------|
+  | 10690   | 2026-02-26 05:30:24 +0000 | 2026-02-26 05:30:30 +0000 | valid      |
+  | 10691   | 2026-02-26 05:30:34 +0000 | 2026-02-26 05:30:40 +0000 | valid      |
+  | 10692   | 2026-02-26 05:30:44 +0000 | 2026-02-26 05:30:50 +0000 | valid      |
+  | 10693   | 2026-02-26 05:30:54 +0000 | 2026-02-26 05:31:00 +0000 | valid      |
+  | 10694   | 2026-02-26 05:31:04 +0000 | 2026-02-26 05:31:10 +0000 | valid      |
+  | 10695   | 2026-02-26 05:31:14 +0000 | 2026-02-26 05:31:20 +0000 | valid      |
+  | 10696   | 2026-02-26 05:31:24 +0000 | 2026-02-26 05:31:30 +0000 | valid      |
+  | 10697   | 2026-02-26 05:31:34 +0000 | 2026-02-26 05:31:40 +0000 | valid      |
+  | 10698   | 2026-02-26 05:31:44 +0000 | 2026-02-26 05:31:50 +0000 | valid      |
+  | 10699   | 2026-02-26 05:31:54 +0000 |                           | incomplete |
+  Latest Test Results (Index 10699):
+  Start time: 2026-02-26 05:31:54 +0000
+  End time:
+  Measurement validity:     incomplete
+  SLM PDUs transmitted:     4
+  SLR PDUs received:        3
+  Remote SLM PDUs received: 3
+  Unacknowledged SLR PDUs:  1
+  Frame loss statistics:
+  Near-end loss count: 0
+  Near-end loss percentage: 0%
+  Far-end loss count: 1
+  Far-end loss percentage: 25.0%
+  Flow counters:
+  Local TXFCl: 3
+  Local RXFCl: 3
+  Last SLR TXFCf: 2
+  Last SLR TXFCb: 53523
+  NCP3-CFM-nog#
+
+=== Event verification: set logging terminal ===
+
+=== Show system event-manager ? ===
+  show system event-manager
+  <CR>
+  policy-type          Policy Type
+  NCP3-CFM-nog# show system event-manager 
+  Event Policies:
+  | name   | admin state   | oper state   | user name   | script   | max iterations   | executed iterations   | match count   | script maxruntime   |
+  |--------+---------------+--------------+-------------+----------+------------------+-----------------------+---------------+---------------------|
+  Periodic Policies:
+  | name   | admin state   | oper state   | user name   | script   | max iterations   | executed iterations   | iterations interval   | next iteration   | script maxruntime   |
+  |--------+---------------+--------------+-------------+----------+------------------+-----------------------+-----------------------+------------------+---------------------|
+  Generic Policies:
+  | name   | admin state   | oper state   | user name   | script   |
+  |--------+---------------+--------------+-------------+----------|
+  NCP3-CFM-nog#
+
+=== run command: cat /var/log/messages (if available) ===
+  run bash cat /var/log/syslog 2>/dev/null | grep -i cfm | tail -20
+  ------------------^
+  ERROR: Unknown word: 'bash'.
+  NCP3-CFM-nog#
+
+=== show log ? ===
+  show log
+  NCP3-CFM-nog# show log 
+  -------------------^
+  ERROR: Unknown word: 'log'.
+  NCP3-CFM-nog#
+
+=== Profile test detail (used by DM_CLI_TAB) ===
+  show config services performance-monitoring profiles cfm two-way-delay-measurement test | no-more
+  # NCP3-CFM-nog config-start [26-Feb-2026 05:32:17 UTC]
+  services
+  performance-monitoring
+  profiles
+  cfm
+  two-way-delay-measurement test
+  inform-test-results enabled
+  thresholds
+  success-rate 33.33333
+  !
+  !
+  !
+  !
+  !
+  !
+  # NCP3-CFM-nog config-end
+  NCP3-CFM-nog#
+DONE

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.pyo
+.cache/
+.local/
+.cursor/
+.cursor-server/
+.ssh/

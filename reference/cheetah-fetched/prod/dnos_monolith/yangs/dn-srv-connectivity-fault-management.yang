@@ -1,0 +1,2478 @@
+module dn-srv-connectivity-fault-management {
+  namespace "http://drivenets.com/ns/yang/dn-srv-connectivity-fault-management";
+  prefix dn-srv-cfm;
+
+  import dn-top {
+    prefix dn-top;
+  }
+  import dn-services {
+    prefix dn-srv;
+  }
+  import dn-srv-ethernet-oam {
+    prefix dn-srv-eoam;
+  }
+  import dn-interfaces {
+    prefix dn-if;
+  }
+  import dn-lldp {
+    prefix dn-lldp;
+  }
+  import dn-srv-connectivity-fault-management-types {
+    prefix dn-cfm-types;
+  }
+  import dn-vlan-types {
+    prefix dn-vlan-types;
+  }
+  import iana-if-type {
+    prefix ianaift;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import ietf-yang-types {
+    prefix yang;
+  }
+  import dn-group {
+    prefix dn-group;
+  }
+  import dn-performance-monitoring {
+    prefix dn-pm;
+  }
+
+  organization
+    "DRIVENETS LTD";
+  contact
+    "DRIVENETS Customer Service <mailto:support@drivenets.com>";
+  description
+    "This module contains a collection of YANG definitions for
+     managing DRIVENETS CFM OAM service.
+     Connectivity Fault Management (CFM) comprises capabilities for
+     detecting, verifying, and isolating connectivity failures in Virtual
+     Bridged Local Area Networks. These capabilities can be used in
+     networks operated by multiple independent organizations, each with
+     restricted management access to each other's equipment.";
+
+  revision 2025-08-10 {
+    description
+      "Added support for proactive CFM performance monitoring tests;
+       introduced groupings for common test parameters
+       (target, source, timing, statistics) to improve consistency and reduce
+       duplication across on-demand and proactive test configurations";
+  }
+  revision 2025-07-13 {
+    description
+      "Added support for CFM performance monitoring on-demand tests";
+  }
+  revision 2025-05-03 {
+    description
+      "Added apply-groups statement";
+  }
+  revision 2024-12-19 {
+    description
+      "Removed unsupported LBM/LBR counters";
+  }
+  revision 2024-06-20 {
+    description
+      "Added support for auto-discovery";
+  }
+  revision 2024-03-26 {
+    description
+      "Added support for MIP";
+    reference
+      "IEEE Std 802.3-2018";
+  }
+  revision 2024-03-10 {
+    description
+      "Added extensions for Y.1731 ICC-based short-MA-name format and Performance Measurement; Changed VPN-ID format; Added global summary statistics";
+    reference
+      "Recommendation ITU-T G.8013/Y.1731 (2015)";
+  }
+  revision 2023-07-30 {
+    description
+      "Initial revision";
+    reference
+      "IEEE Std 802.3-2018";
+  }
+
+  // Grouping Statements
+
+  grouping mac-address-and-uint-type-grouping {
+    description
+      "The MAC address and uint type grouping.";
+    container mac-address-and-uint-type {
+      description
+        "The MAC address and uint type definition.";
+      leaf address {
+        type yang:mac-address;
+        mandatory true;
+        description
+          "The MAC address.";
+      }
+      leaf unsigned-int16 {
+        type uint16;
+        mandatory true;
+        description
+          "The additional 2-octet (unsigned) integer.";
+      }
+    }
+  }
+
+  grouping md-name-choice-grouping {
+    description
+      "The Maintenance Domain name and name format choice.";
+    choice md-name {
+      description
+        "The Maintenance Domain name type.";
+      case none {
+        leaf none {
+          type empty;
+          mandatory true;
+          description
+            "No format specified, usually because there is not a
+             Maintenance Domain Name. The Maintenance Domain name
+             inserted in CFM protocol messages will be a zero length
+             OCTET string.";
+        }
+      }
+      case dns-like-name {
+        leaf dns-like-name {
+          type string {
+            length "1..43";
+          }
+          mandatory true;
+          description
+            "Domain name like string, globally unique text string
+             derived from a DNS name.";
+        }
+      }
+      case mac-address-and-uint {
+        description
+          "MAC address plus 2-octet (unsigned) integer.";
+        uses mac-address-and-uint-type-grouping;
+      }
+      case char-string {
+        leaf char-string {
+          type string {
+            length "1..43";
+            pattern '[ -~]*';
+          }
+          mandatory true;
+          description
+            "RFC2579 DisplayString, except that the character codes 0-31
+             (decimal) are not used.";
+        }
+      }
+    }
+  }
+
+  grouping ma-name-choice-grouping {
+    description
+      "The Maintenance Association name and name format choice.";
+    choice ma-name {
+      description
+        "The Maintenance Association name type.";
+      case primary-vid {
+        leaf primary-vid {
+          type dn-vlan-types:vlan-id;
+          mandatory true;
+          description
+            "Primary VLAN ID. 12 bits represented in a 2-octet integer.";
+        }
+      }
+      case char-string {
+        leaf char-string {
+          type string {
+            length "1..45";
+            pattern '[ -~]*';
+          }
+          mandatory true;
+          description
+            "RFC2579 DisplayString, except that the character codes 0-31
+             (decimal) are not used.";
+        }
+      }
+      case unsigned-int16 {
+        leaf unsigned-int16 {
+          type uint16;
+          mandatory true;
+          description
+            "2-octet integer.";
+        }
+      }
+      case rfc2685-vpn-id {
+        leaf vpn-id {
+          type string {
+            length "0..15";
+            pattern '[0-9A-Fa-f]{1,6}(:[0-9A-Fa-f]{1,8})' {
+              error-message "VPN-ID format is invalid";
+            }
+          }
+          mandatory true;
+          description
+            "RFC2685 VPN ID. 3 octet VPN authority Organizationally
+             Unique Identifier followed by 4 octet VPN index identifying
+             VPN according to the OUI.";
+        }
+      }
+      case icc-based-meg-id {
+        container icc-based {
+          description
+            "ICC-based (ITU Carrier Code) MEG-ID format. ICC is a code assigned
+             to a network operator/service provider, maintained by the ITU Telecommunication Standardization Bureau.";
+          leaf icc {
+            type string {
+              length "1..6";
+              pattern '[a-zA-Z0-9]{1,32}' {
+                error-message "ITU Carrier Code format is invalid";
+              }
+            }
+            description
+              "ITU Carrier Code (ICC) of the ICC-based short-ma-name format.";
+            mandatory true;
+          }
+          leaf umc {
+            type string {
+              length "7..12";
+            }
+            description
+              "Unique MEG-ID Code (UMC) of the ICC-based short-ma-name format.";
+          }
+        }
+      }
+    }
+  }
+
+  grouping management-address-grouping {
+    description
+      "Defines the Management Address.";
+    reference
+      "21.5.3.5 of IEEE Std 802.1Q-2022";
+    leaf domain {
+      type yang:object-identifier-128;
+      description
+        "The domain type.";
+    }
+    choice management-address {
+      when './domain';
+      mandatory true;
+      description
+        "Selects the management address";
+      case ip {
+        description
+          "Represents an IP TCP, UDP, or SCTP transport address
+           consisting of an IPv4/v6 address, and a port number,
+           associated with the domain type defined by the domain leaf
+           node.";
+        leaf ip-address {
+          type inet:ip-address;
+          mandatory true;
+          description
+            "IPv4 or IPv6 address.";
+        }
+        leaf ip-port {
+          type inet:port-number;
+          mandatory true;
+          description
+            "IP port.";
+        }
+      }
+      case local {
+        leaf local-address {
+          type string {
+            length "1..255";
+          }
+          mandatory true;
+          description
+            "Represents a POSIX Local IPC transport address, associated
+             with the domain type defined by the domain leaf node.";
+        }
+      }
+      case dns {
+        leaf dns-address {
+          type string {
+            length "1..255";
+          }
+          mandatory true;
+          description
+            "The transport domain using fully qualified domain names,
+             associated with the domain type defined by the domain leaf
+             node. Represents a DNS domain name followed by a colon ':'
+             (ASCII character 0x3A) and a port number in ASCII. The name
+             SHOULD be fully qualified whenever possible.";
+        }
+      }
+      case other {
+        leaf unknown-address {
+          type binary {
+            length "1..255";
+          }
+          description
+            "This represents an undefined address, for the case when the
+             domain type provided is an unrecognizable value.";
+        }
+      }
+    }
+  }
+
+  grouping loopback-input-grouping {
+    description
+      "Defines the group of loopback input parameters.";
+    choice lbm-destination {
+      mandatory true;
+      description
+        "Selects the destination type (which is either MEP identifier or
+         MAC address) used for the Loopback transmissions.";
+      case dest-ucast-mac-address {
+        description
+          "The target unicast MAC Address field to be transmitted. A
+           unicast destination MAC address.";
+        leaf lbm-dest-ucast-mac-address {
+          type dn-cfm-types:unicast-mac-address-type;
+          description
+            "The target MAC Address field to be transmitted. A unicast
+             destination MAC address.";
+          reference
+            "Item b) in 12.14.7.3.2 of IEEE Std 802.1Q-2022";
+        }
+      }
+      case dest-mcast-class1-mac-address {
+        description
+          "The target multicast Class 1 MAC address field to be
+           transmitted.";
+        leaf lbm-dest-mcast-class1-mac-address {
+          type dn-cfm-types:multicast-class1-mac-address-type;
+          description
+            "The target multicast Class 1 MAC address field to be
+             transmitted";
+        }
+      }
+      case dest-mep-id {
+        description
+          "The identifier of a remote MEP in the same MA to which the
+           LBM is to be sent.";
+        leaf lbm-dest-mep-id {
+          type dn-cfm-types:mep-id-type;
+          description
+            "The identifier of a remote MEP in the same MA to which the
+             LBM is to be sent.";
+          reference
+            "Item b) in 12.14.7.3.2 of IEEE Std 802.1Q-2022";
+        }
+      }
+    }
+    leaf lbm-messages {
+      type uint16 {
+        range "1..1024";
+      }
+      default "1";
+      description
+        "The number of Loopback messages to be transmitted.";
+      reference
+        "Item c) in 12.14.7.3.2 of IEEE Std 802.1Q-2022";
+    }
+    leaf lbm-priority {
+      type dn-cfm-types:priority-type;
+      default "7";
+      description
+        "Priority. 3 bit value to be used in the VLAN tag, if present in
+         the transmitted frame. The default value should be priority 7,
+         which is the default CCM priority (ccm-ltm-priority).";
+      reference
+        "Item e) in 12.14.7.3.2 of IEEE Std 802.1Q-2022";
+    }
+    leaf lbm-drop-eligible {
+      type boolean;
+      default "false";
+      description
+        "Drop eligible bit value to be used in the VLAN tag, if present
+         in the transmitted frame. A value 'true' means inserting value
+         '1' in the DEI field, while a value 'false' means inserting
+         value '0' in the DEI field.";
+      reference
+        "Item e) in 12.14.7.3.2 of IEEE Std 802.1Q-2022";
+    }
+    leaf lbm-data-tlv {
+      type dn-cfm-types:lbm-data-tlv-type;
+      description
+        "An arbitrary amount of data to be included in the Data TLV, if
+         the Data TLV is selected to be sent.";
+      reference
+        "Item d) in 12.14.7.3.2 of IEEE Std 802.1Q-2022";
+    }
+  }
+
+  grouping linktrace-input-grouping {
+    description
+      "Defines the group of linktrace input parameters. By default, the
+       priority used is that of the CCMs (ccm-ltm-priority) and the drop
+       eligibility is false.";
+    choice ltr-target {
+      mandatory true;
+      description
+        "Selects the target address type (which is either MEP identifier
+         or MAC address) used for the Linktrace transmissions.";
+      case target-ucast-mac-address {
+        description
+          "The target MAC address field to be transmitted. A unicast MAC
+           address.";
+        leaf ltm-target-mac-address {
+          type dn-cfm-types:unicast-mac-address-type;
+          description
+            "The target MAC address field to be transmitted. A unicast
+             MAC address.";
+          reference
+            "Item c) in 12.14.7.4.2 of IEEE Std 802.1Q-2022";
+        }
+      }
+      case target-mep-id {
+        description
+          "The MEP identifier of another MEP in the same MA.";
+        leaf ltm-target-mep-id {
+          type dn-cfm-types:mep-id-type;
+          description
+            "The MEP identifier of another MEP in the same MA.";
+          reference
+            "Item c) in 12.14.7.4.2 of IEEE Std 802.1Q-2022";
+        }
+      }
+    }
+    leaf ltm-ttl {
+      type uint8 {
+        range "0..255";
+      }
+      default "64";
+      description
+        "The LTM TTL field. Indicates the number of hops remaining to
+         the LTM. Decremented by 1 by each Linktrace Responder that
+         handles the LTM. The value returned in the LTR is one less than
+         that received in the LTM. If the LTM TTL is 0 or 1, the LTM is
+         not forwarded to the next hop, and if 0, no LTR is generated.";
+      reference
+        "Item d) in 12.14.7.4.2, 21.8.4 of IEEE Std 802.1Q-2022";
+    }
+    leaf ltm-flags {
+      type dn-cfm-types:mep-tx-ltm-flags-type;
+      default "";
+      description
+        "The flags field for the LTMs transmitted by the MEP.";
+      reference
+        "Item b) in 12.14.7.4.2, 20.42.1 of IEEE Std 802.1Q-2022";
+    }
+  }
+
+  grouping ltm-egress-identifier-grouping {
+    description
+      "The grouping used to identify the MEP Linktrace initiator that is
+       originating the LTM. It defines the MAC address and uint type
+       definition.";
+    leaf int {
+      type uint16;
+      mandatory true;
+      description
+        "A value used to uniquely identify the MEP Linktrace Initiator
+         or Linktrace Responder within that system.";
+    }
+    leaf address {
+      type yang:mac-address;
+      mandatory true;
+      description
+        "A 48-bit IEEE MAC address unique to the system in which the MEP
+         Linktrace Initiator or Linktrace Responder resides.";
+    }
+  }
+
+  grouping maintenance-association-config {
+    description
+      "Contains CFM Maintenance Association configuration data";
+    leaf ma-id {
+      type dn-cfm-types:name-key-type;
+      description
+        "Key of the Maintenance Association list of entries.";
+    }
+    uses ma-name-choice-grouping;
+    /*  leaf fault-alarm-transmission {
+          type dn-cfm-types:fault-alarm-type;
+          description
+            "A value indicating whether Fault Alarms are to be
+              transmitted or not. If this leaf node is not present then
+              the disposition of the fault-alarm used by the MD should be
+              used.";
+          reference
+            "3.123, Item e) in 12.14.5.1.3 of IEEE Std 802.1Q-2022";
+        }
+        leaf mhf-creation {
+          type dn-cfm-types:mhf-creation-type;
+          default "mhf-defer";
+          description
+            "Value indicating whether the management entity can create
+            MHFs (MIP Half Function) for this Maintenance Association.";
+          reference
+            "3.123, Item c) in 12.14.5.1.3 of IEEE Std 802.1Q-2022";
+        }
+    leaf id-permission {
+      type dn-cfm-types:sender-id-permission-type;
+      default "send-id-defer";
+      description
+        "Enumerated value indicating what, if anything, is to be
+         included in the Sender ID TLV (21.5.3) transmitted by MPs
+         configured in this MA.";
+      reference
+        "Item d) in 12.14.3.1.3 of IEEE Std 802.1Q-2022";
+    } */
+    container remote-meps {
+      description
+        "Contains the remote MEPs related configuration.";
+      leaf auto-discovery {
+        type dn-cfm-types:admin-state;
+        default "disabled";
+        description
+          "Value indicating whether dynamic discovery of remote MEPs is allowed or not.
+           In case enabled, the system will learn of remote peers that were not statically
+           configured by the receipt of valid CCMs.";
+      }
+      list remote-mep {
+        key "mep-id";
+        description
+          "The list of all remote MEPs that belong to this Maintenance
+           Association.";
+        leaf mep-id {
+          type dn-cfm-types:mep-id-type;
+          description
+            "Integer that is unique among all the MEPs in the same
+             Maintenance Association.";
+          reference
+            "Item g) in 12.14.6.1.3 of IEEE Std 802.1Q-2022";
+        }
+      }
+    }
+  }
+
+  grouping maintenance-association-oper {
+    description
+      "Contains CFM Maintenance Association operational state data";
+    leaf ma-snmp-index {
+      type uint32;
+      description
+        "SNMP index for this Maintenance Association. This value is automatically
+         assigned by the system and is not user configurable.";
+    }
+  }
+
+  grouping maintenance-domain-config {
+    description
+      "Contains CFM Maintenance Domain configuration data";
+    leaf md-id {
+      type dn-cfm-types:name-key-type;
+      description
+        "The index to the Maintenance Domain list.";
+    }
+    uses md-name-choice-grouping;
+    leaf md-level {
+      type dn-cfm-types:md-level-type;
+      mandatory true;
+      description
+        "The Maintenance Domain level.";
+      reference
+        "3.123, Item b) in 12.14.5.1.3 of IEEE Std 802.1Q-2022";
+    }
+    /*  leaf mhf-creation {
+          type dn-cfm-types:mhf-creation-type;
+          must
+            ". != 'mhf-defer'" {
+            description
+              "The value mhf-defer is not allowed";
+          }
+          default "mhf-none";
+          description
+            "Value indicating whether the management entity can create
+            MHFs (MIP Half Function) for this Maintenance Domain. Since
+            there is no encompassing Maintenance Domain, the value
+            mhf-defer is not allowed.";
+          reference
+            "3.123, Item c) in 12.14.5.1.3 of IEEE Std 802.1Q-2022";
+        }
+        leaf fault-alarm-transmission {
+          type dn-cfm-types:fault-alarm-type;
+          default "not-transmitted";
+          description
+            "A value indicating whether Fault Alarms are to be transmitted
+              or not. The default is not transmit.";
+          reference
+            "3.123, item e) in 12.14.5.1.3 of IEEE Std 802.1Q-2022";
+        }
+        leaf id-permission {
+          type dn-cfm-types:sender-id-permission-type;
+          must ". != 'send-id-defer'" {
+            description
+              "The value send-id-defer is not allowed";
+          }
+          default "send-id-none";
+          description
+            "Value indicating what, if anything, is to be included in the
+            Sender ID TLV transmitted by Maintenance Points configured in
+            this Maintenance Domain. Since there is no encompassing
+            Maintenance Domain, the value send-id-defer is not allowed.";
+          reference
+            "3.123, item d) in 12.14.5.1.3 of IEEE Std 802.1Q-2022";
+        } */
+  }
+
+  grouping maintenance-domain-oper {
+    description
+      "Contains CFM Maintenance Domain operational state data";
+    leaf md-snmp-index {
+      type uint32;
+      description
+        "SNMP index for this Maintenance Domain. This value is automatically
+         assigned by the system and is not user configurable.";
+    }
+  }
+
+  grouping local-mep-config {
+    description
+      "Contains local MEPs configuration items";
+    leaf mep-id {
+      type dn-cfm-types:mep-id-type;
+      must 'current() != ../../../../config-items/remote-meps/remote-mep/mep-id';
+      description
+        "Integer that is unique among all the MEPs in the same
+         Maintenance Association.";
+      reference
+        "12.14.7, 19.2 of IEEE Std 802.1Q-2022";
+    }
+    leaf interface-name {
+      type dn-if:base-interface-ref;
+      mandatory true;
+      description
+        "The inband network interface associated with this local MEP.";
+      must "(/dn-top:drivenets-top/dn-if:interfaces/dn-if:interface[dn-if:name = current()]/dn-if:config-items/dn-if:type = 'ianaift:ethernetCsmacd') or"
+         + "(/dn-top:drivenets-top/dn-if:interfaces/dn-if:interface[dn-if:name = current()]/dn-if:config-items/dn-if:type = 'ianaift:ieee8023adLag') or"
+         + "(/dn-top:drivenets-top/dn-if:interfaces/dn-if:interface[dn-if:name = current()]/dn-if:config-items/dn-if:type = 'ianaift:l2vlan')" {
+        error-message "Interface cannot be of type loopback, IRB or GRE Tunnel";
+      }
+    }
+    leaf direction {
+      type dn-cfm-types:mp-direction-type;
+      mandatory true;
+      description
+        "The direction in which the MEP faces on the Bridge Port.
+         Example, up or down.";
+      reference
+        "Item c) in 12.14.7.1.3, 19.2 of IEEE Std 802.1Q-2022";
+    }
+    leaf admin-state {
+      type dn-cfm-types:admin-state;
+      default "enabled";
+      description
+        "The administrative state of the MEP. TRUE indicates that
+         the MEP is to functional normally, and FALSE indicates that
+         it is to cease functioning.";
+      reference
+        "Item e) in 12.14.7.1.3, 20.9.1 of IEEE Std 802.1Q-2022";
+    }
+    leaf ccm-ltm-priority {
+      type dn-cfm-types:priority-type;
+      default "7";
+      description
+        "The priority value for CCMs and LTMs transmitted by the
+         MEP. The default value is the highest priority allowed to
+         pass through the Bridge Port for any of the MEPs VID(s).";
+      reference
+        "Item h) in 12.14.7.1.3 of IEEE Std 802.1Q-2022";
+    }
+    /*leaf id-permission {
+      type dn-cfm-types:sender-id-permission-type;
+      default "send-id-defer";
+      description
+        "Enumerated value indicating what, if anything, is to be
+         included in the Sender ID TLV (21.5.3) transmitted by MPs
+         configured in this MA.";
+      reference
+        "Item d) in 12.14.3.1.3 of IEEE Std 802.1Q-2022";
+    } */
+    // uses cfm-continuity-check-config;
+    /*  list inactive-remote-mep {
+          key "inactive-rmep-id";
+          description
+            "A list indicating which of the remote MEPs in the same MA
+            are inactive. The Remote MEP state machines (20.20) are
+            instantiated only for the remote MEPs which are present in
+            the maintenance-association-mep-list, but not in this list.
+            By default, all configured remote MEPs in the same MA are
+            active";
+          leaf inactive-rmep-id {
+            type leafref {
+              path "../../../../../../../../maintenance-domains/maintenance-domain[md-id = current()/../../../../../../md-id]/maintenance-associations/maintenance-association[ma-id = current()/../../../../ma-id]/config-items/remote-mep/mep-id";
+            }
+            description
+              "Maintenance association Endpoint Identifier of a remote
+              MEP for which the Remote MEP state machine should not be
+              instantiated.";
+            reference
+              "Item ae) in 12.14.7.1.3 of IEEE Std 802.1Q-2022";
+          }
+        } */
+  }
+
+  grouping mip-config {
+    description
+      "Contains local MEPs configuration items";
+    leaf mip-name {
+      type string {
+        length "1..255";
+        pattern '[a-zA-Z0-9_-]+';
+      }
+      description
+        "String that is unique among all the MIPs in the same
+         Maintenance Association.";
+      reference
+        "12.14.7, 19.2 of IEEE Std 802.1Q-2022";
+    }
+    leaf interface-name {
+      type dn-if:base-interface-ref;
+      mandatory true;
+      description
+        "The inband network interface associated with this MIP.";
+      must "(/dn-top:drivenets-top/dn-if:interfaces/dn-if:interface[dn-if:name = current()]/dn-if:config-items/dn-if:type = 'ianaift:ethernetCsmacd') or"
+         + "(/dn-top:drivenets-top/dn-if:interfaces/dn-if:interface[dn-if:name = current()]/dn-if:config-items/dn-if:type = 'ianaift:ieee8023adLag') or"
+         + "(/dn-top:drivenets-top/dn-if:interfaces/dn-if:interface[dn-if:name = current()]/dn-if:config-items/dn-if:type = 'ianaift:l2vlan')" {
+        error-message "Interface cannot be of type loopback, IRB or GRE Tunnel";
+      }
+    }
+    leaf admin-state {
+      type dn-cfm-types:admin-state;
+      default "enabled";
+      description
+        "The administrative state of the MMIP. TRUE indicates that
+         the MIP is to functional normally, and FALSE indicates that
+         it is to cease functioning.";
+      reference
+        "Item e) in 12.14.7.1.3, 20.9.1 of IEEE Std 802.1Q-2022";
+    }
+  }
+
+  grouping mp-oper {
+    description
+      "Contains local MPs operational state items";
+    leaf mac-address {
+      type yang:mac-address;
+      mandatory true;
+      description
+        "The MAC address of the MP.";
+      reference
+        "Item i) in 12.14.7.1.3, 19.4 of IEEE Std 802.1Q-2022";
+    }
+  }
+
+  grouping cfm-mep-db {
+    description
+      "Contains the MEP database operational state variables";
+    list mep-db {
+      key "rmep-id";
+      description
+        "The MEP CCM Database. A database, maintained by every MEP,
+         that maintains received information about other MEPs in the
+         Maintenance Association.";
+      leaf rmep-id {
+        type dn-cfm-types:mep-id-type;
+        description
+          "Maintenance association Endpoint Identifier of a remote
+           MEP whose information from the MEP Database is to be
+           returned.";
+        reference
+          "Item b) in 12.14.7.6.2 of IEEE Std 802.1Q-2022";
+      }
+      leaf rmep-state {
+        type dn-cfm-types:remote-mep-state-type;
+        mandatory true;
+        description
+          "The operational state of the remote MEP state machine";
+        reference
+          "Item b) in 12.14.7.6.3, 20.20 of IEEE Std 802.1Q-2022";
+      }
+      leaf rmep-failed-ok-time {
+        type yang:timeticks;
+        mandatory true;
+        description
+          "The time (SysUpTime) at which the Remote MEP state
+           machine last entered either the RMEP_FAILED or RMEP_OK
+           state";
+        reference
+          "Item c) in 12.14.7.6.3 of IEEE Std 802.1Q-2022";
+      }
+      leaf mac-address {
+        type yang:mac-address;
+        mandatory true;
+        description
+          "The MAC address of the remote MEP.";
+        reference
+          "Item d) in 12.14.7.6.3, 20.19.7 of IEEE Std 802.1Q-2022";
+      }
+      leaf rdi {
+        type boolean;
+        mandatory true;
+        description
+          "State of the RDI bit in the last received CCM (true for
+           RDI=1), or false if none has been received.";
+        reference
+          "Item e) in 12.14.7.6.3, 20.19.2 of IEEE Std 802.1Q-2022";
+      }
+      leaf port-status-tlv {
+        type dn-cfm-types:port-status-tlv-value-type;
+        description
+          "An enumerated value of the Port status TLV received in
+           the last CCM from the remote MEP or the default value
+           no-port-state-tlv indicating either no CCM has been
+           received, or that no port status TLV was received in the
+           last CCM.";
+        reference
+          "Item f) in 12.14.7.6.3, 20.19.3 of IEEE Std 802.1Q-2022";
+      }
+      leaf interface-status-tlv {
+        type dn-cfm-types:interface-status-tlv-value-type;
+        description
+          "An enumerated value of the Interface status TLV received
+           in the last CCM from the remote MEP or the default value
+           is-no-interface-status-tlv indicating either no CCM has
+           been received, or that no interface status TLV was
+           received in the last CCM.";
+        reference
+          "Item g) in 12.14.7.6.3, 20.19.4 of IEEE Std 802.1Q-2022";
+      }
+      leaf chassis-id-subtype {
+        type dn-lldp:chassis-id-type;
+        description
+          "This object specifies the format of the Chassis ID
+           received in the last CCM.";
+        reference
+          "Item h) in 12.14.7.6.3, 21.5.3.2 of IEEE Std 802.1Q-2022";
+      }
+      leaf chassis-id {
+        type dn-cfm-types:chassis-id-type;
+        description
+          "The Chassis ID. The format of this object is determined
+           by the value of the ltr-chassis-id-subtype object.";
+        reference
+          "Item h) in 12.14.7.6.3, 21.5.3.3 of IEEE Std 802.1Q-2022";
+      }
+      container transport-service-domain {
+        description
+          "The transport management domain and address.";
+        reference
+          "Item h) in 12.14.7.6.3 of IEEE Std 802.1Q-2022";
+        uses management-address-grouping;
+      }
+      leaf rmep-is-active {
+        type boolean;
+        default "true";
+        description
+          "A Boolean value stating if the remote MEP is active.";
+        reference
+          "Item ae) in 12.14.7.1.3 of IEEE Std 802.1Q-2022";
+      }
+    }
+  }
+
+  grouping cfm-missing-rmeps {
+    description
+      "Contains information about missing remote MEPs";
+    leaf-list missing-rmeps {
+      description
+        "The list of missing remote MEPs according to the static crosscheck remote MEPs list and the remote MEP DB.";
+      type dn-cfm-types:mep-id-type;
+    }
+  }
+
+  grouping cfm-global-statistics {
+    description
+      "Contains global CFM statistics and global aggregated CFM counters for PDUs and errors per system.";
+    uses cfm-global-summary;
+    uses cfm-mep-statistics;
+  }
+
+  grouping cfm-global-summary {
+    description
+      "Contains the CFM global summary statistics.";
+    container summary {
+      description
+        "Contains the CFM global summary statistics.";
+      leaf total-number-of-maintenance-domains {
+        type yang:counter64;
+        description
+          "Total number of CFM Maintenance Domains in the system.";
+      }
+      leaf total-number-of-maintenance-associations {
+        type yang:counter64;
+        description
+          "Total number of CFM Maintenance Associations in the system.";
+      }
+      leaf total-number-of-local-meps {
+        type yang:counter64;
+        description
+          "Total number of CFM local Maintenance Endpoints in the system.";
+      }
+      leaf total-number-of-local-down-meps {
+        type yang:counter64;
+        description
+          "Total number of CFM local down Maintenance Endpoints in the system.";
+      }
+      leaf total-number-of-local-up-meps {
+        type yang:counter64;
+        description
+          "Total number of CFM local up Maintenance Endpoints in the system.";
+      }
+      leaf total-number-of-user-disabled-local-meps {
+        type yang:counter64;
+        description
+          "Total number of CFM local Maintenance Endpoints disabled due to user configuration.";
+      }
+      leaf total-number-of-internal-error-local-meps {
+        type yang:counter64;
+        description
+          "Total number of CFM local Maintenance Endpoints disabled due to an internal error.";
+      }
+      leaf total-number-of-remote-meps {
+        type yang:counter64;
+        description
+          "Total number of CFM remote Maintenance Endpoints in the system.";
+      }
+      leaf total-number-of-remote-meps-reported-with-rdi {
+        type yang:counter64;
+        description
+          "Total number of CFM remote Maintenance Endpoints reported with Remote Defect Indication.";
+      }
+      leaf total-number-of-remote-meps-reported-without-rdi {
+        type yang:counter64;
+        description
+          "Total number of CFM remote Maintenance Endpoints reported without Remote Defect Indication.";
+      }
+      leaf total-number-of-remote-meps-lost {
+        type yang:counter64;
+        description
+          "Total number of CFM remote Maintenance Endpoints failed due to loss of connectivity.";
+      }
+      leaf total-number-of-mips {
+        type yang:counter64;
+        description
+          "Total number of CFM Maintenance Intermediate Points in the system.";
+      }
+      leaf total-number-of-interfaces {
+        type yang:counter64;
+        description
+          "Total number of interfaces participating in CFM in the system.";
+      }
+      leaf total-number-of-faulty-services {
+        type yang:counter64;
+        description
+          "Total number of services in the system with CFM defects.";
+      }
+      leaf total-number-of-auto-discovered-remote-meps {
+        type yang:counter64;
+        description
+          "Total number of auto-discovered CFM remote Maintenance Endpoints.";
+      }
+    }
+  }
+
+  grouping cfm-common-pdu-statistics {
+    description
+      "Common CFM PDU statistics shared by MEP and MIP";
+    leaf wrong-level {
+      type yang:counter64;
+      description
+        "Total number of CFM PDUs received with wrong MD level";
+    }
+    leaf ltm-in {
+      type yang:counter64;
+      description
+        "Total number of valid Linktrace Messages received.";
+    }
+    leaf ltm-out {
+      type yang:counter64;
+      description
+        "Total number of Linktrace Messages transmitted.";
+      reference
+        "12.14.7.4, 20.42.1 of IEEE Std 802.1Q-2022";
+    }
+    leaf ltr-in {
+      type yang:counter64;
+      description
+        "Total number of valid Linktrace Replies received.";
+    }
+    leaf ltr-out {
+      type yang:counter64;
+      description
+        "Total number of Linktrace Replies transmitted.";
+      reference
+        "20.49.1 of IEEE Std 802.1Q-2022";
+    }
+    leaf unsupported-cfm-pdu {
+      type yang:counter64;
+      description
+        "Total number of CFM PDUs received with unsupported type";
+    }
+    leaf unicast-mac-mismatch {
+      type yang:counter64;
+      description
+        "Total number of CFM PDUs received with wrong unicast MAC destination address";
+    }
+  }
+
+  grouping cfm-mep-statistics {
+    description
+      "Contains CFM PDU statistics per local MEP";
+    container pdu-statistics {
+      description
+        "Contains the counters associated with the MEP.";
+      leaf ccm-in {
+        type yang:counter64;
+        description
+          "Total number of CCMs received";
+      }
+      leaf ccm-out {
+        type yang:counter64;
+        description
+          "Total number of CCMs transmitted";
+        reference
+          "Item w) in 12.14.7.1.3, 20.10.2 of IEEE Std 802.1Q-2022";
+      }
+      /*    leaf mep-ccm-sequence-errors {
+              type yang:counter64;
+              description
+                "The total number of out-of-sequence CCMs received from
+                all remote MEPs.";
+              reference
+                "Item v) in 12.14.7.1.3, 20.16.12 of IEEE Std 802.1Q-2022";
+            } */
+      uses cfm-common-pdu-statistics;
+      leaf ccms-wrong-interval {
+        type yang:counter64;
+        description
+          "Total number of CCMs received with wrong MA interval";
+      }
+      leaf ccms-wrong-rmep {
+        type yang:counter64;
+        description
+          "Total number of CCMs received with invalid MA Remote MEP-ID (own or unknown)";
+      }
+      leaf ccms-wrong-maid {
+        type yang:counter64;
+        description
+          "Total number of CCMs received with wrong MA-ID";
+      }
+      /*      leaf ccms-crc-error {
+              type yang:counter64;
+              description
+                "Total number of CCMs received with CRC error";
+            }
+      leaf lbm-in {
+        type yang:counter64;
+        description
+          "Total number of valid, in-order Loopback Messages
+           received.";
+      } */
+      leaf lbm-out {
+        type yang:counter64;
+        description
+          "Total number of Loopback Messages transmitted.";
+      }
+      leaf lbr-in {
+        type yang:counter64;
+        description
+          "Total number of valid, in-order Loopback Replies
+           received.";
+        reference
+          "Item y) in 12.14.7.1.3, 20.31.1 of IEEE Std 802.1Q-2022";
+      }
+      /*leaf lbr-out {
+        type yang:counter64;
+        description
+          "Total number of Loopback Replies transmitted.";
+        reference
+          "Item ad) in 12.14.7.1.3, 20.28.2 of IEEE Std 802.1Q-2022";
+      }*/
+      /*    leaf lbr-in-out-of-order {
+              type yang:counter64;
+              description
+                "The total number of valid, out-of-order Loopback Replies
+                received";
+              reference
+                "Item z) in 12.14.7.1.3, 20.31.1 of IEEE Std 802.1Q-2022";
+            }
+            leaf lbr-bad-msdu {
+              type yang:counter64;
+              description
+                "The total number of LBRs received whose
+                mac_service_data_unit did not match (except for the
+                OpCode) that of the corresponding LBM.";
+              reference
+                "Item aa) in 12.14.7.1.3, 20.2.3 of IEEE Std 802.1Q-2022";
+            }
+            leaf unexpected-ltr-in {
+              type yang:counter64;
+              description
+                "The total number of unexpected LTRs received.";
+              reference
+                "Item ac) in 12.14.7.1.3, 20.44.1 of IEEE Std 802.1Q-2022";
+            }
+            leaf dmm-in {
+              type yang:counter64;
+              description
+                "Total number of valid Delay Measurement Messages received.";
+              reference
+                "Section 9.15 of Recommendation ITU-T G.8013/Y.1731 (2015)";
+            }
+            leaf dmm-out {
+              type yang:counter64;
+              description
+                "Total number of valid Delay Measurement Messages transmitted.";
+              reference
+                "Section 9.15 of Recommendation ITU-T G.8013/Y.1731 (2015)";
+            }
+            leaf dmr-in {
+              type yang:counter64;
+              description
+                "Total number of valid Delay Measurement Replies received.";
+              reference
+                "Section 9.16 of Recommendation ITU-T G.8013/Y.1731 (2015)";
+            }
+            leaf dmr-out {
+              type yang:counter64;
+              description
+                "Total number of valid Delay Measurement Replies transmitted.";
+              reference
+                "Section 9.16 of Recommendation ITU-T G.8013/Y.1731 (2015)";
+            }
+            leaf slm-in {
+              type yang:counter64;
+              description
+                "Total number of valid Synthetic Loss Messages received.";
+              reference
+                "Section 9.22 of Recommendation ITU-T G.8013/Y.1731 (2015)";
+            }
+            leaf slm-out {
+              type yang:counter64;
+              description
+                "Total number of valid Synthetic Loss Messages transmitted.";
+              reference
+                "Section 9.22 of Recommendation ITU-T G.8013/Y.1731 (2015)";
+            }
+            leaf slr-in {
+              type yang:counter64;
+              description
+                "Total number of valid Synthetic Loss Replies received.";
+              reference
+                "Section 9.23 of Recommendation ITU-T G.8013/Y.1731 (2015)";
+            }
+            leaf slr-out {
+              type yang:counter64;
+              description
+                "Total number of valid Synthetic Loss Replies transmitted.";
+              reference
+                "Section 9.23 of Recommendation ITU-T G.8013/Y.1731 (2015)";
+            } */
+      leaf passive-in {
+        type yang:counter64;
+        description
+          "Total number of CFM PDUs received with from the passive side of the MEP";
+      }
+      leaf passive-in-wrong-level {
+        type yang:counter64;
+        description
+          "Total number of CFM PDUs received from the passive side of the MEP with wrong MD level";
+      }
+    }
+  }
+
+  grouping cfm-mip-statistics {
+    description
+      "Contains CFM PDU statistics per local MIP";
+    container pdu-statistics {
+      description
+        "Contains the counters associated with the MIP.";
+      uses cfm-common-pdu-statistics;
+    }
+  }
+
+  grouping cfm-continuity-check-config {
+    description
+      "Contains CFM continuity check protocol configuration items";
+    container continuity-check {
+      description
+        "Contains configuration items for CFM continuity check protocol";
+      leaf ccm-enabled {
+        type dn-cfm-types:admin-state;
+        default "enabled";
+        description
+          "Indicates whether the MEP can generate CCMs. If TRUE, the
+           MEP will generate CCM PDUs.";
+        reference
+          "Item g) in 12.14.7.1.3, 20.10.1 of IEEE Std 802.1Q-2022";
+      }
+      leaf ccm-interval {
+        type dn-cfm-types:ccm-interval-type;
+        default "1sec";
+        description
+          "The interval between CCM transmissions to be used by all
+           MEPs in the Maintenance Association.";
+        reference
+          "Item e) in 12.14.6.1.3 of IEEE Std 802.1Q-2022";
+      }
+      leaf loss-threshold {
+        type uint8 {
+          range "3..255";
+        }
+        units "packets";
+        default "3";
+        description
+          "The lost CCMs threshold for declaring connectivity loss of a remote MEP.";
+      }
+      /*    leaf hold-time {
+              type uint8;
+            } */
+      /*    leaf fault-alarm-transmission {
+              type dn-cfm-types:fault-alarm-type;
+              description
+                "A value indicating whether Fault Alarms are to be
+                  transmitted or not. If this leaf is not specified, the
+                  disposition of the fault-alarm used by the MD should be
+                  used.";
+              reference
+                "3.124, Item j) in 12.14.7.1.3 of IEEE Std 802.1Q-2022";
+            } */
+      leaf lowest-priority-defect {
+        type dn-cfm-types:lowest-alarm-priority-type;
+        default "mac-remote-error-xcon";
+        description
+          "The lowest priority defect that is allowed to generate
+           fault alarms.";
+        reference
+          "Item k) in 12.14.7.1.3, 20.9.5 of IEEE Std 802.1Q-2022";
+      }
+      leaf fng-alarm-time {
+        type uint16 {
+          range "2500..10000";
+        }
+        units "milliseconds";
+        default "2500";
+        description
+          "The time that defect must be present before a Fault Alarm
+           is issued.";
+        reference
+          "Item l) in 12.14.7.1.3, 20.35.3 of IEEE Std 802.1Q-2022";
+      }
+      leaf fng-reset-time {
+        type uint16 {
+          range "2500..10000";
+        }
+        units "milliseconds";
+        default "10000";
+        description
+          "The time that defects must be absent before resetting a
+           Fault Alarm.";
+        reference
+          "Item m) in 12.14.7.1.3, 20.35.4 of IEEE Std 802.1Q-2022";
+      }
+      /*      leaf efd-policy {
+              description
+                "The Ethernet Fault Detection (EFD) action to take upon failure detection.";
+              type dn-cfm-types:policy-action;
+            }
+            leaf efd-lowest-priority {
+              description
+                "The lowest priority defect that is allowed to trigger
+                 the EFD policy.";
+              type dn-cfm-types:lowest-alarm-priority-type;
+            } */
+    }
+  }
+
+  grouping cfm-continuity-check-oper {
+    description
+      "Contains CFM continuity check protocol operational items";
+    leaf fng-state {
+      type dn-cfm-types:fng-state-type;
+      default "fng-reset";
+      description
+        "The current state of the MEP Fault Notification Generator
+         state machine.";
+      reference
+        "Item f) in 12.14.7.1.3, 20.35 of IEEE Std 802.1Q-2022";
+    }
+    leaf highest-priority-defect {
+      type dn-cfm-types:highest-defect-priority-type;
+      mandatory true;
+      description
+        "The highest priority defect that has been present since
+         the MEPs Fault Notification Generator state machine was
+         last in the FNG_RESET state.";
+      reference
+        "Item n) in 12.14.7.1.3, 20.35.9 of IEEE Std 802.1Q-2022";
+    }
+    leaf defects {
+      type dn-cfm-types:mep-defects-type;
+      mandatory true;
+      description
+        "Vector of boolean error conditions";
+      reference
+        "12.14.7.1.3 of IEEE Std 802.1Q-2022";
+    }
+    leaf error-ccm-last-failure {
+      type binary {
+        length "1..128";
+      }
+      description
+        "The last received CCM that triggered a def-error-ccm
+         fault.";
+      reference
+        "Item t) in 12.14.7.1.3, 20.21.2 of IEEE Std 802.1Q-2022";
+    }
+    leaf xcon-ccm-last-failure {
+      type binary {
+        length "1..128";
+      }
+      description
+        "The last received CCM that triggered a def-xcon-ccm
+         fault.";
+      reference
+        "Item u) in 12.14.7.1.3, 20.23.2 of IEEE Std 802.1Q-2022";
+    }
+  }
+
+  grouping cfm-global-config {
+    description
+      "CFM global configuration items.";
+    leaf maximum-auto {
+      description
+        "The maximum limit of dynamically learned remote MEPs in the system.";
+      type uint32 {
+        range "0..8191";
+      }
+      default "2048";
+    }
+    leaf maximum-auto-syslog-threshold {
+      description
+        "The percentage of the maximum limit of dynamically learned remote MEPs in the system to trigger a syslog system event.";
+      type uint8 {
+        range "1..100";
+      }
+      units "percent";
+      default "75";
+    }
+  }
+
+  grouping cfm-global-oper {
+    description
+      "CFM global operational items.";
+  }
+
+  grouping cfm-top {
+    description
+      "Top-level grouping for CFM configuration and operational state data";
+    container connectivity-fault-management {
+      description
+        "CFM OAM container.";
+      container global {
+        description
+          "CFM global configuration and operational container";
+        container config-items {
+          description
+            "Global configuration data for CFM";
+          uses cfm-global-config;
+          //        uses cfm-continuity-check-config;
+        }
+        container oper-items {
+          config false;
+          description
+            "Global state variables for CFM";
+          uses cfm-global-config;
+          uses cfm-global-oper;
+          //        uses cfm-continuity-check-config;
+        }
+        container global-statistics {
+          config false;
+          description
+            "Contains global CFM counters for the system.";
+          uses cfm-global-statistics;
+        }
+      }
+      container maintenance-domains {
+        description
+          "Contains configuration and operational data for CFM Maintenance Domains.";
+        list maintenance-domain {
+          key "md-id";
+          max-elements 2000;
+          description
+            "Contains the Maintenance Domain configuration and operational
+             data. A Maintenance Domain is the network or the part of the
+             network for which faults in connectivity can be managed. The
+             boundary of a Maintenance Domain is defined by a set of Domain
+             Service Access Points (DoSAPs), each of which can become a point
+             of connectivity to a service instance.";
+          leaf md-id {
+            type leafref {
+              path "../config-items/md-id";
+            }
+            description
+              "The index to the Maintenance Domain list.";
+          }
+          container config-items {
+            description
+              "Contains CFM Maintenance Domain configuration items.";
+            uses maintenance-domain-config;
+            // uses cfm-continuity-check-config;
+          }
+          container oper-items {
+            description
+              "Contains CFM Maintenance Domain operational state items.";
+            config false;
+            uses maintenance-domain-config;
+            uses maintenance-domain-oper;
+            // uses cfm-continuity-check-config;
+          }
+          container maintenance-associations {
+            description
+              "Holds Maintenance Associations configuration items";
+            list maintenance-association {
+              key "ma-id";
+              description
+                "Provides configuration and operational data for the
+                 Maintenance Associations. A Maintenance Association is a set
+                 of MEPs, each configured with the same MAID and MD level,
+                 established to verify the integrity of a single service
+                 instance. A Maintenance Association can be thought of as a
+                 full mesh of Maintenance Entities among a set of MEPs so
+                 configured.";
+              leaf ma-id {
+                type leafref {
+                  path "../config-items/ma-id";
+                }
+                description
+                  "The index to the Maintenance Association list.";
+              }
+              container config-items {
+                description
+                  "Contains CFM Maintenance Association configuration items.";
+                uses maintenance-association-config;
+                uses cfm-continuity-check-config;
+              }
+              container oper-items {
+                description
+                  "Contains CFM Maintenance Association operational state items.";
+                config false;
+                uses maintenance-association-config;
+                uses maintenance-association-oper;
+                uses cfm-continuity-check-config;
+              }
+              container local-meps {
+                description
+                  "Holds configuration items for local Maintenance association
+                   End Points (MEPs). A MEP is an actively managed CFM entity,
+                   associated with a specific DoSAP of a service instance, which
+                   can generate and receive CFM PDUs and track any responses. It
+                   is an end point of a single Maintenance Association (MA) and is
+                   an end point of a separate Maintenance Entity for each of the
+                   other MEPs in the same MA.";
+                list local-mep {
+                  key "mep-id";
+                  max-elements 1;
+                  description
+                    "The Local MEP unique identifier within the MA.";
+                  leaf mep-id {
+                    type leafref {
+                      path "../config-items/mep-id";
+                    }
+                  }
+                  container config-items {
+                    description
+                      "Contains CFM Local MEP configuration items.";
+                    uses local-mep-config;
+                  }
+                  container oper-items {
+                    description
+                      "Contains CFM Local MEP operational state items.";
+                    config false;
+                    uses local-mep-config;
+                    uses mp-oper;
+                    uses cfm-continuity-check-oper;
+                    uses cfm-mep-db;
+                    uses cfm-missing-rmeps;
+                    uses cfm-mep-statistics;
+                  }
+                  uses dn-group:apply-group;
+                }
+                list mip {
+                  key "mip-name";
+                  description
+                    "Multiple MIPs can be set on the same MA, MD combination, as long they associate to different interfaces.";
+                  leaf mip-name {
+                    type leafref {
+                      path "../config-items/mip-name";
+                    }
+                  }
+                  container config-items {
+                    description
+                      "Contains CFM MIP configuration items.";
+                    uses mip-config;
+                  }
+                  container oper-items {
+                    description
+                      "Contains CFM MIP operational state items.";
+                    config false;
+                    uses mip-config;
+                    uses mp-oper;
+                    uses cfm-mip-statistics;
+                  }
+                  uses dn-group:apply-group;
+                }
+              }
+              uses dn-group:apply-group;
+            }
+          }
+          uses dn-group:apply-group;
+        }
+      }
+    }
+  }
+
+  // CFM Performance Monitoring Groupings
+
+  grouping cfm-test-target {
+    description
+      "Common target specification for CFM tests - includes target type indicator
+       and choice between MAC address or MEP ID";
+    leaf target-type {
+      type enumeration {
+        enum mac-address;
+        enum mep-id;
+      }
+      description
+        "Type of target used for the test";
+    }
+    choice target {
+      description
+        "Target specification for the test - mutually exclusive MAC address or MEP ID";
+      case mac-address {
+        description
+          "Target specified by MAC address";
+        leaf target-mac-address {
+          type yang:mac-address;
+          description
+            "Target MAC address used for the test";
+        }
+      }
+      case mep-id {
+        description
+          "Target specified by MEP ID";
+        leaf target-mep-id {
+          type dn-cfm-types:mep-id-type;
+          description
+            "Target MEP ID used for the test";
+        }
+      }
+    }
+  }
+
+  grouping cfm-test-source-info {
+    description
+      "Common source information for CFM tests";
+    leaf source-interface {
+      type dn-if:base-interface-ref;
+      description
+        "Source interface name where the test was initiated from";
+    }
+    leaf source-mep-id {
+      type dn-cfm-types:mep-id-type;
+      description
+        "Source MEP ID from which the test was initiated";
+    }
+    leaf source-md-name {
+      type string;
+      description
+        "Source Maintenance Domain name from which the test was initiated";
+    }
+    leaf source-ma-name {
+      type string;
+      description
+        "Source Maintenance Association name from which the test was initiated";
+    }
+    leaf source-mac-address {
+      type yang:mac-address;
+      description
+        "Source MAC address from which the test was initiated";
+    }
+  }
+
+  grouping cfm-test-timing {
+    description
+      "Common timing information for CFM tests";
+    leaf start-time {
+      type yang:date-and-time;
+      description
+        "The time that the test started";
+    }
+    leaf end-time {
+      type yang:date-and-time;
+      description
+        "The time that the test ended";
+    }
+  }
+
+  grouping cfm-delay-measurement-test-info {
+    description
+      "Information about CFM delay measurement test execution";
+    uses cfm-test-target;
+    uses cfm-test-source-info;
+    uses cfm-test-timing;
+    leaf count {
+      type uint16;
+      description
+        "Number of Y.1731 ETH-DM probes sent";
+    }
+    leaf interval {
+      type uint16;
+      units "seconds";
+      description
+        "Interval between sending subsequent ETH-DM probes";
+    }
+    leaf timeout {
+      type uint16;
+      units "seconds";
+      description
+        "Timeout value for waiting DMR responses";
+    }
+    leaf pcp {
+      type dn-cfm-types:priority-type;
+      description
+        "802.1p priority value used in the test frames";
+    }
+  }
+
+  grouping cfm-delay-measurement-test-results {
+    description
+      "Results of CFM delay measurement test";
+    leaf measurement-validity {
+      type enumeration {
+        enum valid;
+        enum invalid;
+        enum incomplete;
+      }
+      description
+        "Validity status of this measurement result";
+    }
+    leaf dmm-transmitted {
+      type uint32;
+      description
+        "Total number of DMM PDUs transmitted";
+    }
+    leaf dmr-received {
+      type uint32;
+      description
+        "Total number of valid DMR PDUs received";
+    }
+    leaf success-rate-percent {
+      type decimal64 {
+        fraction-digits 2;
+      }
+      units "percent";
+      description
+        "Success rate percentage (received/transmitted * 100)";
+    }
+    uses cfm-round-trip-delay-stats;
+    uses cfm-delay-variation-stats;
+  }
+
+  grouping cfm-synthetic-loss-measurement-test-info {
+    description
+      "Information about CFM synthetic loss measurement test execution";
+    uses cfm-test-target;
+    uses cfm-test-source-info;
+    uses cfm-test-timing;
+    leaf count {
+      type uint16;
+      description
+        "Number of Y.1731 ETH-SL probes sent";
+    }
+    leaf interval {
+      type uint16;
+      units "seconds";
+      description
+        "Interval between sending subsequent ETH-SL probes";
+    }
+    leaf timeout {
+      type uint16;
+      units "seconds";
+      description
+        "Timeout value for waiting SLR responses";
+    }
+    leaf pcp {
+      type dn-cfm-types:priority-type;
+      description
+        "802.1p priority value used in the test frames";
+    }
+  }
+
+  grouping cfm-synthetic-loss-measurement-test-results {
+    description
+      "Results of CFM synthetic loss measurement test";
+    // MIB-compliant fields
+    leaf measurement-validity {
+      type enumeration {
+        enum valid;
+        enum invalid;
+        enum incomplete;
+      }
+      description
+        "Validity status of this measurement result";
+    }
+    leaf synthetic-loss-pdus-sent {
+      type uint32;
+      description
+        "Count of Synthetic Loss Measurement (SLM) PDUs sent for the given measurement session.";
+    }
+    leaf synthetic-loss-pdus-received {
+      type uint32;
+      description
+        "Count of Synthetic Loss Measurement Reply (SLR) PDUs received for the given measurement session.";
+    }
+    leaf slm-received-by-remote-mep {
+      type uint32;
+      description
+        "Number of SLM PDUs received by remote MEP";
+    }
+    leaf missing-slr {
+      type uint32;
+      description
+        "Number of SLR PDUs that were not received from the remote MEP";
+    }
+    leaf local-txfcl-value {
+      type uint32;
+      description
+        "Local TXFC1 value";
+    }
+    leaf local-rxfcl-value {
+      type uint32;
+      description
+        "Local RXFC1 value";
+    }
+    leaf last-slr-txfcf-tc {
+      type uint32;
+      description
+        "Last received SLR frame TXFCf(tc) value";
+    }
+    leaf last-slr-txfcb-tc {
+      type uint32;
+      description
+        "Last received SLR frame TXFCb(tc) value";
+    }
+    uses cfm-frame-loss-stats;
+  }
+
+  grouping cfm-loopback-test-info {
+    description
+      "Information about CFM loopback test execution";
+    uses cfm-test-target;
+    uses cfm-test-source-info;
+    uses cfm-test-timing;
+    leaf count {
+      type uint16;
+      description
+        "Number of Y.1731 ETH-LB probes sent";
+    }
+    leaf interval {
+      type uint16;
+      units "seconds";
+      description
+        "Interval between sending subsequent ETH-LB probes";
+    }
+    leaf size {
+      type uint16 {
+        range "9..1492";
+      }
+      description
+        "Size of LBM PDUs in bytes, excluding the ethernet header";
+    }
+    leaf timeout {
+      type uint16;
+      units "seconds";
+      description
+        "Timeout value for waiting LBR responses";
+    }
+    leaf pcp {
+      type dn-cfm-types:priority-type;
+      description
+        "802.1p priority value used in the test frames";
+    }
+  }
+
+  grouping cfm-loopback-test-results {
+    description
+      "Results of CFM loopback test";
+    leaf measurement-validity {
+      type enumeration {
+        enum valid;
+        enum invalid;
+        enum incomplete;
+      }
+      description
+        "Validity status of this measurement result";
+    }
+    leaf lbm-transmitted {
+      type uint32;
+      description
+        "Total number of LBM PDUs transmitted";
+    }
+    leaf lbr-received {
+      type uint32;
+      description
+        "Total number of valid LBR PDUs received";
+    }
+    leaf lbr-timeout {
+      type uint32;
+      description
+        "Number of LBR PDUs missed within timeout window";
+    }
+    leaf success-rate-percent {
+      type decimal64 {
+        fraction-digits 2;
+      }
+      units "percent";
+      description
+        "Success rate percentage (received/transmitted * 100)";
+    }
+    leaf lost-lbr {
+      type uint32;
+      description
+        "Number of lost LBR PDUs (expected sequence number that were not returned)";
+    }
+    leaf invalid-lbr {
+      type uint32;
+      description
+        "Number of invalid LBR PDUs (unexpected sequence number or malformed)";
+    }
+    leaf out-of-order-lbr {
+      type uint32;
+      description
+        "Number of out-of-order LBR PDUs that arrived before timeout";
+    }
+  }
+
+  grouping cfm-linktrace-test-info {
+    description
+      "Information about CFM linktrace test execution";
+    uses cfm-test-target;
+    uses cfm-test-source-info;
+    uses cfm-test-timing;
+    leaf max-hops {
+      type uint8 {
+        range "1..255";
+      }
+      description
+        "Maximum number of hops that the ETH-LT frames should cross before timeout";
+    }
+    leaf timeout {
+      type uint16;
+      units "seconds";
+      description
+        "Timeout value for waiting LTR responses";
+    }
+    leaf pcp {
+      type dn-cfm-types:priority-type;
+      description
+        "802.1p priority value used in the test frames";
+    }
+  }
+
+  grouping cfm-linktrace-test-results {
+    description
+      "Results of CFM linktrace test";
+    leaf measurement-validity {
+      type enumeration {
+        enum valid;
+        enum invalid;
+        enum incomplete;
+      }
+      description
+        "Validity status of this measurement result";
+    }
+    leaf ltr-received {
+      type uint32;
+      description
+        "Total number of valid LTR PDUs received";
+    }
+    leaf transaction-id {
+      type uint32;
+      description
+        "Transaction identifier for this linktrace test";
+    }
+    list hop-info {
+      key "hop-number";
+      description
+        "Information about each hop discovered in the linktrace";
+      leaf hop-number {
+        type uint8;
+        description
+          "Hop number in the path";
+      }
+      leaf ttl {
+        type uint8;
+        description
+          "Time-to-live value for this hop";
+      }
+      leaf source-mac-address {
+        type yang:mac-address;
+        description
+          "Source MAC address of this hop";
+      }
+      leaf next-hop-mac-address {
+        type yang:mac-address;
+        description
+          "Next hop MAC address";
+      }
+      leaf previous-hop-mac-address {
+        type yang:mac-address;
+        description
+          "Previous hop MAC address";
+      }
+      leaf ingress-action {
+        type string;
+        description
+          "Ingress action at this hop (e.g., IngOk, IngOK)";
+      }
+      leaf egress-action {
+        type string;
+        description
+          "Egress action at this hop (e.g., EgrOK)";
+      }
+      leaf relay-action {
+        type string;
+        description
+          "Relay action at this hop (e.g., RlyFDB, RlyMPDB, RlyHit)";
+      }
+    }
+  }
+
+  grouping cfm-on-demand-test-results {
+    description
+      "Contains CFM on-demand test results for delay measurement, synthetic loss measurement, loopback, and linktrace";
+    container two-way-delay-measurement {
+      description
+        "On-demand two-way ethernet delay measurement tests";
+      list test-result {
+        key "source-md-name source-ma-name source-mep-id";
+        description
+          "List of on-demand two-way ethernet delay measurement test results";
+        leaf source-md-name {
+          type leafref {
+            path "../test-info/source-md-name";
+          }
+          description
+            "Source Maintenance Domain name";
+        }
+        leaf source-ma-name {
+          type leafref {
+            path "../test-info/source-ma-name";
+          }
+          description
+            "Source Maintenance Association name";
+        }
+        leaf source-mep-id {
+          type leafref {
+            path "../test-info/source-mep-id";
+          }
+          description
+            "Source MEP identifier";
+        }
+        container test-info {
+          description
+            "Information about the delay measurement test execution";
+          uses cfm-delay-measurement-test-info;
+        }
+        container test-results {
+          description
+            "Results of the delay measurement test";
+          uses cfm-delay-measurement-test-results;
+        }
+      }
+    }
+    container two-way-synthetic-loss-measurement {
+      description
+        "On-demand synthetic loss measurement tests";
+      list test-result {
+        key "source-md-name source-ma-name source-mep-id";
+        description
+          "List of on-demand synthetic loss measurement test results";
+        leaf source-md-name {
+          type leafref {
+            path "../test-info/source-md-name";
+          }
+          description
+            "Source Maintenance Domain name";
+        }
+        leaf source-ma-name {
+          type leafref {
+            path "../test-info/source-ma-name";
+          }
+          description
+            "Source Maintenance Association name";
+        }
+        leaf source-mep-id {
+          type leafref {
+            path "../test-info/source-mep-id";
+          }
+          description
+            "Source MEP identifier";
+        }
+        container test-info {
+          description
+            "Information about the synthetic loss measurement test execution";
+          uses cfm-synthetic-loss-measurement-test-info;
+        }
+        container test-results {
+          description
+            "Results of the synthetic loss measurement test";
+          uses cfm-synthetic-loss-measurement-test-results;
+        }
+      }
+    }
+    container loopback {
+      description
+        "On-demand ethernet loopback tests";
+      list test-result {
+        key "source-md-name source-ma-name source-mep-id";
+        description
+          "List of on-demand ethernet loopback test results";
+        leaf source-md-name {
+          type leafref {
+            path "../test-info/source-md-name";
+          }
+          description
+            "Source Maintenance Domain name";
+        }
+        leaf source-ma-name {
+          type leafref {
+            path "../test-info/source-ma-name";
+          }
+          description
+            "Source Maintenance Association name";
+        }
+        leaf source-mep-id {
+          type leafref {
+            path "../test-info/source-mep-id";
+          }
+          description
+            "Source MEP identifier";
+        }
+        container test-info {
+          description
+            "Information about the loopback test execution";
+          uses cfm-loopback-test-info;
+        }
+        container test-results {
+          description
+            "Results of the loopback test";
+          uses cfm-loopback-test-results;
+        }
+      }
+    }
+    container linktrace {
+      description
+        "On-demand ethernet linktrace tests";
+      list test-result {
+        key "source-md-name source-ma-name source-mep-id";
+        description
+          "List of on-demand ethernet linktrace test results";
+        leaf source-md-name {
+          type leafref {
+            path "../test-info/source-md-name";
+          }
+          description
+            "Source Maintenance Domain name";
+        }
+        leaf source-ma-name {
+          type leafref {
+            path "../test-info/source-ma-name";
+          }
+          description
+            "Source Maintenance Association name";
+        }
+        leaf source-mep-id {
+          type leafref {
+            path "../test-info/source-mep-id";
+          }
+          description
+            "Source MEP identifier";
+        }
+        container test-info {
+          description
+            "Information about the linktrace test execution";
+          uses cfm-linktrace-test-info;
+        }
+        container test-results {
+          description
+            "Results of the linktrace test";
+          uses cfm-linktrace-test-results;
+        }
+      }
+    }
+  }
+
+  grouping cfm-round-trip-delay-stats {
+    description
+      "Round-trip delay statistics common to delay measurement tests";
+    container round-trip-delay {
+      description
+        "Round-trip delay statistics in microseconds";
+      leaf frame-delay-two-way-min {
+        type uint32;
+        units "microseconds";
+        description
+          "Minimum two-way frame delay calculated by this MEP for the given measurement session.";
+      }
+      leaf frame-delay-two-way-avg {
+        type uint32;
+        units "microseconds";
+        description
+          "Average two-way frame delay calculated by this MEP for the given measurement session.";
+      }
+      leaf frame-delay-two-way-max {
+        type uint32;
+        units "microseconds";
+        description
+          "Maximum two-way frame delay calculated by this MEP for the given measurement session.";
+      }
+      leaf last-delay {
+        type uint32;
+        units "microseconds";
+        description
+          "Last delay.";
+      }
+    }
+  }
+
+  grouping cfm-delay-variation-stats {
+    description
+      "Delay variation statistics common to delay measurement tests";
+    container delay-variation {
+      description
+        "Packets transmitted delay variation";
+      leaf ifdv-two-way-avg {
+        type uint32;
+        units "microseconds";
+        description
+          "Average two-way Inter-Frame Delay Variation (IFDV) calculated by this MEP for the given measurement session.";
+      }
+      leaf ifdv-two-way-max {
+        type uint32;
+        units "microseconds";
+        description
+          "Maximum two-way Inter-Frame Delay Variation (IFDV) calculated by this MEP for the given measurement session.";
+      }
+      leaf last-jitter {
+        type uint32;
+        units "microseconds";
+        description
+          "Jitter";
+      }
+    }
+  }
+
+  grouping cfm-frame-loss-stats {
+    description
+      "Frame loss statistics common to synthetic loss measurement tests";
+    container frame-loss {
+      description
+        "Frame loss statistics";
+      container near-end {
+        description
+          "Near-end frame loss (frames lost on the way back from remote node)";
+        leaf frame-loss-near-end-count {
+          type uint32;
+          description
+            "Count of frames lost at the near end (local MEP) for the given synthetic loss measurement session.";
+        }
+        leaf frame-loss-near-end-percentage {
+          type decimal64 {
+            fraction-digits 2;
+          }
+          units "percent";
+          description
+            "Percentage of frames lost near-end";
+        }
+      }
+      container far-end {
+        description
+          "Far-end frame loss (frames lost on the way to remote node)";
+        leaf frame-loss-far-end-count {
+          type uint32;
+          description
+            "Count of frames lost at the far end (remote MEP) for the given synthetic loss measurement session.";
+        }
+        leaf frame-loss-far-end-percentage {
+          type decimal64 {
+            fraction-digits 2;
+          }
+          units "percent";
+          description
+            "Percentage of frames lost far-end";
+        }
+      }
+    }
+  }
+
+  grouping cfm-proactive-test-base-config {
+    description
+      "Base configuration common to all CFM proactive test sessions";
+    leaf admin-state {
+      type dn-cfm-types:admin-state;
+      default "disabled";
+      description
+        "The administrative state of the CFM proactive test";
+    }
+    leaf description {
+      type string {
+        length "1..255";
+      }
+      description
+        "Optional description of the test session";
+    }
+    leaf source-md-name {
+      type string;
+      description
+        "Source Maintenance Domain name from which the test was initiated";
+      mandatory true;
+    }
+    leaf source-ma-name {
+      type string;
+      description
+        "Source Maintenance Association name from which the test was initiated";
+      mandatory true;
+    }
+    leaf source-mep-id {
+      type dn-cfm-types:mep-id-type;
+      description
+        "Source MEP ID from which the test was initiated";
+      mandatory true;
+    }
+  }
+
+  grouping cfm-proactive-test-base-oper {
+    leaf session-id {
+      type uint32;
+      description
+        "System-generated identifier for this CFM test session, used to correlate
+         configuration and results internally.
+         Note: This ID is not transmitted in DMM/DMR/SLM/SLR PDUs on the wire. It is used
+         only for internal tracking and indexing of CFM test sessions.";
+    }
+    description
+      "Base operational data common to all CFM proactive test sessions";
+    leaf source-interface {
+      type dn-if:base-interface-ref;
+      description
+        "Source interface name where the test was initiated from";
+    }
+    leaf source-mac-address {
+      type yang:mac-address;
+      description
+        "Source MAC address from which the test was initiated";
+    }
+    leaf count {
+      type uint16;
+      description
+        "Number of Y.1731 probes sent";
+    }
+    leaf interval {
+      type uint16;
+      units "seconds";
+      description
+        "Interval between sending subsequent probes";
+    }
+    leaf timeout {
+      type uint16;
+      units "seconds";
+      description
+        "Timeout value for waiting for responses";
+    }
+    leaf pcp {
+      type dn-cfm-types:priority-type;
+      description
+        "802.1p priority value used in the test frames";
+    }
+    leaf session-uptime {
+      type yang:timeticks;
+      description
+        "CFM session uptime.";
+    }
+  }
+
+  grouping cfm-proactive-delay-measurement-config {
+    description
+      "Configuration items for CFM pro-active two-way delay measurement";
+    uses cfm-proactive-test-base-config;
+    leaf profile {
+      type leafref {
+        path "/dn-top:drivenets-top/dn-srv:services/dn-pm:performance-monitoring/dn-pm:profiles/dn-pm:cfm/dn-pm:two-way-delay-measurement/dn-pm:profile/dn-pm:profile-name";
+      }
+      description
+        "The CFM two-way delay measurement profile containing test parameters configuration";
+      mandatory true;
+    }
+    uses cfm-test-target;
+  }
+
+  grouping cfm-proactive-delay-measurement-oper {
+    description
+      "Operational items for CFM pro-active two-way delay measurement";
+    uses cfm-proactive-test-base-oper;
+    uses cfm-proactive-delay-measurement-test-results;
+  }
+
+  grouping cfm-proactive-delay-measurement-test-results {
+    description
+      "Test results for CFM pro-active two-way delay measurement";
+    list measurement-result {
+      key "index";
+      max-elements 10;
+      description
+        "Historical list of delay measurement test results for this test session (retained up to N results)";
+      leaf index {
+        type uint8;
+        description
+          "Index for this measurement result entry";
+      }
+      uses cfm-test-timing;
+      uses cfm-delay-measurement-test-results;
+    }
+  }
+
+  grouping cfm-proactive-synthetic-loss-config {
+    description
+      "Configuration items for CFM pro-active two-way synthetic loss measurement";
+    uses cfm-proactive-test-base-config;
+    leaf profile {
+      type leafref {
+        path "/dn-top:drivenets-top/dn-srv:services/dn-pm:performance-monitoring/dn-pm:profiles/dn-pm:cfm/dn-pm:two-way-synthetic-loss-measurement/dn-pm:profile/dn-pm:profile-name";
+      }
+      description
+        "The CFM two-way synthetic loss measurement profile containing test parameters configuration";
+      mandatory true;
+    }
+    uses cfm-test-target;
+  }
+
+  grouping cfm-proactive-synthetic-loss-oper {
+    description
+      "Operational items for CFM pro-active two-way synthetic loss measurement";
+    uses cfm-proactive-test-base-oper;
+    uses cfm-proactive-synthetic-loss-test-results;
+  }
+
+  grouping cfm-proactive-synthetic-loss-test-results {
+    description
+      "Test results for CFM pro-active two-way synthetic loss measurement";
+    list measurement-result {
+      key "index";
+      max-elements 10;
+      description
+        "Historical list of delay measurement test results for this test session (retained up to N results)";
+      leaf index {
+        type uint8;
+        description
+          "Index for this measurement result entry";
+      }
+      uses cfm-test-timing;
+      uses cfm-synthetic-loss-measurement-test-results;
+    }
+  }
+
+  grouping cfm-performance-monitoring-top {
+    description
+      "CFM performance monitoring top level container";
+    container on-demand-tests {
+      config false;
+      description
+        "CFM on-demand test results";
+      uses cfm-on-demand-test-results;
+    }
+    container proactive-monitoring {
+      description
+        "CFM pro-active performance monitoring";
+      container two-way-delay-measurements {
+        description
+          "CFM pro-active two-way delay measurement tests";
+        list test-session {
+          description
+            "CFM pro-active two-way delay measurement test session";
+          key "session-name";
+          leaf session-name {
+            type string {
+              length "1..255";
+            }
+            description
+              "Name of the test session";
+          }
+          container config-items {
+            description
+              "CFM pro-active two-way delay measurement configuration";
+            uses cfm-proactive-delay-measurement-config;
+          }
+          container oper-items {
+            config false;
+            description
+              "CFM pro-active two-way delay measurement operational data";
+            uses cfm-proactive-delay-measurement-config;
+            uses cfm-proactive-delay-measurement-oper;
+          }
+          uses dn-group:apply-group;
+        }
+      }
+      container two-way-synthetic-loss-measurements {
+        description
+          "CFM pro-active synthetic loss measurement tests";
+        list test-session {
+          description
+            "CFM pro-active two-way synthetic loss measurement test session";
+          key "session-name";
+          leaf session-name {
+            type string {
+              length "1..255";
+            }
+            description
+              "Name of the test session";
+          }
+          container config-items {
+            description
+              "CFM pro-active two-way synthetic loss measurement configuration";
+            uses cfm-proactive-synthetic-loss-config;
+          }
+          container oper-items {
+            config false;
+            description
+              "CFM pro-active two-way synthetic loss measurement operational data";
+            uses cfm-proactive-synthetic-loss-config;
+            uses cfm-proactive-synthetic-loss-oper;
+          }
+          uses dn-group:apply-group;
+        }
+      }
+    }
+  }
+
+  // Augment statements
+  // Augment top CFM OAM container to Ethernet OAM hierarchy
+
+  augment "/dn-top:drivenets-top/dn-srv:services/dn-srv-eoam:ethernet-oam" {
+    description
+      "Adds CFM OAM configuration and operational data to the Ethernet OAM model";
+    uses cfm-top;
+  }
+
+  // Augment CFM/Y.1731 performance monitoring tests to dn-performance-monitoring YANG model
+
+  augment "/dn-top:drivenets-top/dn-srv:services/dn-pm:performance-monitoring/dn-pm:cfm-tests" {
+    description
+      "Adds CFM performance monitoring test results to the performance monitoring model";
+    uses cfm-performance-monitoring-top;
+  }
+}

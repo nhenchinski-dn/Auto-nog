@@ -1,0 +1,4 @@
+show interfaces detail | no-more
+show lacp interfaces | no-more
+show lacp counters | no-more
+show interfaces counters drops rx tx | no-more

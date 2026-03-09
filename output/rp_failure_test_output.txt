@@ -1,0 +1,150 @@
+[15:59:44] Connecting to 100.64.6.171...
+[15:59:48] Connected.
+
+======================================================================
+  STEP 1: BASELINE (before RP failure)
+======================================================================
+
+======================================================================
+  [15:59:48] Baseline
+======================================================================
+  PIM: (*,G)=0  (S,G)SM=21995  Total=21997  MFIB=21997
+  CPRL Punted-IP-Multicast: RX=19765864  Drops=19136561
+  MC Routes: (*,G)=9740  (S,G)=30010  Failed installs=0
+  RP: 8.8.8.8 (present)
+  PIM neighbors: 2 (SSH responsive)
+
+
+######################################################################
+  STEP 2: REMOVING RP (no protocols pim static-rp 8.8.8.8)
+######################################################################
+[16:01:46] Commit output: OK
+[16:01:46] RP removed. Elapsed: 67.2s
+
+
+######################################################################
+  STEP 3: MONITORING DEGRADATION (every 15s for 2 minutes)
+######################################################################
+
+======================================================================
+  [16:02:01] Degradation T+15s
+======================================================================
+  PIM: (*,G)=0  (S,G)SM=0  Total=1  MFIB=1
+  CPRL Punted-IP-Multicast: RX=27372768  Drops=26674864
+  MC Routes: (*,G)=0  (S,G)=0  Failed installs=0
+  RP: NOT CONFIGURED
+  PIM neighbors: 2 (SSH responsive)
+
+======================================================================
+  [16:03:08] Degradation T+82s
+======================================================================
+  PIM: (*,G)=0  (S,G)SM=0  Total=1  MFIB=1
+  CPRL Punted-IP-Multicast: RX=27372768  Drops=26674864
+  MC Routes: (*,G)=0  (S,G)=0  Failed installs=0
+  RP: NOT CONFIGURED
+  PIM neighbors: 2 (SSH responsive)
+
+======================================================================
+  [16:04:15] Degradation T+148s
+======================================================================
+  PIM: (*,G)=0  (S,G)SM=0  Total=1  MFIB=1
+  CPRL Punted-IP-Multicast: RX=27372768  Drops=26674864
+  MC Routes: (*,G)=0  (S,G)=0  Failed installs=0
+  RP: NOT CONFIGURED
+  PIM neighbors: 2 (SSH responsive)
+
+======================================================================
+  [16:05:21] Degradation T+215s
+======================================================================
+  PIM: (*,G)=0  (S,G)SM=0  Total=1  MFIB=1
+  CPRL Punted-IP-Multicast: RX=27372768  Drops=26674864
+  MC Routes: (*,G)=0  (S,G)=0  Failed installs=0
+  RP: NOT CONFIGURED
+  PIM neighbors: 2 (SSH responsive)
+
+======================================================================
+  [16:06:28] Degradation T+281s
+======================================================================
+  PIM: (*,G)=0  (S,G)SM=0  Total=1  MFIB=1
+  CPRL Punted-IP-Multicast: RX=27372768  Drops=26674864
+  MC Routes: (*,G)=0  (S,G)=0  Failed installs=0
+  RP: NOT CONFIGURED
+  PIM neighbors: 2 (SSH responsive)
+
+======================================================================
+  [16:07:34] Degradation T+348s
+======================================================================
+  PIM: (*,G)=0  (S,G)SM=0  Total=1  MFIB=1
+  CPRL Punted-IP-Multicast: RX=27372768  Drops=26674864
+  MC Routes: (*,G)=0  (S,G)=0  Failed installs=0
+  RP: NOT CONFIGURED
+  PIM neighbors: 2 (SSH responsive)
+
+======================================================================
+  [16:08:41] Degradation T+414s
+======================================================================
+  PIM: (*,G)=0  (S,G)SM=0  Total=1  MFIB=1
+  CPRL Punted-IP-Multicast: RX=27372768  Drops=26674864
+  MC Routes: (*,G)=0  (S,G)=0  Failed installs=0
+  RP: NOT CONFIGURED
+  PIM neighbors: 2 (SSH responsive)
+
+======================================================================
+  [16:09:47] Degradation T+481s
+======================================================================
+  PIM: (*,G)=0  (S,G)SM=0  Total=1  MFIB=1
+  CPRL Punted-IP-Multicast: RX=27372768  Drops=26674864
+  MC Routes: (*,G)=0  (S,G)=0  Failed installs=0
+  RP: NOT CONFIGURED
+  PIM neighbors: 2 (SSH responsive)
+
+
+######################################################################
+  STEP 4: RESTORING RP (protocols pim static-rp 8.8.8.8)
+######################################################################
+[16:11:46] Commit output: OK
+[16:11:46] RP restored. Elapsed: 67.3s
+
+
+######################################################################
+  STEP 5: MONITORING RECOVERY (every 15s for 3 minutes)
+######################################################################
+
+======================================================================
+  [16:12:01] Recovery T+15s
+======================================================================
+  PIM: (*,G)=30000  (S,G)SM=30000  Total=60002  MFIB=60002
+  CPRL Punted-IP-Multicast: RX=53989429  Drops=53031978
+  MC Routes: (*,G)=30000  (S,G)=30000  Failed installs=2
+  RP: 8.8.8.8 (present)
+  PIM neighbors: 2 (SSH responsive)
+
+  >> Recovery looks complete at T+15s
+
+
+######################################################################
+  FINAL STATE
+######################################################################
+
+======================================================================
+  [16:12:53] Final
+======================================================================
+  PIM: (*,G)=30000  (S,G)SM=30000  Total=60002  MFIB=60002
+  CPRL Punted-IP-Multicast: RX=54001003  Drops=53031978
+  MC Routes: (*,G)=30000  (S,G)=30000  Failed installs=2
+  RP: 8.8.8.8 (present)
+  PIM neighbors: 2 (SSH responsive)
+
+
+======================================================================
+  TEST SUMMARY
+======================================================================
+  Baseline:  (*,G)=0  (S,G)SM=21995
+  After RP removal (worst):
+    (*,G) min=0  (S,G)SM min=0
+  After RP restore (final):
+    (*,G)=30000  (S,G)SM=30000
+  Device healthy throughout: True
+  No crash/hang: True
+
+[16:13:44] Test complete.

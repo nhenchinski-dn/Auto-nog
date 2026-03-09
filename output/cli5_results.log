@@ -1,0 +1,86 @@
+=== two-way-delay session-name DM_CLI_TAB ? ===
+  show services performance-monitoring cfm tests proactive two-way-delay session-name DM_CLI_TAB
+  detail
+  NCP3-CFM-nog# show services performance-monitoring cfm tests proactive two-way-delay session-name DM_CLI_TAB 
+  ERROR: Incomplete command.
+  NCP3-CFM-nog#
+
+=== show services performance-monitoring cfm tests ? ===
+  show services performance-monitoring cfm tests
+  <CR>
+  md-name            Filter by maintenance domain
+  on-demand          On-demand tests
+  proactive          Proactive tests
+  NCP3-CFM-nog# show services performance-monitoring cfm tests 
+  CFM Performance Monitoring Test Results:
+  On-Demand Tests:
+  | Test Name            | Test Type                  | MD Name   | MA Name   | MEP-ID   | Target   | Last Run                  | Status   |
+  |----------------------+----------------------------+-----------+-----------+----------+----------+---------------------------+----------|
+  | LB-MD-CUST-MA-CUST-2 | loopback                   | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-24 23:50:56 +0000 | Invalid  |
+  | LT-MD-CUST-MA-CUST-2 | linktrace                  | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-24 23:50:59 +0000 | Valid    |
+  | DM-MD-CUST-MA-CUST-2 | two-way-delay-measurement  | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-26 05:28:32 +0000 | Valid    |
+  | SL-MD-CUST-MA-CUST-2 | two-way-synthetic-loss     | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-24 23:50:54 +0000 | Invalid  |
+  Proactive Tests:
+  | Test Name          | Test Type                  | MD Name   | MA Name   | MEP-ID   | Target   | Last Run                  | Status   |
+  |--------------------+----------------------------+-----------+-----------+----------+----------+---------------------------+----------|
+  | DM_CLI_TAB         | two-way-delay-measurement  | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-26 05:30:44 +0000 | Ongoing  |
+  | SLM_CLI_TAB        | two-way-synthetic-loss     | MD-CUST   | MA-CUST   | 2        | 1        | 2026-02-26 05:31:04 +0000 | Ongoing  |
+  Total on-demand tests: 4
+  Total proactive tests: 2
+  Test Type Counters:
+  -- More -- (Press q to quit)
+
+=== Try results keyword ===
+  show services performance-monitoring cfm tests proactive two-way-delay session-name DM_CLI_TAB results | no-more
+  -------------------------------------------------------------------------------------------------------------^
+  ERROR: Unknown word: 'results'.
+  NCP3-CFM-nog#
+
+=== Try historic keyword ===
+  show services performance-monitoring cfm tests proactive two-way-delay session-name DM_CLI_TAB historic | no-more
+  -------------------------------------------------------------------------------------------------------------^
+  ERROR: Unknown word: 'historic'.
+  NCP3-CFM-nog#
+
+=== Try detail keyword ===
+  show services performance-monitoring cfm tests proactive two-way-delay session-name DM_CLI_TAB detail | no-more
+  CFM Proactive Two-Way Delay Measurement Session: DM_CLI_TAB (Detailed)
+  Test Session: DM_CLI_TAB, Session ID: 8
+  Description: Two-Way Delay measurement between MEP 2 and MEP 1
+  Admin state: enabled, Profile: test
+  Inform Test Results: enabled
+  Maintenance Domain: MD-CUST, Maintenance Association: MA-CUST, MEP-ID: 2
+  Source Interface: ge400-0/0/24.100, Source MAC: 84:40:76:90:cd:0c
+  Target: N/A (MEP-ID 1)
+  PCP: N/A
+  Count: 60 probes, Interval: 1 second, Timeout: 2 seconds
+  Overall test duration: 60 seconds, Repeat Interval: 60 seconds
+  Uptime: 1 day, 4:15:41
+  Historical Test Results (Last 10):
+  | Index   | Start Time                | End Time                  | Status     |
+  |---------+---------------------------+---------------------------+------------|
+  | 2647    | 2026-02-26 05:20:24 +0000 | 2026-02-26 05:21:26 +0000 | valid      |
+  | 2648    | 2026-02-26 05:21:34 +0000 | 2026-02-26 05:22:36 +0000 | valid      |
+  | 2649    | 2026-02-26 05:22:44 +0000 | 2026-02-26 05:23:46 +0000 | valid      |
+  | 2650    | 2026-02-26 05:23:54 +0000 | 2026-02-26 05:24:56 +0000 | valid      |
+  | 2651    | 2026-02-26 05:25:04 +0000 | 2026-02-26 05:26:06 +0000 | valid      |
+  | 2652    | 2026-02-26 05:26:14 +0000 | 2026-02-26 05:27:16 +0000 | valid      |
+  | 2653    | 2026-02-26 05:27:24 +0000 | 2026-02-26 05:28:26 +0000 | valid      |
+  | 2654    | 2026-02-26 05:28:34 +0000 |                           | invalid    |
+  | 2655    | 2026-02-26 05:29:34 +0000 | 2026-02-26 05:30:36 +0000 | valid      |
+  | 2656    | 2026-02-26 05:30:44 +0000 |                           | incomplete |
+  Latest Test Results (Index 2656):
+  Start time: 2026-02-26 05:30:44 +0000
+  End time:
+  Measurement validity: incomplete
+  DMM PDUs transmitted: 40
+  DMR PDUs received:    40
+  Success rate:         100.0%
+  Round-trip delay statistics (microseconds):
+  Minimum: 13 usec, Maximum: 13 usec, Average: 13 usec
+  Last delay: 13 usec
+  Delay variation statistics (microseconds):
+  IFDV Average: 0 usec, IFDV Maximum: 0 usec
+  Last jitter: 0 usec
+  NCP3-CFM-nog#
+DONE

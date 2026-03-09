@@ -1,0 +1,25 @@
+show lldp neighbors
+
+| Interface    | Neighbor System Name   | Neighbor interface   | Neighbor TTL   |
+|--------------+------------------------+----------------------+----------------|
+| ge400-0/0/0  |                        |                      |                |
+| ge400-0/0/2  |                        |                      |                |
+| ge400-0/0/3  |                        |                      |                |
+| ge400-0/0/4  | NCP3-nog-cfm           | ge400-0/0/18         | 120            |
+| ge400-0/0/5  | NCP3-nog-cfm           | ge400-0/0/6          | 120            |
+| ge400-0/0/6  | NCP3-nog-cfm           | ge400-0/0/5          | 120            |
+| ge400-0/0/7  |                        |                      |                |
+| ge400-0/0/8  | NCP3-nog-cfm           | ge400-0/0/9          | 120            |
+| ge400-0/0/9  | NCP3-nog-cfm           | ge400-0/0/8          | 120            |
+| ge400-0/0/10 |                        |                      |                |
+| ge400-0/0/11 | NCP3-nog-cfm           | ge400-0/0/12         | 120            |
+| ge400-0/0/12 | NCP3-nog-cfm           | ge400-0/0/11         | 120            |
+| ge400-0/0/13 | NCP3-nog-cfm           | ge400-0/0/14         | 120            |
+| ge400-0/0/14 | NCP3-nog-cfm           | ge400-0/0/13         | 120            |
+| ge400-0/0/15 | NCP3-nog-cfm           | ge400-0/0/16         | 120            |
+| ge400-0/0/16 | NCP3-nog-cfm           | ge400-0/0/15         | 120            |
+| ge400-0/0/18 | NCP3-nog-cfm           | ge400-0/0/4          | 120            |
+| ge400-0/0/20 |                        |                      |                |
+| ge400-0/0/21 | NCP3-nog-cfm           | ge400-0/0/22         | 120            |
+| ge400-0/0/22 | NCP3-nog-cfm           | ge400-0/0/21         | 120            |
+                                            -- More -- (Press q to quit)

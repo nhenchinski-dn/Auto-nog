@@ -1,0 +1,561 @@
+======================================================================
+  [1mY.1731 RESTCONF SANITY TEST[0m
+  Device   : 100.64.5.225
+  ODL      : 10.10.75.34:8181
+  Node     : 100_64_5_225
+  Jira     : SW-237067
+  Started  : 2026-02-18 07:31:32
+======================================================================
+[*] SSH: Connecting to 100.64.5.225 as dnroot ...
+[+] SSH: Connected and paging disabled.
+
+
+============================================================
+PHASE 1.1: Mount device to ODL
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF PUT[0m  http://10.10.75.34:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/100_64_5_225
+    [2mRequest body:[0m
+      <node xmlns="urn:TBD:params:xml:ns:yang:network-topology">
+        <node-id>100_64_5_225</node-id>
+        <host xmlns="urn:opendaylight:netconf-node-topology">100.64.5.225</host>
+        <port xmlns="urn:opendaylight:netconf-node-topology">830</port>
+        <username xmlns="urn:opendaylight:netconf-node-topology">dnroot</username>
+        <password xmlns="urn:opendaylight:netconf-node-topology">dnroot</password>
+        <tcp-only xmlns="urn:opendaylight:netconf-node-topology">false</tcp-only>
+        <default-request-timeout-millis xmlns="urn:opendaylight:netconf-node-topology">3600000</default-request-timeout-millis>
+      </node>
+    [2mResponse: HTTP 201[0m
+    ────────────────────────────────────────────────────────
+  [32m[PASS][0m mount_device -- HTTP 201
+
+============================================================
+PHASE 1.2: Verify mount status
+============================================================
+    Waiting for connection... (1/12)
+    Waiting for connection... (2/12)
+    Waiting for connection... (3/12)
+    Waiting for connection... (4/12)
+    Waiting for connection... (5/12)
+    Waiting for connection... (6/12)
+    Waiting for connection... (7/12)
+    Waiting for connection... (8/12)
+    Waiting for connection... (9/12)
+    Waiting for connection... (10/12)
+    Waiting for connection... (11/12)
+    Waiting for connection... (12/12)
+  [31m[FAIL][0m verify_mount_status -- Timed out
+
+============================================================
+PHASE 1.3: Discover YANG namespaces
+============================================================
+  [32m[PASS][0m discover_yang_paths -- pm=http://drivenets.com/ns/yang/dn-performance-monitoring | cfm=http://drivenets.com/ns/yang/dn-srv-connectivity-fault-m...
+
+============================================================
+PHASE 1.4: Discover CFM context
+============================================================
+  [32m[PASS][0m discover_cfm_context -- Found 2 MEP(s): mep3@MD-CUST1/MA-CUST1 dir=down tgt=4 [FREE] | mep1@MD-CUST/MA-CUST dir=up tgt=2 [FREE] -- will test 2 f...
+
+============================================================
+PHASE 2.1: GET PM config
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF GET[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top/dn-services:services/dn-performance-monitoring:performance-monitoring?content=config
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (JSON):[0m
+      {
+        "errors": {
+          "error": [
+            {
+              "error-message": "Mount point does not exist.",
+              "error-tag": "data-missing",
+              "error-type": "protocol"
+            }
+          ]
+        }
+      }
+    ────────────────────────────────────────────────────────
+  [32m[PASS][0m get_pm_config -- HTTP 404 (may be expected if no PM data)
+
+============================================================
+PHASE 2.2: GET PM oper
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF GET[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top/dn-services:services/dn-performance-monitoring:performance-monitoring?content=nonconfig
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (JSON):[0m
+      {
+        "errors": {
+          "error": [
+            {
+              "error-message": "Mount point does not exist.",
+              "error-tag": "data-missing",
+              "error-type": "protocol"
+            }
+          ]
+        }
+      }
+    ────────────────────────────────────────────────────────
+  [32m[PASS][0m get_pm_oper -- HTTP 404 (may be expected if no PM data)
+
+============================================================
+PHASE 2.3: GET PM all
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF GET[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top/dn-services:services/dn-performance-monitoring:performance-monitoring?content=all
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (JSON):[0m
+      {
+        "errors": {
+          "error": [
+            {
+              "error-message": "Mount point does not exist.",
+              "error-tag": "data-missing",
+              "error-type": "protocol"
+            }
+          ]
+        }
+      }
+    ────────────────────────────────────────────────────────
+  [32m[PASS][0m get_pm_all -- HTTP 404 (may be expected if no PM data)
+
+============================================================
+PHASE 3.1: PATCH - Create DM profile
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF PATCH[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top
+    [2mRequest body:[0m
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <profiles>
+              <cfm>
+                <two-way-delay-measurement>
+                  <profile>
+                    <profile-name>RESTCONF_DM_PROF</profile-name>
+                    <config-items>
+                      <profile-name>RESTCONF_DM_PROF</profile-name>
+                      <inform-test-results>enabled</inform-test-results>
+                      <test-duration-probes>
+                        <probe-count>5</probe-count>
+                        <probe-interval>1</probe-interval>
+                        <repeat-interval>10</repeat-interval>
+                      </test-duration-probes>
+                      <cfm-eth-dm-performance-thresholds>
+                        <delay-rtt-min>100</delay-rtt-min>
+                        <delay-rtt-avg>1000</delay-rtt-avg>
+                        <delay-rtt-max>2000</delay-rtt-max>
+                        <jitter-rtt-avg>500</jitter-rtt-avg>
+                        <jitter-rtt-max>1000</jitter-rtt-max>
+                        <success-rate-percent>90.0</success-rate-percent>
+                      </cfm-eth-dm-performance-thresholds>
+                    </config-items>
+                  </profile>
+                </two-way-delay-measurement>
+              </cfm>
+            </profiles>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (XML):[0m
+      <errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-message>Mount point does not exist.</error-message>
+          <error-tag>data-missing</error-tag>
+          <error-type>protocol</error-type>
+        </error>
+      </errors>
+    ────────────────────────────────────────────────────────
+  [31m[FAIL][0m create_dm_profile -- HTTP 404 -- Mount point does not exist.
+
+============================================================
+PHASE 3.2: PATCH - Create SLM profile
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF PATCH[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top
+    [2mRequest body:[0m
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <profiles>
+              <cfm>
+                <two-way-synthetic-loss-measurement>
+                  <profile>
+                    <profile-name>RESTCONF_SLM_PROF</profile-name>
+                    <config-items>
+                      <profile-name>RESTCONF_SLM_PROF</profile-name>
+                      <pcp>5</pcp>
+                      <inform-test-results>enabled</inform-test-results>
+                      <test-duration-probes>
+                        <probe-count>5</probe-count>
+                        <probe-interval>1</probe-interval>
+                        <repeat-interval>10</repeat-interval>
+                      </test-duration-probes>
+                      <cfm-eth-sl-performance-thresholds>
+                        <near-end-loss>1.0</near-end-loss>
+                        <far-end-loss>1.0</far-end-loss>
+                      </cfm-eth-sl-performance-thresholds>
+                    </config-items>
+                  </profile>
+                </two-way-synthetic-loss-measurement>
+              </cfm>
+            </profiles>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (XML):[0m
+      <errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-message>Mount point does not exist.</error-message>
+          <error-tag>data-missing</error-tag>
+          <error-type>protocol</error-type>
+        </error>
+      </errors>
+    ────────────────────────────────────────────────────────
+  [31m[FAIL][0m create_slm_profile -- HTTP 404 -- Mount point does not exist.
+
+============================================================
+PHASE 3.3.1: PATCH - Create DM session (mep3@MD-CUST1/MA-CUST1)
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF PATCH[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top
+    [2mRequest body:[0m
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <cfm-tests>
+              <proactive-monitoring xmlns="http://drivenets.com/ns/yang/dn-srv-connectivity-fault-management">
+                <two-way-delay-measurements>
+                  <test-session>
+                    <session-name>RESTCONF_DM_SESS_mep3</session-name>
+                    <config-items>
+                      <profile>RESTCONF_DM_PROF</profile>
+                      <admin-state>enabled</admin-state>
+                      <description>RESTCONF_test_DM_session</description>
+                      <source-md-name>MD-CUST1</source-md-name>
+                      <source-ma-name>MA-CUST1</source-ma-name>
+                      <source-mep-id>3</source-mep-id>
+                      <target-mep-id>4</target-mep-id>
+                    </config-items>
+                  </test-session>
+                </two-way-delay-measurements>
+              </proactive-monitoring>
+            </cfm-tests>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (XML):[0m
+      <errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-message>Mount point does not exist.</error-message>
+          <error-tag>data-missing</error-tag>
+          <error-type>protocol</error-type>
+        </error>
+      </errors>
+    ────────────────────────────────────────────────────────
+  [31m[FAIL][0m create_dm_sess_mep3 -- HTTP 404 -- Mount point does not exist.
+
+============================================================
+PHASE 3.3.2: PATCH - Create DM session (mep1@MD-CUST/MA-CUST)
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF PATCH[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top
+    [2mRequest body:[0m
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <cfm-tests>
+              <proactive-monitoring xmlns="http://drivenets.com/ns/yang/dn-srv-connectivity-fault-management">
+                <two-way-delay-measurements>
+                  <test-session>
+                    <session-name>RESTCONF_DM_SESS_mep1</session-name>
+                    <config-items>
+                      <profile>RESTCONF_DM_PROF</profile>
+                      <admin-state>enabled</admin-state>
+                      <description>RESTCONF_test_DM_session</description>
+                      <source-md-name>MD-CUST</source-md-name>
+                      <source-ma-name>MA-CUST</source-ma-name>
+                      <source-mep-id>1</source-mep-id>
+                      <target-mep-id>2</target-mep-id>
+                    </config-items>
+                  </test-session>
+                </two-way-delay-measurements>
+              </proactive-monitoring>
+            </cfm-tests>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (XML):[0m
+      <errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-message>Mount point does not exist.</error-message>
+          <error-tag>data-missing</error-tag>
+          <error-type>protocol</error-type>
+        </error>
+      </errors>
+    ────────────────────────────────────────────────────────
+  [31m[FAIL][0m create_dm_sess_mep1 -- HTTP 404 -- Mount point does not exist.
+
+============================================================
+PHASE 3.4.1: PATCH - Create SLM session (mep3@MD-CUST1/MA-CUST1)
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF PATCH[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top
+    [2mRequest body:[0m
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <cfm-tests>
+              <proactive-monitoring xmlns="http://drivenets.com/ns/yang/dn-srv-connectivity-fault-management">
+                <two-way-synthetic-loss-measurements>
+                  <test-session>
+                    <session-name>RESTCONF_SLM_SESS_mep3</session-name>
+                    <config-items>
+                      <profile>RESTCONF_SLM_PROF</profile>
+                      <admin-state>enabled</admin-state>
+                      <description>RESTCONF_test_SLM_session</description>
+                      <source-md-name>MD-CUST1</source-md-name>
+                      <source-ma-name>MA-CUST1</source-ma-name>
+                      <source-mep-id>3</source-mep-id>
+                      <target-mep-id>4</target-mep-id>
+                    </config-items>
+                  </test-session>
+                </two-way-synthetic-loss-measurements>
+              </proactive-monitoring>
+            </cfm-tests>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (XML):[0m
+      <errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-message>Mount point does not exist.</error-message>
+          <error-tag>data-missing</error-tag>
+          <error-type>protocol</error-type>
+        </error>
+      </errors>
+    ────────────────────────────────────────────────────────
+  [31m[FAIL][0m create_slm_sess_mep3 -- HTTP 404 -- Mount point does not exist.
+
+============================================================
+PHASE 3.4.2: PATCH - Create SLM session (mep1@MD-CUST/MA-CUST)
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF PATCH[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top
+    [2mRequest body:[0m
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <cfm-tests>
+              <proactive-monitoring xmlns="http://drivenets.com/ns/yang/dn-srv-connectivity-fault-management">
+                <two-way-synthetic-loss-measurements>
+                  <test-session>
+                    <session-name>RESTCONF_SLM_SESS_mep1</session-name>
+                    <config-items>
+                      <profile>RESTCONF_SLM_PROF</profile>
+                      <admin-state>enabled</admin-state>
+                      <description>RESTCONF_test_SLM_session</description>
+                      <source-md-name>MD-CUST</source-md-name>
+                      <source-ma-name>MA-CUST</source-ma-name>
+                      <source-mep-id>1</source-mep-id>
+                      <target-mep-id>2</target-mep-id>
+                    </config-items>
+                  </test-session>
+                </two-way-synthetic-loss-measurements>
+              </proactive-monitoring>
+            </cfm-tests>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (XML):[0m
+      <errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-message>Mount point does not exist.</error-message>
+          <error-tag>data-missing</error-tag>
+          <error-type>protocol</error-type>
+        </error>
+      </errors>
+    ────────────────────────────────────────────────────────
+  [31m[FAIL][0m create_slm_sess_mep1 -- HTTP 404 -- Mount point does not exist.
+
+============================================================
+PHASE 4: Verify creates via CLI
+============================================================
+  [32m[PASS][0m verify_creates_cli -- Nothing to verify (no artifacts created)
+
+============================================================
+PHASE 5: PATCH - Modify DM profile
+============================================================
+  [33m[SKIP][0m modify_dm_profile -- Profile was not created
+
+============================================================
+PHASE 6.1: DELETE DM sessions
+============================================================
+  [33m[SKIP][0m delete_dm_sessions -- No DM sessions were created
+
+============================================================
+PHASE 6.2: DELETE SLM sessions
+============================================================
+  [33m[SKIP][0m delete_slm_sessions -- No SLM sessions were created
+
+============================================================
+PHASE 6.3: DELETE DM profile
+============================================================
+  [33m[SKIP][0m delete_dm_profile -- Profile was not created
+
+============================================================
+PHASE 6.4: DELETE SLM profile
+============================================================
+  [33m[SKIP][0m delete_slm_profile -- Profile was not created
+
+============================================================
+PHASE 6.5: Verify all test artifacts removed
+============================================================
+  [32m[PASS][0m verify_all_removed -- All test artifacts removed
+
+============================================================
+PHASE 7.1: GET invalid path (negative)
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF GET[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top/dn-nonexistent:fake?content=config
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (JSON):[0m
+      {
+        "errors": {
+          "error": [
+            {
+              "error-message": "Mount point does not exist.",
+              "error-tag": "data-missing",
+              "error-type": "protocol"
+            }
+          ]
+        }
+      }
+    ────────────────────────────────────────────────────────
+  [32m[PASS][0m get_invalid_path -- HTTP 404 (expected non-200)
+
+============================================================
+PHASE 7.2: PATCH malformed XML (negative)
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF PATCH[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top
+    [2mRequest body:[0m
+      <drivenets-top><not-valid></drivenets-top>
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (XML):[0m
+      <errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-message>Mount point does not exist.</error-message>
+          <error-tag>data-missing</error-tag>
+          <error-type>protocol</error-type>
+        </error>
+      </errors>
+    ────────────────────────────────────────────────────────
+  [32m[PASS][0m patch_invalid_body -- HTTP 404 (expected reject)
+
+============================================================
+PHASE 7.3: PATCH invalid value (negative)
+============================================================
+    ────────────────────────────────────────────────────────
+    [36mRESTCONF PATCH[0m  http://10.10.75.34:8181/rests/data/network-topology:network-topology/topology=topology-netconf/node=100_64_5_225/yang-ext:mount/dn-top:drivenets-top
+    [2mRequest body:[0m
+      <drivenets-top xmlns="http://drivenets.com/ns/yang/dn-top">
+        <services xmlns="http://drivenets.com/ns/yang/dn-services">
+          <performance-monitoring xmlns="http://drivenets.com/ns/yang/dn-performance-monitoring">
+            <profiles>
+              <cfm>
+                <two-way-delay-measurement>
+                  <profile>
+                    <profile-name>RESTCONF_INVALID_TEST</profile-name>
+                    <config-items>
+                      <profile-name>RESTCONF_INVALID_TEST</profile-name>
+                      <cfm-eth-dm-performance-thresholds>
+                        <delay-rtt-min>NOT_A_NUMBER</delay-rtt-min>
+                      </cfm-eth-dm-performance-thresholds>
+                    </config-items>
+                  </profile>
+                </two-way-delay-measurement>
+              </cfm>
+            </profiles>
+          </performance-monitoring>
+        </services>
+      </drivenets-top>
+    [2mResponse: HTTP 404[0m
+    [2mResponse body (XML):[0m
+      <errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-message>Mount point does not exist.</error-message>
+          <error-tag>data-missing</error-tag>
+          <error-type>protocol</error-type>
+        </error>
+      </errors>
+    ────────────────────────────────────────────────────────
+  [32m[PASS][0m patch_invalid_value -- HTTP 404 (expected reject)
+
+============================================================
+PHASE 8: Unmount device
+============================================================
+  [32m[PASS][0m unmount_device -- Skipped (--cleanup not set)
+[*] SSH: Disconnected.
+
+======================================================================
+  [1mRESULTS SUMMARY[0m
+======================================================================
+  Total  : 24
+  [32mPassed : 12[0m
+  [33mSkipped: 5[0m
+  [31mFailed : 7[0m
+  Time   : 80.1s
+
+  [32m[1mPASSED (12):[0m
+    [32m[PASS][0m mount_device  HTTP 201
+    [32m[PASS][0m discover_yang_paths  pm=http://drivenets.com/ns/yang/dn-performance-monitoring | cfm=http://drivenets.com/ns/ya
+    [32m[PASS][0m discover_cfm_context  Found 2 MEP(s): mep3@MD-CUST1/MA-CUST1 dir=down tgt=4 [FREE] | mep1@MD-CUST/MA-CUST dir=up
+    [32m[PASS][0m get_pm_config  HTTP 404 (may be expected if no PM data)
+    [32m[PASS][0m get_pm_oper  HTTP 404 (may be expected if no PM data)
+    [32m[PASS][0m get_pm_all  HTTP 404 (may be expected if no PM data)
+    [32m[PASS][0m verify_creates_cli  Nothing to verify (no artifacts created)
+    [32m[PASS][0m verify_all_removed  All test artifacts removed
+    [32m[PASS][0m get_invalid_path  HTTP 404 (expected non-200)
+    [32m[PASS][0m patch_invalid_body  HTTP 404 (expected reject)
+    [32m[PASS][0m patch_invalid_value  HTTP 404 (expected reject)
+    [32m[PASS][0m unmount_device  Skipped (--cleanup not set)
+
+  [33m[1mSKIPPED (5):[0m
+    [33m[SKIP][0m modify_dm_profile
+           [2mProfile was not created[0m
+    [33m[SKIP][0m delete_dm_sessions
+           [2mNo DM sessions were created[0m
+    [33m[SKIP][0m delete_slm_sessions
+           [2mNo SLM sessions were created[0m
+    [33m[SKIP][0m delete_dm_profile
+           [2mProfile was not created[0m
+    [33m[SKIP][0m delete_slm_profile
+           [2mProfile was not created[0m
+
+  [31m[1mFAILED (7):[0m
+    [31m[FAIL][0m verify_mount_status
+           [33mTimed out[0m
+    [31m[FAIL][0m create_dm_profile
+           [33mHTTP 404 -- Mount point does not exist.[0m
+    [31m[FAIL][0m create_slm_profile
+           [33mHTTP 404 -- Mount point does not exist.[0m
+    [31m[FAIL][0m create_dm_sess_mep3
+           [33mHTTP 404 -- Mount point does not exist.[0m
+    [31m[FAIL][0m create_dm_sess_mep1
+           [33mHTTP 404 -- Mount point does not exist.[0m
+    [31m[FAIL][0m create_slm_sess_mep3
+           [33mHTTP 404 -- Mount point does not exist.[0m
+    [31m[FAIL][0m create_slm_sess_mep1
+           [33mHTTP 404 -- Mount point does not exist.[0m
+
+======================================================================
+  [31m[1m>>> 7/24 TESTS FAILED <<<[0m
+======================================================================
+

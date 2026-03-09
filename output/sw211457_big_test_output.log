@@ -1,0 +1,226 @@
+======================================================================
+  SW-211457 Large Commit Race Condition Test
+  Device: 100.64.3.239
+  Config size: 15 IRBs + EVPNs + VRF + BGP neighbor
+  Date: 2026-02-19 08:40:19
+======================================================================
+  [Cleanup] Removing test config...
+  [Cleanup] Committed: succeeded
+
+======================================================================
+  ATTEMPT 1 (large commit, 15 IRBs, delay=0.2s)
+======================================================================
+  [X] Committing large config (15 IRBs + EVPNs + VRF + BGP)...
+  [X] First commit took 45.3s: FAILED
+  [X] Signaling Y and committing large rollback deletion...
+  [Y] Entering configure mode during X's commit window...
+  [Y] Rollback compare has IRBs: True
+  [Y] Committing (bug trigger point)...
+  [X] Rollback commit took 60.4s: check log
+  [Y] Commit took 60.3s
+
+  --- Key Session X Logs ---
+    [X] Config compare has ~45 IRB references
+    [X] >>> commit
+    [X] <<< commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:43:45)# commit
+Warning: User 'dnroot' committed at 19-Feb-2026 10:43:49 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+    [X] First commit took 45.3s
+    [X] >>> rollback 1
+    [X] <<< rollback 1
+Warning: User 'dnroot' committed at 19-Feb-2026 10:43:49 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+    [X] Rollback 1 done, about to commit deletion
+    [X] >>> commit
+    [X] <<< commit
+NOTICE: commit action is not applicable. no configuration changes were made
+B2B_DT-DEMO(cfg)# 
+    [X] Rollback commit took 60.4s: commit
+NOTICE: commit action is not applicable. no configuration changes were made
+B2B_DT-DEMO(cfg)# 
+
+  --- Key Session Y Logs ---
+    [Y] In configure mode, doing rollback 1
+    [Y] >>> rollback 1
+    [Y] <<< rollback 1
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:44:36)# rollback 1
+Configuration rollback complete
+B2B_DT-DEMO(cfg)# 
+    [Y] Config compare has IRBs: True
+    [Y] >>> commit
+    [Y] <<< commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:44:45)# commit
+Commit succeeded by dnroot at 19-Feb-2026 10:44:51 UTC+02:00 (Asia/Jerusalem)
+B2B_DT-DEMO(cfg)# 
+    [Y] COMMIT: 60.3s - commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:44:45)# commit
+Commit succeeded by dnroot at 19-Feb-2026 10:44:51 UTC+02:00 (Asia/Jerusalem)
+B2B_DT-DEMO(cfg)# 
+
+  *** PASSED ***
+  [Cleanup] Removing test config...
+  [Cleanup] Nothing to clean
+
+======================================================================
+  ATTEMPT 2 (large commit, 15 IRBs, delay=0.2s)
+======================================================================
+  [X] Committing large config (15 IRBs + EVPNs + VRF + BGP)...
+  [X] First commit took 45.3s: succeeded
+  [X] Signaling Y and committing large rollback deletion...
+  [Y] Entering configure mode during X's commit window...
+  [Y] Rollback compare has IRBs: True
+  [Y] Committing (bug trigger point)...
+  [X] Rollback commit took 60.3s: succeeded
+  [Y] Commit took 60.4s
+
+  --- Key Session X Logs ---
+    [X] Config compare has ~45 IRB references
+    [X] >>> commit
+    [X] <<< commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:48:46)# commit
+Commit succeeded by dnroot at 19-Feb-2026 10:48:52 UTC+02:00 (Asia/Jerusalem)
+B2B_DT-DEMO(cfg)# 
+    [X] First commit took 45.3s
+    [X] >>> rollback 1
+    [X] <<< rollback 1
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:49:31)# rollback 1
+Configuration rollback complete
+B2B_DT-DEMO(cfg)# 
+    [X] Rollback 1 done, about to commit deletion
+    [X] >>> commit
+    [X] <<< commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:49:34)# commit
+Commit succeeded by dnroot at 19-Feb-2026 10:49:39 UTC+02:00 (Asia/Jerusalem)
+B2B_DT-DEMO(cfg)# 
+    [X] Rollback commit took 60.3s: commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:49:34)# commit
+Commit succeeded by dnroot at 19-Feb-202
+  --- Key Session X Logs ---
+    [X] Config compare has ~45 IRB references
+    [X] >>> commit
+    [X] <<< commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:48:47)# commit
+Warning: User 'dnroot' committed at 19-Feb-2026 10:48:49 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+    [X] First commit took 45.3s
+    [X] >>> rollback 1
+    [X] <<< rollback 1
+Warning: User 'dnroot' committed at 19-Feb-2026 10:48:49 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+    [X] Rollback 1 done, about to commit deletion
+    [X] >>> commit
+    [X] <<< commit
+ERROR: Failed to perform commit, another commit is in progress.
+B2B_DT-DEMO(cfg)# 
+    [  [Cleanup] Committed: succeeded
+
+======================================================================
+  ATTEMPT 3 (large commit, 15 IRBs, delay=0.2s)
+======================================================================
+  [X] Committing large config (15 IRBs + EVPNs + VRF + BGP)...
+  [X] First commit took 45.3s: succeeded
+  [X] Signaling Y and committing large rollback deletion...
+  [Y] Entering configure mode during X's commit window...
+  [Y] Rollback compare has IRBs: True
+  [Y] Committing (bug trigger point)...
+  [X] Rollback commit took 60.3s: succeeded
+  [Y] Commit took 60.4s
+
+  --- Key Session X Logs ---
+    [X] Config compare has ~45 IRB references
+    [X] >>> commit
+    [X] <<< commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:54:14)# commit
+Commit succeeded by dnroot at 19-Feb-2026 10:54:21 UTC+02:00 (Asia/Jerusalem)
+B2B_DT-DEMO(cfg)# 
+    [X] First commit took 45.3s
+    [X] >>> rollback 1
+    [X] <<< rollback 1
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:55:00)# rollback 1
+Configuration rollback complete
+B2B_DT-DEMO(cfg)# 
+    [X] Rollback 1 done, about to commit deletion
+    [X] >>> commit
+    [X] <<< commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:55:03)# commit
+Commit succeeded by dnroot at 19-Feb-2026 10:55:08 UTC+02:00 (Asia/Jerusalem)
+B2B_DT-DEMO(cfg)# 
+    [X] Rollback commit took 60.3s: commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:55:03)# commit
+Commit succeeded by dnroot at 19-Feb-2026 10:55:08 UTC+02:00 (Asia/Jerusalem)
+B2B_DT-DEMO(cfg)# 
+
+  --- Key Session Y Logs ---
+    [Y] In configure mode, doing rollback 1
+    [Y] >>> rollback 1
+    [Y] <<< rollback 1
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:55:05)# rollback 1
+Configuration rollback complete
+B2B_DT-DEMO(cfg)# 
+    [Y] Config compare has IRBs: True
+    [Y] >>> commit
+    [Y] <<< commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:55:14)# commit
+Commit succeeded by dnroot at 19-Feb-2026 10:55:20 UTC+02:00 (Asia/Jerusalem)
+B2B_DT-DEMO(cfg)# 
+    [Y] COMMIT: 60.4s - commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:55:14)# commit
+Commit succeeded by dnroot at 19-Feb-2026 10:55:20 UTC+02:00 (Asia/Jerusalem)
+B2B_DT-DEMO(cfg)# 
+
+  *** PASSED ***
+  [Cleanup] Removing test config...
+  [Cleanup] Committed: succeeded
+
+======================================================================
+  RESULTS: ['PASS', 'PASS', 'PASS']
+  CONCLUSION: Bug appears FIXED (3/3 passed)
+======================================================================
+  [Cleanup] Removing test config...
+  [Cleanup] Nothing to clean
+
+Done.
+of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+    [X] First commit took 45.3s
+    [X] >>> rollback 1
+    [X] <<< rollback 1
+Warning: User 'dnroot' committed at 19-Feb-2026 10:54:18 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+    [X] Rollback 1 done, about to commit deletion
+    [X] >>> commit
+    [X] <<< commit
+ERROR: Failed to perform commit, another commit is in progress.
+B2B_DT-DEMO(cfg)# 
+    [X] Rollback commit took 60.4s: commit
+ERROR: Failed to perform commit, another commit is in progress.
+B2B_DT-DEMO(cfg)# 
+
+  --- Key Session Y Logs ---
+    [Y] In configure mode, doing rollback 1
+    [Y] >>> rollback 1
+    [Y] <<< rollback 1
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:55:06)# rollback 1
+Configuration rollback complete
+B2B_DT-DEMO(cfg)# 
+    [Y] Config compare has IRBs: True
+    [Y] >>> commit
+    [Y] <<< commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:55:15)# commit
+Warning: User 'dnroot' committed at 19-Feb-2026 10:55:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+    [Y] COMMIT: 60.4s - commit
+[FB2B_DT-DEMO(cfg 19-Feb-2026-10:55:15)# commit
+Warning: User 'dnroot' committed at 19-Feb-2026 10:55:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+    [Y] <<< exit
+Warning: User 'dnroot' committed at 19-Feb-2026 10:55:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+    [Y] <<< exit
+Warning: User 'dnroot' committed at 19-Feb-2026 10:55:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+
+  *** INCONCLUSIVE: DEMO(cfg 19-Feb-2026-10:55:15)# commit
+Warning: User 'dnroot' committed at 19-Feb-2026 10:55:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]?  ***
+  [Cleanup] Removing test config...
+  [Cleanup] Committed: ser 'dnroot' committed at 19-Feb-2026 10:56:56 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? 
+
+======================================================================
+  RESULTS: ['OTHER', 'OTHER', 'OTHER']
+  CONCLUSION: Inconclusive
+======================================================================
+  [Cleanup] Removing test config...
+  [Cleanup] Nothing to clean
+
+Done.

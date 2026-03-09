@@ -1,0 +1,24 @@
+=== Investigation: 'direction' keyword in PM source line ===
+
+1. Check TAB completion for source line in PM context:
+  TAB completion output:
+    source maintenance-domain MD-CUST1 maintenance-association MA-CUST1 mep-id 4
+    <CR>
+    admin-state                   Enable or disable the CFM two-way delay measurement test session
+    apply-groups                  To apply the configuration groups
+    apply-groups-exclude          To exclude the configuration groups
+    description                   Set description for the CFM two-way delay measurement test session
+    profile                       Associate a configuration profile with the CFM two-way delay measurement test session
+    target                        Configure target for the two-way delay measurement test
+    NCP3-CFM-nog(cfg-pm-cfm-dm-DEEP_TEST)# source maintenance-domain MD-CUST1 maintenance-association MA-CUST1 mep-id 4 
+    NCP3-CFM-nog(cfg-pm-cfm-dm-DEEP_TEST)#
+Traceback (most recent call last):
+  File "/home/dn/verify_bc10_deep.py", line 54, in <module>
+    run_seq(client, ["exit", "exit", "exit", "exit", "exit"], timeout=10)
+  File "/home/dn/verify_bc10_deep.py", line 15, in run_seq
+    ch.send(cmd + "\n")
+  File "/home/dn/.local/lib/python3.10/site-packages/paramiko/channel.py", line 799, in send
+    return self._send(s, m)
+  File "/home/dn/.local/lib/python3.10/site-packages/paramiko/channel.py", line 1196, in _send
+    raise socket.error("Socket is closed")
+OSError: Socket is closed

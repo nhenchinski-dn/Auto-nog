@@ -1,0 +1,326 @@
+interfaces
+  ge100-0/0/101.204
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 2
+    ipv4-address 10.0.2.1/24
+  !
+  ge100-0/0/101.205
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 3
+    ipv4-address 10.0.3.1/24
+  !
+  ge100-0/0/101.206
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 4
+    ipv4-address 10.0.4.1/24
+  !
+  ge100-0/0/101.207
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 5
+    ipv4-address 10.0.5.1/24
+  !
+  ge100-0/0/101.208
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 6
+    ipv4-address 10.0.6.1/24
+  !
+  ge100-0/0/101.209
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 7
+    ipv4-address 10.0.7.1/24
+  !
+  ge100-0/0/101.210
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 8
+    ipv4-address 10.0.8.1/24
+  !
+  ge100-0/0/101.211
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 9
+    ipv4-address 10.0.9.1/24
+  !
+  ge100-0/0/101.212
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 10
+    ipv4-address 10.0.10.1/24
+  !
+  ge100-0/0/101.213
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 11
+    ipv4-address 10.0.11.1/24
+  !
+  ge100-0/0/64.204
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 2
+    ipv4-address 10.0.2.2/24
+  !
+  ge100-0/0/64.205
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 3
+    ipv4-address 10.0.3.2/24
+  !
+  ge100-0/0/64.206
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 4
+    ipv4-address 10.0.4.2/24
+  !
+  ge100-0/0/64.207
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 5
+    ipv4-address 10.0.5.2/24
+  !
+  ge100-0/0/64.208
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 6
+    ipv4-address 10.0.6.2/24
+  !
+  ge100-0/0/64.209
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 7
+    ipv4-address 10.0.7.2/24
+  !
+  ge100-0/0/64.210
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 8
+    ipv4-address 10.0.8.2/24
+  !
+  ge100-0/0/64.211
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 9
+    ipv4-address 10.0.9.2/24
+  !
+  ge100-0/0/64.212
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 10
+    ipv4-address 10.0.10.2/24
+  !
+  ge100-0/0/64.213
+    admin-state enabled
+    vlan-tags outer-tag 202 inner-tag 11
+    ipv4-address 10.0.11.2/24
+  !
+!
+protocols
+  bgp
+    neighbor 10.0.2.2
+      remote-as 65001
+      update-source ge100-0/0/101.204
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.3.2
+      remote-as 65001
+      update-source ge100-0/0/101.205
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.4.2
+      remote-as 65001
+      update-source ge100-0/0/101.206
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.5.2
+      remote-as 65001
+      update-source ge100-0/0/101.207
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.6.2
+      remote-as 65001
+      update-source ge100-0/0/101.208
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.7.2
+      remote-as 65001
+      update-source ge100-0/0/101.209
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.8.2
+      remote-as 65001
+      update-source ge100-0/0/101.210
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.9.2
+      remote-as 65001
+      update-source ge100-0/0/101.211
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.10.2
+      remote-as 65001
+      update-source ge100-0/0/101.212
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.11.2
+      remote-as 65001
+      update-source ge100-0/0/101.213
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.2.1
+      remote-as 65001
+      update-source ge100-0/0/64.204
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.3.1
+      remote-as 65001
+      update-source ge100-0/0/64.205
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.4.1
+      remote-as 65001
+      update-source ge100-0/0/64.206
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.5.1
+      remote-as 65001
+      update-source ge100-0/0/64.207
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.6.1
+      remote-as 65001
+      update-source ge100-0/0/64.208
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.7.1
+      remote-as 65001
+      update-source ge100-0/0/64.209
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.8.1
+      remote-as 65001
+      update-source ge100-0/0/64.210
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.9.1
+      remote-as 65001
+      update-source ge100-0/0/64.211
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.10.1
+      remote-as 65001
+      update-source ge100-0/0/64.212
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+    neighbor 10.0.11.1
+      remote-as 65001
+      update-source ge100-0/0/64.213
+      bfd
+        admin-state enabled
+      !
+      address-family ipv4-unicast
+        send-community community-type both
+        soft-reconfiguration inbound
+      !
+    !
+  !
+!

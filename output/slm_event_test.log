@@ -1,0 +1,8 @@
+Logging terminal opened.
+SLM session SLM_EVT_TEST_S created with far-end-loss threshold 0.01%
+Waiting 20s for probes and threshold check...
+Captured 0 bytes from logging terminal.
+BUG: No SLM threshold violation event generated!
+  Raw output: 
+Cleaned up.
+DONE
