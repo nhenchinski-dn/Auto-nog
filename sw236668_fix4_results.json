@@ -1,0 +1,72 @@
+[
+  {
+    "step": "7a",
+    "name": "Create profile TIMING_APPLIED (non-stop ci=60 pi=1)",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_APPLIED test-duration non-stop computation-interval 60 probe-interval 1\nncpl-cfm-nog(cfg)#",
+    "expected": "Profile created"
+  },
+  {
+    "step": "7b",
+    "name": "Commit profile",
+    "status": "PASS",
+    "output": "commit\nCommit succeeded by dnroot at 28-Jul-2025 06:41:04 UTC\nncpl-cfm-nog(cfg)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "7c",
+    "name": "Configure source (MD-CUST/MA-CUST/mep 1)",
+    "status": "PASS",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION source maintenance-domain MD-CUST maintenance-association MA-CUST mep-id 1\nncpl-cfm-nog(cfg)#",
+    "expected": "Source configured"
+  },
+  {
+    "step": "7d",
+    "name": "Assign profile TIMING_APPLIED",
+    "status": "PASS",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION profile TIMING_APPLIED\nncpl-cfm-nog(cfg)#",
+    "expected": "Profile assigned"
+  },
+  {
+    "step": "7e",
+    "name": "Set target mep-id 2",
+    "status": "PASS",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION target mep-id 2\nncpl-cfm-nog(cfg)#",
+    "expected": "Target set"
+  },
+  {
+    "step": "7f",
+    "name": "Enable admin-state",
+    "status": "PASS",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION admin-state enable\nncpl-cfm-nog(cfg)#",
+    "expected": "Enabled"
+  },
+  {
+    "step": "7g",
+    "name": "Commit DM session",
+    "status": "FAIL",
+    "output": "commit\nERROR: Source MD MD-CUST MA MA-CUST LMEP 1 in use with session DM_CFM_CLI.\nncpl-cfm-nog(cfg)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "7h",
+    "name": "Session config shows TIMING_APPLIED",
+    "status": "PASS",
+    "output": "show config services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:41:52 UTC]\n\nservices\n  performance-monitoring\n    cfm\n      two-way-delay-measurement DM_TIMING_SESSION\n        admin-state enabled\n        profile TIMING_APPLIED\n        source maintenance-domain MD-CUST maintenance-association MA-CUST mep-id 1\n        target mep-id 2\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "Profile and source visible in config"
+  },
+  {
+    "step": "7i",
+    "name": "Session operational detail shows profile info",
+    "status": "PASS",
+    "output": "show services performance-monitoring cfm tests proactive two-way-delay session-name DM_TIMING_SESSION detail | no-more\n--------------------------------------------------------------------------------------------------^\nERROR: Unknown word: 'DM_TIMING_SESSION'.\nncpl-cfm-nog#",
+    "expected": "Session operational info visible"
+  },
+  {
+    "step": "7j",
+    "name": "DM_TIMING_SESSION visible in proactive tests list",
+    "status": "FAIL",
+    "output": "show services performance-monitoring cfm tests proactive | no-more\n\nCFM Proactive Performance Monitoring Sessions:\n\n| Test Name          | Test Type                  | MD Name   | MA Name   | MEP-ID   | Target   | Last Run                  | Status   |\n|--------------------+----------------------------+-----------+-----------+----------+----------+---------------------------+----------|\n| DM_CFM_CLI         | two-way-delay-measurement  | MD-CUST   | MA-CUST   | 1        | 2        | 2025-07-28 06:42:18 +0000 | Ongoing  |\n\n\n Test Type Counters:\n   Two-way delay measurement tests: 1\n   Two-way synthetic loss measurement tests: 0\n\n Total displayed tests: 1\n\nncpl-cfm-nog#",
+    "expected": "Session in proactive test list"
+  }
+]

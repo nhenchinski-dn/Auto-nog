@@ -1,0 +1,107 @@
+[
+  {
+    "step": "4a",
+    "name": "Configure probes on TIMING_TEST (pc=10 pi=1 ri=60)",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST test-duration probes probe-count 10 probe-interval 1 repeat-interval 60\nncpl-cfm-nog(cfg)#",
+    "expected": "Probes accepted"
+  },
+  {
+    "step": "4b",
+    "name": "TIMING_TEST shows probes after commit",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:33:19 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_TEST\n          test-duration probes probe-count 10 probe-interval 1 repeat-interval 60\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "probes visible"
+  },
+  {
+    "step": "4c",
+    "name": "Switch to time-frame (m=5 pi=2 ri=600)",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST test-duration time-frame minutes 5 probe-interval 2 repeat-interval 600\nncpl-cfm-nog(cfg)#",
+    "expected": "Time-frame accepted"
+  },
+  {
+    "step": "4d-commit",
+    "name": "Time-frame commit succeeds",
+    "status": "PASS",
+    "output": "commit\nCommit succeeded by dnroot at 28-Jul-2025 06:33:38 UTC\nncpl-cfm-nog(cfg)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "4d",
+    "name": "Only time-frame active (probes gone)",
+    "status": "FAIL",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:33:52 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_TEST\n          test-duration probes probe-count 10 probe-interval 1 repeat-interval 60\n          test-duration time-frame minutes 5 probe-interval 2 repeat-interval 600\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "time-frame present, no probe-count"
+  },
+  {
+    "step": "4e",
+    "name": "Switch to non-stop (ci=300 pi=3)",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST test-duration non-stop computation-interval 300 probe-interval 3\nncpl-cfm-nog(cfg)#",
+    "expected": "Non-stop accepted"
+  },
+  {
+    "step": "4f",
+    "name": "Only non-stop active (time-frame gone)",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:34:25 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_TEST\n          test-duration non-stop computation-interval 300 probe-interval 3\n          test-duration probes probe-count 10 probe-interval 1 repeat-interval 60\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "non-stop present, no time-frame"
+  },
+  {
+    "step": "7a",
+    "name": "Create profile TIMING_APPLIED (non-stop ci=60 pi=1)",
+    "status": "FAIL",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_APPLIED test-duration non-stop computation-interval 60 probe-interval 1\n------------------------------------------------^\nERROR: Unknown word: 'services'.\nncpl-cfm-nog(cfg-pm-cfm-dm-DM_TIMING_SESSION)#",
+    "expected": "Profile created"
+  },
+  {
+    "step": "7b",
+    "name": "Commit TIMING_APPLIED",
+    "status": "FAIL",
+    "output": "commit\nERROR: Command failed\n'source_mep_id' is missing at 'services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION'.\nncpl-cfm-nog(cfg-pm-cfm-dm-DM_TIMING_SESSION)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "7c",
+    "name": "Assign profile TIMING_APPLIED",
+    "status": "FAIL",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION profile TIMING_APPLIED\n------------------------------------------------^\nERROR: Unknown word: 'services'.\nncpl-cfm-nog(cfg-pm-cfm-dm-DM_TIMING_SESSION)#",
+    "expected": "Profile assigned"
+  },
+  {
+    "step": "7d",
+    "name": "Set target mep-id 2",
+    "status": "FAIL",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION target mep-id 2\n------------------------------------------------^\nERROR: Unknown word: 'services'.\nncpl-cfm-nog(cfg-pm-cfm-dm-DM_TIMING_SESSION)#",
+    "expected": "Target set"
+  },
+  {
+    "step": "7e",
+    "name": "Enable admin-state",
+    "status": "FAIL",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION admin-state enable\n------------------------------------------------^\nERROR: Unknown word: 'services'.\nncpl-cfm-nog(cfg-pm-cfm-dm-DM_TIMING_SESSION)#",
+    "expected": "Admin state enabled"
+  },
+  {
+    "step": "7f",
+    "name": "Commit DM session with profile",
+    "status": "FAIL",
+    "output": "commit\nERROR: Command failed\n'source_mep_id' is missing at 'services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION'.\nncpl-cfm-nog(cfg-pm-cfm-dm-DM_TIMING_SESSION)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "7g",
+    "name": "Session config shows TIMING_APPLIED profile",
+    "status": "FAIL",
+    "output": "show config services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:36:23 UTC]\n\nservices\n  performance-monitoring\n    cfm\n      two-way-delay-measurement DM_TIMING_SESSION\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg-pm-cfm-dm-DM_TIMING_SESSION)#",
+    "expected": "Profile name visible in session config"
+  },
+  {
+    "step": "7h",
+    "name": "Session operational detail shows profile",
+    "status": "PASS",
+    "output": "show services performance-monitoring cfm tests proactive two-way-delay session-name DM_TIMING_SESSION detail | no-more\n--------------------------------------------------------------------------------------------------^\nERROR: Unknown word: 'DM_TIMING_SESSION'.\nncpl-cfm-nog#",
+    "expected": "Session details visible"
+  }
+]
