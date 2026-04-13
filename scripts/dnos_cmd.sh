@@ -1,36 +1,15 @@
-#!/usr/bin/expect -f
-set timeout 30
-set host "WKY1C7VD00008P2"
-set user "dnroot"
-set pass "dnroot"
+#!/bin/bash
+# Run DNOS CLI commands on a remote device
+# Usage: ./dnos_cmd.sh <hostname> <command1> [command2] ...
+HOST=$1
+shift
 
-# Get commands from arguments or stdin
-if {[llength $argv] > 0} {
-    set cmds [lindex $argv 0]
-} else {
-    set cmds "show version"
-}
-
-log_user 1
-
-spawn sshpass -p $pass ssh -tt -o StrictHostKeyChecking=no -o PreferredAuthentications=password,keyboard-interactive -o PubkeyAuthentication=no $user@$host
-
-expect {
-    "#" { }
-    ">" { }
-    timeout { puts "TIMEOUT waiting for prompt"; exit 1 }
-}
-
-foreach cmd [split $cmds "\n"] {
-    set cmd [string trim $cmd]
-    if {$cmd eq ""} continue
-    send "$cmd\r"
-    expect {
-        -re {#\s*$} { }
-        -re {>\s*$} { }
-        timeout { puts "TIMEOUT after: $cmd"; exit 1 }
-    }
-}
-
-send "exit\r"
-expect eof
+{
+    sleep 6
+    for cmd in "$@"; do
+        echo "$cmd"
+        sleep 2
+    done
+    sleep 1
+    echo "exit"
+} | sshpass -p 'dnroot' ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no dnroot@${HOST} 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -v "^stty:" | grep -v "DRIVENETS CLI Loading"

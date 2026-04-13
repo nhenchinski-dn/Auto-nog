@@ -1,0 +1,2532 @@
+[
+  {
+    "trap_number": 1,
+    "timestamp": "2026-03-24T09:19:04.946834",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14903345
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70348
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 2,
+    "timestamp": "2026-03-24T09:19:17.946644",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14904646
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70350
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 3,
+    "timestamp": "2026-03-24T09:19:30.946408",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14905946
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70353
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 4,
+    "timestamp": "2026-03-24T09:19:43.946143",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14907247
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70355
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 5,
+    "timestamp": "2026-03-24T09:19:56.945858",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14908548
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70357
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 6,
+    "timestamp": "2026-03-24T09:20:09.945505",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14909849
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70360
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 7,
+    "timestamp": "2026-03-24T09:20:22.945392",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14911150
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70362
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 8,
+    "timestamp": "2026-03-24T09:20:35.944512",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14912451
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70364
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 9,
+    "timestamp": "2026-03-24T09:20:48.944545",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14913751
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70367
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 10,
+    "timestamp": "2026-03-24T09:21:01.944058",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14915052
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70369
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 11,
+    "timestamp": "2026-03-24T09:21:14.943467",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14916353
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70371
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 12,
+    "timestamp": "2026-03-24T09:21:27.943192",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14917654
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70373
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 13,
+    "timestamp": "2026-03-24T09:21:40.943218",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14918955
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70376
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 14,
+    "timestamp": "2026-03-24T09:21:53.942663",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14920255
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70378
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 15,
+    "timestamp": "2026-03-24T09:22:06.941883",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14921556
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70380
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 16,
+    "timestamp": "2026-03-24T09:22:19.941924",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14922857
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70383
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 17,
+    "timestamp": "2026-03-24T09:22:32.941326",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14924158
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70385
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 18,
+    "timestamp": "2026-03-24T09:22:45.941150",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14925459
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70387
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 19,
+    "timestamp": "2026-03-24T09:22:58.940380",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14926759
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70390
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 20,
+    "timestamp": "2026-03-24T09:23:11.940234",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14928060
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70392
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 21,
+    "timestamp": "2026-03-24T09:23:24.939859",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14929361
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70394
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 22,
+    "timestamp": "2026-03-24T09:23:37.939695",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14930662
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70396
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 23,
+    "timestamp": "2026-03-24T09:23:50.939376",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14931963
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70399
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 24,
+    "timestamp": "2026-03-24T09:24:03.939104",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14933263
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70401
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 25,
+    "timestamp": "2026-03-24T09:24:16.938829",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14934564
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70403
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 26,
+    "timestamp": "2026-03-24T09:24:29.938318",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14935865
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70406
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 27,
+    "timestamp": "2026-03-24T09:24:42.937981",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14937166
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70408
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 28,
+    "timestamp": "2026-03-24T09:24:55.937679",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14938467
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70410
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 29,
+    "timestamp": "2026-03-24T09:25:08.937434",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14939767
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70413
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 30,
+    "timestamp": "2026-03-24T09:25:21.936996",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14941068
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70415
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 31,
+    "timestamp": "2026-03-24T09:25:34.936703",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14942369
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70417
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 32,
+    "timestamp": "2026-03-24T09:25:47.936309",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14943670
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70419
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 33,
+    "timestamp": "2026-03-24T09:26:00.935988",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14944971
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70422
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 34,
+    "timestamp": "2026-03-24T09:26:13.935594",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14946271
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70424
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 35,
+    "timestamp": "2026-03-24T09:26:26.935497",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14947572
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70426
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 36,
+    "timestamp": "2026-03-24T09:26:39.934932",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14948873
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70429
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 37,
+    "timestamp": "2026-03-24T09:26:52.934784",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14950174
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70431
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 38,
+    "timestamp": "2026-03-24T09:27:05.934251",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14951375
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70433
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 39,
+    "timestamp": "2026-03-24T09:27:18.934049",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14952675
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70436
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 40,
+    "timestamp": "2026-03-24T09:27:31.933274",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14953976
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70438
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 41,
+    "timestamp": "2026-03-24T09:27:44.933285",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14955277
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70440
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 42,
+    "timestamp": "2026-03-24T09:27:57.933452",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14956578
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70442
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 43,
+    "timestamp": "2026-03-24T09:28:10.932538",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14957879
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70445
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 44,
+    "timestamp": "2026-03-24T09:28:23.932469",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14959180
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70447
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 45,
+    "timestamp": "2026-03-24T09:28:36.932358",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14960480
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70449
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  },
+  {
+    "trap_number": 46,
+    "timestamp": "2026-03-24T09:28:49.931933",
+    "source": "100.64.4.125:162",
+    "community": "noga",
+    "trap_oid": "1.3.6.1.4.1.49739.2.15.0.3",
+    "trap_name": "dnCfmProactiveTestFailure",
+    "varbinds": [
+      {
+        "oid": "1.3.6.1.2.1.1.3.0",
+        "name": "1.3.6.1.2.1.1.3.0",
+        "value": 14961781
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.5.0",
+        "name": "dnCfmTrapMdLevel",
+        "value": 7
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.6.0",
+        "name": "dnCfmTrapMdName",
+        "value": "MD-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.7.0",
+        "name": "dnCfmTrapMaName",
+        "value": "MA-CUST"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.12.0",
+        "name": "dnCfmTrapMepId",
+        "value": 2
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.13.0",
+        "name": "dnCfmTrapSessionType",
+        "value": "1 (ethDm)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.14.0",
+        "name": "dnCfmTrapSessionId",
+        "value": 70452
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.9.0",
+        "name": "dnCfmTrapThresholdType",
+        "value": "1 (frameDelayTwoWayMin)"
+      },
+      {
+        "oid": "1.3.6.1.4.1.49739.2.15.1.11.0",
+        "name": "dnCfmTrapMeasuredValue",
+        "value": 13
+      }
+    ]
+  }
+]

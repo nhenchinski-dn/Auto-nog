@@ -1,0 +1,53 @@
+
+============================================================
+[08:22:33] show system version
+============================================================
+show system version | no-more
+
+System Name: ncpl-nog
+Version: DNOS [26.2.0] build [175_dev], Copyright 2026 DRIVENETS LTD.
+Patch: N/A
+
+ncpl-nog#
+
+============================================================
+[08:23:14] PRE-CHECK show on-demand
+============================================================
+show services performance-monitoring cfm tests on-demand | no-more
+
+CFM On-Demand Performance Monitoring Sessions:
+
+| Test Name          | Test Type                  | MD Name   | MA Name   | MEP-ID   | Target   | Last Run   | Status   |
+|--------------------+----------------------------+-----------+-----------+----------+----------+------------+----------|
+
+
+ Test Type Counters:
+   Loopback tests: 0
+   Linktrace tests: 0
+   Two-way delay measurement tests: 0
+   Two-way synthetic loss measurement tests: 0
+
+ Total displayed tests: 0
+
+ncpl-nog#
+
+============================================================
+[08:28:20] Health check cycle 25 show on-demand
+============================================================
+show services performance-monitoring cfm tests on-demand | no-more
+
+CFM On-Demand Performance Monitoring Sessions:
+
+| Test Name          | Test Type                  | MD Name   | MA Name   | MEP-ID   | Target   | Last Run   | Status   |
+|--------------------+----------------------------+-----------+-----------+----------+----------+------------+----------|
+
+
+ Test Type Counters:
+   Loopback tests: 0
+   Linktrace tests: 0
+   Two-way delay measurement tests: 0
+   Two-way synthetic loss measurement tests: 0
+
+ Total displayed tests: 0
+
+ncpl-nog#

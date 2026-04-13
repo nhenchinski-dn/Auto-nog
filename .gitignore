@@ -6,3 +6,35 @@ __pycache__/
 .cursor/
 .cursor-server/
 .ssh/
+.config/
+.snmp/
+
+# Shell/profile
+.bash_history
+.bash_logout
+.bashrc
+.profile
+.lesshst
+.viminfo
+.sudo_as_admin_successful
+.gitconfig
+
+# Secrets and state
+.bug_dashboard_secret
+.bug_dashboard_sessions.db
+.bug_dashboard_state/
+.bug_monitor.env
+.bug_monitor_state.json
+
+# Logs
+nohup.out
+bug_monitor.log
+*.mov
+*.vtt
+
+# Cloned repos / nested repos
+Auto-nog/
+cheetah/
+
+# Misc
+my-cursor-skills.tar.gz

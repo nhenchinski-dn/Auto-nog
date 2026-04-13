@@ -1,0 +1,23 @@
+{
+  "version": "show system version | no-more\n\nSystem Name: NCP3-nog\nVersion: DNOS [26.2.0] build [22_priv], Copyright 2026 DRIVENETS LTD.\nPatch: N/A\n\nNCP3-nog#",
+  "step1_baseline": "show route summary | no-more\n\nVRF: default\nTable: ipv4-unicast, ipv6-unicast\n\n| Protocol   | IPv4 Routes   | IPv6 Routes   |\n|------------+---------------+---------------|\n| connected  | 3             | 3             |\n| static     | 2003          | 3             |\n| Totals     | 2006          | 6             |\n\nRIB maximum IPv4 routes: 2025000\nRIB maximum IPv6 routes: 525000\nRIB maximum IGP IPv4 routes: 25000\nRIB maximum IGP IPv6 routes: 25000\nBGP maximum IPv4 routes: 2000000\nBGP maximum IPv6 routes: 500000\n\nTable: mpls-nh\n\n| Protocol   | IPv4 Routes   |\n|------------+---------------|\n| Totals     | 0             |\nTable: color-mpls-nh\n\n| Protocol   | IPv4 Routes   |\n|------------+---------------|\n| Totals     | 0             |\nTable: color-mpls-nh-ipv6\n\n| Protocol   | IPv6 Routes   |\n|------------+---------------|\n| Totals     | 0             |\nTable: mpls-nh-ipv6\n\n| Protocol   | IPv6 Routes   |\n|------------+---------------|\n| Totals     | 0             |\n\nTable: multicast-ipv4-rpf, RPF check mode: unicast RIB\n\n| Protocol   | IPv4 Unicast Routes   | IPv4 Multicast Routes   |\n|------------+-----------------------+-------------------------|\n| connected  | 3                     |                         |\n| Totals     | 3                     | 0                       |\n\nTable: ipv4-flowspec, ipv6-flowspec\n\n| Protocol   | IPv4 Flows   | IPv6 Flows   |\n|------------+--------------+--------------|\n| Totals     | 0            | 0            |\n\nNCP3-nog#",
+  "step1_ipv4_baseline": 2006,
+  "step1_ipv6_baseline": 6,
+  "step2_commit": "commit\nNOTICE: commit action is not applicable. no configuration changes were made\nNCP3-nog(cfg)#",
+  "step2_time": 114.5,
+  "step2_result": "FAIL",
+  "step2_ipv4_after": 2006,
+  "step2_ipv6_after": 6,
+  "step3_commit": "commit\nCommit succeeded by dnroot at 09-Apr-2026 01:07:22 UTC\nNCP3-nog(cfg)#",
+  "step3_ipv4_after_enable": 2006,
+  "step3_result": "PASS",
+  "step4_commit": "commit\nCommit succeeded by dnroot at 09-Apr-2026 01:08:42 UTC\nNCP3-nog(cfg)#",
+  "step4_ipv4_after_disable": 2006,
+  "step4_result": "PASS",
+  "step5_result": "PASS",
+  "step6_ipv4_final": 2006,
+  "start_time": "2026-04-09 09:47:34 UTC",
+  "end_time": "2026-04-09 09:59:46 UTC",
+  "duration_sec": 731.834462,
+  "overall": "FAIL"
+}

@@ -1,0 +1,741 @@
+==============================================================================
+  SW-238976: Y.1731 HA Longevity Test
+  Host:    WKY1C7VD00008P2
+  Cycles:  600
+  Actions: ['DataPath restart', 'wb_agent restart']
+  Started: 2026-03-26 08:53:17 UTC
+==============================================================================
+  [SSH main] Connected to WKY1C7VD00008P2
+
+==============================================================================
+  PRE-CHECK 1: Software version
+==============================================================================
+show system version | no-more
+
+System Name: ncp3-cfm-nog
+Version: DNOS [26.2.0] build [175_dev], Copyright 2026 DRIVENETS LTD.
+Patch: N/A
+
+ncp3-cfm-nog#
+
+==============================================================================
+  PRE-CHECK 2: System uptime
+==============================================================================
+show system uptime | no-more
+
+System Name: ncp3-cfm-nog
+Time Source: ntp
+Current Time: 26-Mar-2026 00:16:14 UTC
+System Start Time: 25-Mar-2026 00:16:01 UTC
+System Uptime: 1 day, 0:00:12
+System Boot Uptime: 1 day, 0:01:01
+
+ncp3-cfm-nog#
+
+==============================================================================
+  PRE-CHECK 3: Baseline proactive sessions
+==============================================================================
+  Total sessions: 4
+  Ongoing: 4
+  [PASS] Proactive sessions exist
+         4 session(s)
+
+==============================================================================
+  PRE-CHECK 4: cfm_mgr baseline memory
+==============================================================================
+  cfm_mgr memory not available
+  [FAIL] cfm_mgr baseline memory captured
+         unavailable
+
+==============================================================================
+  PRE-CHECK 5: Baseline core dumps
+==============================================================================
+  Existing cfm cores: 1
+
+==============================================================================
+  PRE-CHECK 6: Baseline system events (CFM)
+==============================================================================
+  No CFM events found (or command not supported).
+
+==============================================================================
+  PRE-CHECK 7: CLI health
+==============================================================================
+  [PASS] CLI responds without errors
+
+==============================================================================
+  LONGEVITY: 600 restart cycles across 2 HA action(s)
+==============================================================================
+
+  --- Cycle 1/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 2/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 3/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 4/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.2s  Status: OK
+
+  --- Cycle 5/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 6/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 7/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 8/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 9/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 10/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.2s  Status: OK
+
+    === Health check at cycle 10 ===
+    cfm_mgr memory: unavailable
+    Core dumps: none new
+    CFM system events: 0 line(s)
+    Last 10 recovery times: avg=173.1s max=188.2s
+    Total errors so far: 1
+
+  --- Cycle 11/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 12/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    SSH channel lost, reconnecting...
+  [SSH c12-a1] Connected to WKY1C7VD00008P2
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 164.5s  Status: OK
+
+  --- Cycle 13/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 14/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 15/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 16/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 17/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 18/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 19/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 20/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.2s  Status: OK
+
+    === Health check at cycle 20 ===
+    cfm_mgr memory: unavailable
+    Core dumps: none new
+    CFM system events: 0 line(s)
+    Last 10 recovery times: avg=173.8s max=188.2s
+    Total errors so far: 2
+
+  --- Cycle 21/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 22/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 23/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 24/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 25/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 26/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.2s  Status: OK
+
+  --- Cycle 27/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 28/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 29/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 30/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+    === Health check at cycle 30 ===
+    cfm_mgr memory: unavailable
+    Core dumps: none new
+    CFM system events: 0 line(s)
+    Last 10 recovery times: avg=173.1s max=188.2s
+    Total errors so far: 3
+
+  --- Cycle 31/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 32/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 33/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 34/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.2s  Status: OK
+
+  --- Cycle 35/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 36/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 37/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 38/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.0s  Status: OK
+
+  --- Cycle 39/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 40/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+    === Health check at cycle 40 ===
+    cfm_mgr memory: unavailable
+    Core dumps: none new
+    CFM system events: 0 line(s)
+    Last 10 recovery times: avg=173.1s max=188.2s
+    Total errors so far: 4
+
+  --- Cycle 41/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 42/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.2s  Status: OK
+
+  --- Cycle 43/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 44/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 45/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 46/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 47/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 48/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 49/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 50/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+    === Health check at cycle 50 ===
+    cfm_mgr memory: unavailable
+    Core dumps: none new
+    CFM system events: 0 line(s)
+    Last 10 recovery times: avg=173.1s max=188.2s
+    Total errors so far: 5
+
+  --- Cycle 51/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 52/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.2s  Status: OK
+
+  --- Cycle 53/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 54/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.2s  Status: OK
+
+  --- Cycle 55/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 56/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.2s  Status: OK
+
+  --- Cycle 57/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 58/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 59/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 60/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+    === Health check at cycle 60 ===
+    cfm_mgr memory: unavailable
+    Core dumps: none new
+    CFM system events: 0 line(s)
+    Last 10 recovery times: avg=173.1s max=188.2s
+    Total errors so far: 6
+
+  --- Cycle 61/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 62/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.2s  Status: OK
+
+  --- Cycle 63/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 64/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 65/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 66/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.0s  Status: OK
+
+  --- Cycle 67/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 68/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 69/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 70/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+    === Health check at cycle 70 ===
+    cfm_mgr memory: unavailable
+    Core dumps: none new
+    CFM system events: 0 line(s)
+    Last 10 recovery times: avg=173.1s max=188.2s
+    Total errors so far: 7
+
+  --- Cycle 71/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 72/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 73/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.1s  Status: OK
+
+  --- Cycle 74/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 158.1s  Status: OK
+
+  --- Cycle 75/600: DataPath restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process datapath restart
+    Waiting 120s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=4, ongoing=4 (expected>=4) [OK]
+    Recovery time: 188.2s  Status: OK
+
+  --- Cycle 76/600: wb_agent restart ---
+    Pre-restart sessions: total=4, ongoing=4
+    Executing: request system process wb_agent restart
+    Waiting 90s for process recovery...
+    Waiting 60s for session recovery...
+    Post-restart sessions: total=0, ongoing=0 (expected>=4) [SESSION_LOSS]
+
+Closing SSH session...
+Traceback (most recent call last):
+  File "/home/dn/tests/y1731/test_sw238976_ha_longevity.py", line 643, in <module>
+    sys.exit(main())
+  File "/home/dn/tests/y1731/test_sw238976_ha_longevity.py", line 433, in main
+    cli_ok = check_cli_health(chan)
+  File "/home/dn/tests/y1731/test_sw238976_ha_longevity.py", line 170, in check_cli_health
+    out = send(chan, "show system version | no-more", wait=5)
+  File "/home/dn/tests/y1731/test_sw238976_ha_longevity.py", line 82, in send
+    chan.send(cmd + "\n")
+  File "/home/dn/.local/lib/python3.10/site-packages/paramiko/channel.py", line 799, in send
+    return self._send(s, m)
+  File "/home/dn/.local/lib/python3.10/site-packages/paramiko/channel.py", line 1196, in _send
+    raise socket.error("Socket is closed")
+OSError: Socket is closed

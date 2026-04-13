@@ -1,0 +1,227 @@
+Connected to WKY1C7VD00008P2
+
+--- Device Version ---
+NCP3-nog# show sys version | no-more
+System Name: NCP3-nog
+Version: DNOS [26.2.0] build [20_priv], Copyright 2026 DRIVENETS LTD.
+Patch: N/A
+
+--- Device Model ---
+NCP3-nog# show sys hardware model | no-more
+----------------------------^
+ERROR: Unknown word: 'model'.
+
+============================================================
+  DISCOVERY: Finding usable interfaces
+============================================================
+NCP3-nog# configure
+NCP3-nog# interfaces ge400-0/0/33 urpf admin-state enabled
+NCP3-nog# interfaces ge400-0/0/33 urpf mode strict
+NCP3-nog# commit
+NOTICE: commit action is not applicable. no configuration changes were made
+*** Found L3 ge interface: ge400-0/0/33
+NCP3-nog# no interfaces ge400-0/0/33 urpf
+NCP3-nog# commit
+Commit succeeded by dnroot at 29-Mar-2026 00:32:28 UTC
+NCP3-nog# interfaces ge400-0/0/33.1 urpf admin-state enabled
+NCP3-nog# interfaces ge400-0/0/33.1 urpf mode strict
+NCP3-nog# commit
+ERROR: l2-service interface 'ge400-0/0/33.1' cannot be URPF enabled.
+NCP3-nog# rollback
+NCP3-nog# interfaces ge400-0/0/33.200 urpf admin-state enabled
+NCP3-nog# interfaces ge400-0/0/33.200 urpf mode strict
+NCP3-nog# commit
+ERROR: Unable to configure 'ge400-0/0/33.200', vlan-id(s) or vlan-tags or untagged must be configured for 'ge400-0/0/33.200'.
+NCP3-nog# rollback
+NCP3-nog# interfaces ge400-0/0/33.300 urpf admin-state enabled
+NCP3-nog# interfaces ge400-0/0/33.300 urpf mode strict
+NCP3-nog# commit
+ERROR: Unable to configure 'ge400-0/0/33.300', vlan-id(s) or vlan-tags or untagged must be configured for 'ge400-0/0/33.300'.
+NCP3-nog# rollback
+WARNING: No usable ge sub-interface found, will skip sub-if tests
+NCP3-nog# interfaces bundle-1 urpf admin-state enabled
+NCP3-nog# interfaces bundle-1 urpf mode strict
+NCP3-nog# commit
+Commit succeeded by dnroot at 29-Mar-2026 00:32:36 UTC
+NCP3-nog# no interfaces bundle-1 urpf
+NCP3-nog# commit
+Commit succeeded by dnroot at 29-Mar-2026 00:32:38 UTC
+NCP3-nog# interfaces bundle-1.100 urpf admin-state enabled
+NCP3-nog# interfaces bundle-1.100 urpf mode strict
+NCP3-nog# commit
+ERROR: Unable to configure 'bundle-1.100', vlan-id(s) or vlan-tags or untagged must be configured for 'bundle-1.100'.
+WARNING: bundle-1.100 not usable for uRPF
+NCP3-nog# rollback
+NCP3-nog# end
+
+*** Using: ge=ge400-0/0/33, ge-sub=None, bundle=bundle-1, bundle-sub=None
+NCP3-nog# configure
+
+============================================================
+  Step 1: Configure uRPF strict on ge interface
+============================================================
+NCP3-nog# interfaces ge400-0/0/33 urpf admin-state enabled
+NCP3-nog# interfaces ge400-0/0/33 urpf mode strict
+NCP3-nog# show configuration commit | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+NCP3-nog# commit
+Commit succeeded by dnroot at 29-Mar-2026 00:32:42 UTC
+NCP3-nog# show configuration interfaces ge400-0/0/33 urpf | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+
+============================================================
+  Step 3: Configure uRPF strict on bundle interface
+============================================================
+NCP3-nog# interfaces bundle-1 urpf admin-state enabled
+NCP3-nog# interfaces bundle-1 urpf mode strict
+NCP3-nog# show configuration commit | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+NCP3-nog# commit
+Commit succeeded by dnroot at 29-Mar-2026 00:32:46 UTC
+NCP3-nog# show configuration interfaces bundle-1 urpf | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+
+============================================================
+  Step 5: Per-AFI IPv4 strict + IPv6 loose on ge interface
+============================================================
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv4 admin-state enabled
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv4 mode strict
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv6 admin-state enabled
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv6 mode loose
+NCP3-nog# show configuration commit | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+NCP3-nog# commit
+Commit succeeded by dnroot at 29-Mar-2026 00:32:51 UTC
+NCP3-nog# show configuration interfaces ge400-0/0/33 urpf | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+
+============================================================
+  Step 6: Per-AFI reversed: IPv4 loose + IPv6 strict
+============================================================
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv4 mode loose
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv6 mode strict
+NCP3-nog# show configuration commit | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+NCP3-nog# commit
+Commit succeeded by dnroot at 29-Mar-2026 00:32:55 UTC
+NCP3-nog# show configuration interfaces ge400-0/0/33 urpf | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+
+============================================================
+  Step 7: Verify per-AFI takes precedence over global mode
+============================================================
+NCP3-nog# interfaces ge400-0/0/33 urpf mode loose
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv4 mode strict
+NCP3-nog# show configuration commit | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+NCP3-nog# commit
+Commit succeeded by dnroot at 29-Mar-2026 00:32:59 UTC
+NCP3-nog# show configuration interfaces ge400-0/0/33 urpf | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+
+============================================================
+  Step 8: Per-AFI allow-default per address-family
+============================================================
+NCP3-nog# interfaces ge400-0/0/33 urpf allow-default disabled
+NCP3-nog# interfaces ge400-0/0/33 urpf mode strict
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv4 allow-default enabled
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv6 allow-default disabled
+NCP3-nog# show configuration commit | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+NCP3-nog# commit
+ERROR: allow-default value for IPV4 should be the same for all urpf enabled interfaces associated with the same VRF.
+VRF: default.
+Interface ge400-0/0/33 has allow-default: enabled,
+while
+Interface ge400-0/0/5 has allow-default: disabled.
+NCP3-nog# show configuration interfaces ge400-0/0/33 urpf | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+
+============================================================
+  Step 9: Delete per-AFI config and verify fallback to global
+============================================================
+NCP3-nog# top
+NCP3-nog# no interfaces ge400-0/0/33 urpf address-family
+ERROR: Incomplete command.
+NCP3-nog# show configuration commit | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+NCP3-nog# commit
+ERROR: allow-default value for IPV4 should be the same for all urpf enabled interfaces associated with the same VRF.
+VRF: default.
+Interface ge400-0/0/33 has allow-default: enabled,
+while
+Interface ge400-0/0/5 has allow-default: disabled.
+NCP3-nog# show configuration interfaces ge400-0/0/33 urpf | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+
+============================================================
+  Step 11: TAB completion verification
+============================================================
+NCP3-nog# top
+NCP3-nog# interfaces ge400-0/0/33 urpf ?
+<CR>                    
+  address-family          Configure urpf behavior per address-family
+  admin-state             Configure admin state for interface urpf
+  allow-default           Configure interface urpf allow default
+  mode                    Configure interface urpf mode
+NCP3-nog# interfaces ge400-0/0/33 urpf mode ?
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ?
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv4 ?
+-------------------------------------^
+ERROR: Unknown word: 'interfaces'.
+NCP3-nog# interfaces ge400-0/0/33 urpf address-family ipv4 mode ?
+NCP3-nog# interfaces ge400-0/0/33 urpf allow-default ?
+-------------------------------------^
+ERROR: Unknown word: 'interfaces'.
+
+============================================================
+  Negative Test: uRPF strict on irb interface
+============================================================
+NCP3-nog# top
+NCP3-nog# interfaces irb0 urpf admin-state enabled
+-------------------------------------^
+ERROR: Unknown word: 'interfaces'.
+NCP3-nog# interfaces irb0 urpf mode strict
+NCP3-nog# show configuration commit | no-more
+-------------------------------------^
+ERROR: Unknown word: 'interfaces'.
+NCP3-nog# commit
+(x) irb commit PASSED unexpectedly - potential issue!
+NCP3-nog# rollback
+-------------------------------------^
+ERROR: Unknown word: 'interfaces'.
+
+============================================================
+  Cleanup
+============================================================
+NCP3-nog# top
+NCP3-nog# no interfaces ge400-0/0/33 urpf
+ERROR: 'irb0' is not a valid irb name.
+NCP3-nog# no interfaces bundle-1 urpf
+ERROR: 'irb0' is not a valid irb name.
+NCP3-nog# show configuration commit | no-more
+--------------------^
+ERROR: Unknown word: 'configuration'.
+NCP3-nog# commit
+ERROR: allow-default value for IPV4 should be the same for all urpf enabled interfaces associated with the same VRF.
+VRF: default.
+Interface ge400-0/0/33 has allow-default: enabled,
+while
+Interface ge400-0/0/5 has allow-default: disabled.
+NCP3-nog# end
+
+Test complete.

@@ -1,0 +1,126 @@
+{
+  "ticket": "SW-237053",
+  "start": "2026-03-12T15:36:27.837977+00:00",
+  "end": "2026-03-12T15:43:05.723516+00:00",
+  "duration_s": 397.9,
+  "host": "XEC1E3VR00008",
+  "cfm_context": {
+    "md": "MD-CUST",
+    "ma": "MA-CUST",
+    "mep_id": "1",
+    "target_mep": "2"
+  },
+  "overall": "FAIL",
+  "verdicts": [
+    {
+      "name": "Profiles created/updated (DM delay + SLM near-end)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Temporarily removed 1 session(s) from slot",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Sessions created (DM + SLM)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Session DM-EVT-SESS visible in proactive list",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Session SLM-EVT-SESS visible in proactive list",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "At least one CFM_PROACTIVE_TEST_FAILURE event emitted",
+      "passed": true,
+      "detail": "Total events: 5"
+    },
+    {
+      "name": "DM event found for session DM-EVT-SESS",
+      "passed": true,
+      "detail": "Found 5 DM event(s)"
+    },
+    {
+      "name": "Required fields present for DM-EVT-SESS",
+      "passed": true,
+      "detail": "Present: ['session-name', 'session-id'], Missing: []"
+    },
+    {
+      "name": "session-name matches DM-EVT-SESS",
+      "passed": true,
+      "detail": "Got: DM-EVT-SESS"
+    },
+    {
+      "name": "session-id is numeric for DM-EVT-SESS",
+      "passed": true,
+      "detail": "Got: 2749"
+    },
+    {
+      "name": "Event group is CFM-related for DM-EVT-SESS",
+      "passed": true,
+      "detail": "Got: CFM-OAM"
+    },
+    {
+      "name": "SLM event found for session SLM-EVT-SESS",
+      "passed": false,
+      "detail": "Found 0 SLM event(s)"
+    },
+    {
+      "name": "No excessive duplicates for DM-EVT-SESS",
+      "passed": true,
+      "detail": "Count: 5"
+    },
+    {
+      "name": "No excessive duplicates for SLM-EVT-SESS",
+      "passed": true,
+      "detail": "Count: 0"
+    },
+    {
+      "name": "DM session DM-EVT-SESS detail available",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Inform Test Results shown as enabled in DM detail",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SLM session SLM-EVT-SESS detail available",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CFM_PROACTIVE_TEST_FAILURE event defined in system-events catalog",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Test sessions deleted",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Test profiles deleted",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No leftover test sessions",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Original sessions restored",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

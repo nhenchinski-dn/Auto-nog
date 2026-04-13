@@ -1,0 +1,93 @@
+==============================================================================
+  SW-248022: Y.1731 Request Stop Longevity
+  Host:    100.64.11.52
+  Cycles:  7000
+  Started: 2026-03-26 08:22:18 UTC
+==============================================================================
+  CLI output logging to: /home/dn/output/sw248022_cli.log
+  [SSH S1-start] Connected to 100.64.11.52
+  [SSH S2-stop] Connected to 100.64.11.52
+
+==============================================================================
+  PRE-CHECK 1: Software version
+==============================================================================
+show system version | no-more
+
+System Name: ncpl-nog
+Version: DNOS [26.2.0] build [175_dev], Copyright 2026 DRIVENETS LTD.
+Patch: N/A
+
+ncpl-nog#
+
+==============================================================================
+  PRE-CHECK 2: Discover CFM context
+==============================================================================
+  md=MD-CUST  ma=MA-CUST  target=mep-id 2
+  [PASS] CFM context resolved
+
+==============================================================================
+  PRE-CHECK 3: cfm_mgr baseline memory
+==============================================================================
+  cfm_mgr memory: unavailable
+
+==============================================================================
+  PRE-CHECK 4: Baseline core dumps
+==============================================================================
+  Existing cfm cores: 1
+
+==============================================================================
+  PRE-CHECK 5: Clean on-demand state
+==============================================================================
+  On-demand state: clean
+
+==============================================================================
+  LONGEVITY: 7000 start/stop cycles
+==============================================================================
+  Cycle    1/7000 [ DM]   8.0s OK
+  Cycle    2/7000 [SLM]   8.0s OK
+  Cycle    3/7000 [ LB]   8.0s OK
+  Cycle    4/7000 [ LT]   8.0s OK
+  Cycle    5/7000 [ DM]   8.0s OK
+  Cycle    6/7000 [SLM]   8.0s OK
+  Cycle    7/7000 [ LB]   8.0s OK
+  Cycle    8/7000 [ LT]   8.0s OK
+  Cycle    9/7000 [ DM]   8.0s OK
+  Cycle   10/7000 [SLM]   8.0s OK
+  Cycle   11/7000 [ LB]   8.0s OK
+  Cycle   12/7000 [ LT]   8.0s OK
+  Cycle   13/7000 [ DM]   8.0s OK
+  Cycle   14/7000 [SLM]   8.0s OK
+  Cycle   15/7000 [ LB]   8.0s OK
+  Cycle   16/7000 [ LT]   8.0s OK
+  Cycle   17/7000 [ DM]   8.0s OK
+  Cycle   18/7000 [SLM]   8.0s OK
+  Cycle   19/7000 [ LB]   8.0s OK
+  Cycle   20/7000 [ LT]   8.0s OK
+  Cycle   21/7000 [ DM]   8.0s OK
+  Cycle   22/7000 [SLM]   8.0s OK
+  Cycle   23/7000 [ LB]   8.0s OK
+  Cycle   24/7000 [ LT]   8.0s OK
+  Cycle   25/7000 [ DM]   8.0s OK
+
+    --- Health check at cycle 25 ---
+    On-demand: no active sessions (OK)
+    cfm_mgr: PROCESS NOT FOUND
+    Stop latency (last 25): avg=8.0s max=8.0s
+    Errors so far: 1
+
+  Cycle   26/7000 [SLM]   8.0s OK
+  Cycle   27/7000 [ LB]   8.0s OK
+  Cycle   28/7000 [ LT]   8.0s OK
+  Cycle   29/7000 [ DM]   8.0s OK
+  Cycle   30/7000 [SLM]   8.0s OK
+  Cycle   31/7000 [ LB]   8.0s OK
+  Cycle   32/7000 [ LT]   8.0s OK
+  Cycle   33/7000 [ DM]   8.0s OK
+  Cycle   34/7000 [SLM]   8.0s OK
+  Cycle   35/7000 [ LB]   8.0s OK
+  Cycle   36/7000 [ LT]   8.0s OK
+  Cycle   37/7000 [ DM]   8.0s OK
+  Cycle   38/7000 [SLM]   8.0s OK
+  Cycle   39/7000 [ LB]   8.0s OK
+  Cycle   40/7000 [ LT]   8.0s OK
+  Cycle   41/7000 [ DM]   8.0s OK
