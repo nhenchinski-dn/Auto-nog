@@ -10,6 +10,7 @@ Shared Cursor agent skills for DNOS testing workflows.
 | `dnos-acl-reference` | DNOS ACL CLI reference — families, config hierarchy, interface binding, show commands, TCAM verification |
 | `dnos-bulk-interface-config` | Bulk interface configuration patterns (admin-state, LLDP) |
 | `dnos-deploy-upgrade` | Deploy or upgrade a DNOS device from a Jenkins build (fresh deploy + upgrade workflows) |
+| `dnos-techsupport` | Collect a tech-support archive from a DNOS device, upload to MinIO, and return the download link |
 | `dnos-multicast-testing` | DNOS CLI syntax, PIM/multicast testing conventions, Q3D platform behaviors |
 | `dnos-snmp-testing` | SNMP testing patterns and workflows on DNOS devices |
 | `dnos-ssh-connection` | SSH into DNOS devices and run CLI commands via paramiko |
