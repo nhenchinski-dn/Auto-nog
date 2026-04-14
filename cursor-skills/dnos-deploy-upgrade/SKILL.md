@@ -66,7 +66,7 @@ time.sleep(6)
 
 ### DNOS mode vs GI mode confirmation handling
 
-- **DNOS mode**: `set cli-no-confirm` works to auto-accept `(yes/no)` prompts. Run it once per session.
+- **DNOS mode**: `set cli-no-confirm` works for most `(yes/no)` prompts. Run it once per session. **Exception**: `request system target-stack install` still prompts `Do you want to continue? (yes/no)` even with `cli-no-confirm` set. You must explicitly send `yes\n` for this command.
 - **GI mode**: `set cli-no-confirm` does **NOT** work. All commands that prompt `(yes/no)` require you to **explicitly send `yes\n`** after detecting the prompt. Poll the shell output for `yes/no` or `Yes/No` and then send `yes\n`.
 
 ## Deploy Workflow (Fresh Install)
@@ -253,13 +253,39 @@ Wait for completion.
 
 ### Step 2 — Install
 
+**IMPORTANT**: `request system target-stack install` prompts `Do you want to continue? (yes/no)` even with `set cli-no-confirm`. You **must** explicitly send `yes\n` after detecting the prompt.
+
 ```
 request system target-stack install
 ```
 
-Wait for the install to proceed. The device will show progress and may reboot. This can take 10-20 minutes. After completion, the device comes back up with the new software.
+→ Wait for `(yes/no)` prompt → send `yes` → wait for `Started target stack installation, task ID = <id>`.
 
-Reconnect and verify the version:
+The install runs as a background task. The SSH session stays alive briefly, then the device reboots. This can take 10-20 minutes total. The SSH host key may change after reboot — remove the old key before reconnecting:
+
+```bash
+ssh-keygen -f ~/.ssh/known_hosts -R <hostname>
+```
+
+Example paramiko pattern for the install confirmation:
+
+```python
+shell.send("request system target-stack install\n")
+output = ""
+yes_sent = False
+for i in range(600):
+    time.sleep(3)
+    while shell.recv_ready():
+        output += shell.recv(65535).decode("utf-8", errors="replace")
+    if not yes_sent and ("yes/no" in output or "Yes/No" in output):
+        time.sleep(1)
+        shell.send("yes\n")
+        yes_sent = True
+    if yes_sent and "Started target stack installation" in output:
+        break
+```
+
+After the install is confirmed, close the SSH session and wait 15 minutes for the reboot. Then reconnect and verify the version:
 
 ```
 show system version | no-more
