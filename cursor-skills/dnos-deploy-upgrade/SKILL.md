@@ -15,10 +15,11 @@ Collect all of these before starting. If any are missing, ask the user.
 | Input | Example | Notes |
 |---|---|---|
 | **Jenkins build URL** | `https://jenkins.dev.drivenets.net/job/drivenets/job/cheetah/job/feature%252Furpf_strict%252Fv26_2/30/` | The build page URL (with or without trailing slash) |
-| **Jenkins credentials** | user + API token | Only ask once per session; reuse if already provided |
 | **Device** | IP address or hostname | The DNOS machine to operate on |
 | **Operation** | `deploy` or `upgrade` | |
 | **With config?** (deploy only) | yes / no | Whether to save and restore config across the fresh deploy |
+
+Jenkins artifacts are publicly accessible — no credentials are needed to fetch them.
 
 ## Artifact URLs
 
@@ -30,7 +31,7 @@ Three artifact text files are needed. Derive them from the Jenkins build URL by 
 | DNOS | `<build-url>/artifact/gi_DNOS_artifact.txt` |
 | GI | `<build-url>/artifact/gi_GI_artifact.txt` |
 
-Each text file contains a URL to the actual package. Fetch each file (HTTP GET with Basic auth using the Jenkins credentials) and extract the package URL from its content.
+Each text file contains a URL to the actual package. Fetch each file with a simple HTTP GET (no auth needed) and extract the package URL from its content.
 
 ## Per-Machine State Isolation (CRITICAL)
 
@@ -277,10 +278,10 @@ Inform the user that upgrade is complete.
 
 ## Fetching Jenkins Artifact URLs
 
-Use `curl` with Basic auth to download artifact text files:
+Use `curl` to download artifact text files (no auth required):
 
 ```bash
-curl -u '<jenkins-user>:<api-token>' '<artifact-txt-url>'
+curl -s '<artifact-txt-url>'
 ```
 
 The response body is the package URL to pass to `request system target-stack load`.
