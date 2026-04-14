@@ -1,0 +1,56 @@
+{
+  "ticket": "SW-258863",
+  "device": "NCP3-nog (WKY1C7VD00008P2)",
+  "version": "DNOS 26.2.0 build 28_priv",
+  "overall": "PARTIAL",
+  "results": [
+    {
+      "step": "Step 5: Independent uRPF on two breakout ports",
+      "passed": true,
+      "command": "ge100-0/0/26/0=strict, ge100-0/0/26/1=loose",
+      "output": "Port0:\nshow config interfaces ge100-0/0/26/0 urpf | no-more\r\n\r\n# NCP3-nog config-start [13-Apr-2026 04:51:27 UTC]\r\n\r\ninterfaces\r\n  ge100-0/0/26/0\r\n    urpf\r\n      admin-state enabled\r\n      allow-default disabled\r\n      mode strict\r\n      address-family ipv4\r\n        admin-state enabled\r\n        mode strict\r\n      !\r\n      address-family ipv6\r\n        admin-state enabled\r\n        mode loose\r\n      !\r\n    !\r\n  !\r\n!\r\n\r\n# NCP3-nog config-end\r\n\r\nNCP3-nog# \nPort1:\nshow config interfaces ge100-0/0/26/1 urpf | no-more\r\n\r\n# NCP3-nog config-start [13-Apr-2026 04:51:35 UTC]\r\n\r\ninterfaces\r\n  ge100-0/0/26/1\r\n    urpf\r\n      admin-state enabled\r\n      allow-default disabled\r\n      mode loose\r\n    !\r\n  !\r\n!\r\n\r\n# NCP3-nog config-end\r\n\r\nNCP3-nog# ",
+      "expected": "Two breakout ports from same parent have independent uRPF modes",
+      "analysis": "Commit=OK, port0=strict=Yes, port1=loose=Yes"
+    },
+    {
+      "step": "Step 5b: show interfaces confirms independent modes",
+      "passed": true,
+      "command": "show interfaces ge100-0/0/26/0 / ge100-0/0/26/1",
+      "output": "",
+      "expected": "port0 shows Mode: strict, port1 shows Mode: loose",
+      "analysis": "port0 strict in show=Yes, port1 loose in show=Yes"
+    },
+    {
+      "step": "Step 6: uRPF on VLAN sub-interface of breakout port",
+      "passed": true,
+      "command": "interfaces ge100-0/0/26/0.100 urpf admin-state enabled / mode strict",
+      "output": "show config interfaces ge100-0/0/26/0.100 urpf | no-more\r\n\r\n# NCP3-nog config-start [13-Apr-2026 04:53:15 UTC]\r\n\r\ninterfaces\r\n  ge100-0/0/26/0.100\r\n    urpf\r\n      admin-state enabled\r\n      allow-default disabled\r\n      mode strict\r\n    !\r\n  !\r\n!\r\n\r\n# NCP3-nog config-end\r\n\r\nNCP3-nog# ",
+      "expected": "uRPF on sub-interface of breakout port works same as regular port",
+      "analysis": "Commit=OK, urpf on subif=Yes"
+    },
+    {
+      "step": "Counters: uRPF drop counter lines on breakout port",
+      "passed": true,
+      "command": "show interfaces counters ge100-0/0/26/0",
+      "output": "show interfaces counters ge100-0/0/26/0 | no-more\r\n\r\nInterface ge100-0/0/26/0:\r\nOperational state: down\r\nL2-service state: disabled\r\n\r\nEthernet counters:\r\n\tRX octets:                                        0 (           0 bps /       0 Mbps)\r\n\tRX frames:                                        0 (           0 fps /       0 Mfps)\r\n\tRX unicast frames:                                0 (           0 fps /       0 Mfps)\r\n\tRX broadcast frames:                              0 (           0 fps /       0 Mfps)\r\n\tRX multicast frames:                              0 (           0 fps /       0 Mfps)\r\n\tTX octets:                                        0 (           0 bps /       0 Mbps)\r\n\tTX frames:                                        0 (           0 fps /       0 Mfps)\r\n\tTX unicast frames:                                0 (           0 fps /       0 Mfps)\r\n\tTX broadcast frames:                              0 (           0 fps /       0 Mfps)\r\n\tTX multicast frames:                              0 (           0 fps /       0 Mfps)\r\n\r\nEthernet control counters:\r\n\tRX pause frames:                                  0\r\n\tTX pause frames:                                  0\r\n\tRX PFC frames:                                    0\r\n\tTX PFC frames:                                    0\r\n\r\nEthernet drop counters:\r\n\tRX errors:                                        0\r\n\tRX too short:                                     0\r\n\tRX too long:                                      0\r\n\tRX FCS errors:                                    0\r\n\tRX internal MAC errors:                           0\r\n\tRX pipeline MAC drops:                            0\r\n\tTX errors:                                        0\r\n\r\nFEC counters:\r\n\tFEC corrected errors:                             0\r\n\tFEC uncorrected errors:                           0\r\n\tFEC symbol errors:                                0\r\n\tFEC bit errors:                                   0\r\n\r\nInterface forwarding drop counters:\r\n\tRX drops:                                         0\r\n\tTX drops:                                         0\r\n\tRX TTL is too low:                                0\r\n\tRX MPLS label mismatch:                           0\r\n\tRX MPLS disabled:                                 0\r\n\tDestination IF MTU is too low:                    0\r\n\tDestination route unreachable:                    0\r\n\tDestination MAC unresolved:                       0\r\n\tDestination route is null0:                       0\r\n\tMulticast lookup failure:                         0\r\n\tMulticast wrong IIF:                              0\r\n\tuRPF Ipv4 drops:                                  0\r\n\tuRPF Ipv6 drops:                                  0\r\n\r\nMTU violation counters:\r\n\tTX MTU violations:                                0\r\n\tTX IPv4 fragmented packets:                       0\r\n\tTX generated IPv4 fragments:                      0\r\n\r\nForwarding drops summary of logical and sub-IF:\r\n\tRX VLAN mismatch:                                 0\r\n\tDestination MAC mismatch:                         0\r\n\tInvalid IP header:                                0\r\n\tTotal RX dropped packets:                         0\r\n\tTotal TX dropped packets:                         8\r\n\r\nNCP3-nog# ",
+      "expected": "uRPF IPv4/IPv6 drop counter lines displayed",
+      "analysis": "uRPF counter lines present: Yes"
+    },
+    {
+      "step": "Neg-2: no breakout while breakout ports admin-state up",
+      "passed": true,
+      "command": "interfaces ge400-0/0/26 no breakout (while BO ports up)",
+      "output": "commit\r\nNOTICE: commit action is not applicable. no configuration changes were made\r\nNCP3-nog(cfg)# ",
+      "expected": "Commit validation failure expected",
+      "analysis": "Commit rejected as expected: Yes"
+    },
+    {
+      "step": "Step 7: Cleanup \u2014 parent port clean after no breakout",
+      "passed": false,
+      "command": "no urpf, admin-state disabled, no breakout, admin-state enabled",
+      "output": "parent urpf:\nshow config interfaces ge400-0/0/26 urpf | no-more\r\n\r\n# NCP3-nog config-start [13-Apr-2026 04:57:23 UTC]\r\n\r\n\r\n# NCP3-nog config-end\r\n\r\nNCP3-nog# ",
+      "expected": "Parent port returns to normal, no stale uRPF config",
+      "analysis": "Cleanup commits=FAIL, breakout=none=No, no stale urpf=Yes"
+    }
+  ]
+}

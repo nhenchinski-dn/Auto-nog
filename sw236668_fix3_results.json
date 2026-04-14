@@ -1,0 +1,65 @@
+[
+  {
+    "step": "7a",
+    "name": "Create profile TIMING_APPLIED (non-stop ci=60 pi=1)",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_APPLIED test-duration non-stop computation-interval 60 probe-interval 1\nncpl-cfm-nog(cfg)#",
+    "expected": "Profile created"
+  },
+  {
+    "step": "7b",
+    "name": "Commit TIMING_APPLIED",
+    "status": "PASS",
+    "output": "commit\nCommit succeeded by dnroot at 28-Jul-2025 06:37:08 UTC\nncpl-cfm-nog(cfg)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "7c",
+    "name": "Configure source (md=MD-CUST, ma=MA-CUST, mep=1)",
+    "status": "FAIL",
+    "output": "md-name: services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION source md-name MD-CUST\n----------------------------------------------------------------------------------------------------------^\nERROR: Unknown word: 'md-name'.\nncpl-cfm-nog(cfg)# \nma-name: services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION source ma-name MA-CUST\n----------------------------------------------------------------------------------------------------------^\nERROR: Unknown word: 'ma-name'.\nncpl-cfm-nog(cfg)# \nmep-id: services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION source mep-id 1\n----------------------------------------------------------------------------------------------------------^\nERROR: Unknown word: 'mep-id'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Source configured without errors"
+  },
+  {
+    "step": "7d",
+    "name": "Assign profile TIMING_APPLIED to session",
+    "status": "PASS",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION profile TIMING_APPLIED\nncpl-cfm-nog(cfg)#",
+    "expected": "Profile assigned"
+  },
+  {
+    "step": "7e",
+    "name": "Set target mep-id 2",
+    "status": "PASS",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION target mep-id 2\nncpl-cfm-nog(cfg)#",
+    "expected": "Target set"
+  },
+  {
+    "step": "7f",
+    "name": "Enable admin-state",
+    "status": "PASS",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION admin-state enable\nncpl-cfm-nog(cfg)#",
+    "expected": "Enabled"
+  },
+  {
+    "step": "7g",
+    "name": "Commit DM session with profile",
+    "status": "FAIL",
+    "output": "commit\nERROR: Command failed\n'source_mep_id' is missing at 'services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "7h",
+    "name": "Session config shows TIMING_APPLIED",
+    "status": "PASS",
+    "output": "show config services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:38:12 UTC]\n\nservices\n  performance-monitoring\n    cfm\n      two-way-delay-measurement DM_TIMING_SESSION\n        admin-state enabled\n        profile TIMING_APPLIED\n        target mep-id 2\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "Profile name in config"
+  },
+  {
+    "step": "7i",
+    "name": "Session operational state visible",
+    "status": "PASS",
+    "output": "show services performance-monitoring cfm tests proactive two-way-delay session-name DM_TIMING_SESSION detail | no-more\n--------------------------------------------------------------------------------------------------^\nERROR: Unknown word: 'DM_TIMING_SESSION'.\nncpl-cfm-nog#",
+    "expected": "Session visible in operational state"
+  }
+]

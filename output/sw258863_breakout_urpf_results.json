@@ -1,0 +1,96 @@
+{
+  "ticket": "SW-258863",
+  "device": "NCP3-nog (WKY1C7VD00008P2)",
+  "version": "DNOS 26.2.0 build 28_priv",
+  "overall": "FAIL",
+  "results": [
+    {
+      "step": "Step 1: Breakout ge400-0/0/26 \u2192 4x100GE",
+      "passed": false,
+      "command": "interfaces ge400-0/0/26 breakout 100g-4x",
+      "output": "show interfaces breakout | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "Commit succeeds, show interfaces breakout shows b100g-4x with ge100-0/0/26/0-3",
+      "analysis": "Commit=FAIL, breakout visible=No"
+    },
+    {
+      "step": "Neg-1: Parent port urpf after breakout",
+      "passed": true,
+      "command": "show config interfaces ge400-0/0/26 urpf",
+      "output": "show config interfaces ge400-0/0/26 urpf | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "Empty \u2014 parent config erased on breakout",
+      "analysis": "Parent urpf config empty as expected"
+    },
+    {
+      "step": "Step 2: Global uRPF strict on ge100-0/0/26/0",
+      "passed": false,
+      "command": "interfaces ge100-0/0/26/0 urpf admin-state enabled / mode strict / allow-default disabled",
+      "output": "show config interfaces ge100-0/0/26/0 urpf | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "show config displays urpf with admin-state enabled, mode strict, allow-default disabled",
+      "analysis": "Commit=FAIL, config reflected=No"
+    },
+    {
+      "step": "Step 3: Per-AFI uRPF (ipv4 strict, ipv6 loose)",
+      "passed": false,
+      "command": "urpf address-family ipv4 mode strict / ipv6 mode loose",
+      "output": "show config interfaces ge100-0/0/26/0 urpf | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "show config reflects global + per-AFI sections with correct modes",
+      "analysis": "Commit=FAIL, ipv4-strict=No, ipv6-loose=No"
+    },
+    {
+      "step": "Step 4a: show interfaces uRPF lines",
+      "passed": false,
+      "command": "show interfaces ge100-0/0/26/0",
+      "output": "show interfaces ge100-0/0/26/0 | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "uRPF IPv4/IPv6 check lines displayed",
+      "analysis": "uRPF lines in show interfaces: No"
+    },
+    {
+      "step": "Step 4b: show interfaces detail uRPF lines",
+      "passed": false,
+      "command": "show interfaces detail ge100-0/0/26/0",
+      "output": "show interfaces detail ge100-0/0/26/0 | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "uRPF IPv4/IPv6 check lines displayed with correct mode and allow-default",
+      "analysis": "uRPF lines in detail: No"
+    },
+    {
+      "step": "Step 5: Independent uRPF on two breakout ports",
+      "passed": false,
+      "command": "ge100-0/0/26/0=strict, ge100-0/0/26/1=loose",
+      "output": "Port0:\nshow config interfaces ge100-0/0/26/0 urpf | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? \nPort1:\nshow config interfaces ge100-0/0/26/1 urpf | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "Two breakout ports from same parent have independent uRPF states",
+      "analysis": "Commit=FAIL, port0=strict=No, port1=loose=No"
+    },
+    {
+      "step": "Step 6: uRPF on VLAN sub-interface of breakout port",
+      "passed": false,
+      "command": "interfaces ge100-0/0/26/0.100 urpf admin-state enabled / mode strict",
+      "output": "show config interfaces ge100-0/0/26/0.100 urpf | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "uRPF on sub-interface of breakout port works same as regular port",
+      "analysis": "Commit=FAIL, urpf on subif=No"
+    },
+    {
+      "step": "Counters: uRPF drop counter lines on breakout port",
+      "passed": false,
+      "command": "show interfaces counters ge100-0/0/26/0",
+      "output": "show interfaces counters ge100-0/0/26/0 | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "uRPF IPv4/IPv6 drop counter lines displayed",
+      "analysis": "uRPF counter lines present: No"
+    },
+    {
+      "step": "Neg-2: no breakout while breakout ports admin-state up",
+      "passed": true,
+      "command": "interfaces ge400-0/0/26 no breakout (while BO ports up)",
+      "output": "commit\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "Commit validation failure expected",
+      "analysis": "Commit rejected as expected: Yes"
+    },
+    {
+      "step": "Step 7: Cleanup \u2014 parent port clean after no breakout",
+      "passed": false,
+      "command": "no urpf, admin-state disabled, no breakout, admin-state enabled",
+      "output": "breakout:\nshow interfaces breakout | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? \nparent config:\nshow config interfaces ge400-0/0/26 | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? \nparent urpf:\nshow config interfaces ge400-0/0/26 urpf | no-more\r\nWarning: Configuration includes uncommitted changes, would you like to commit them before exiting (yes/no/cancel) [cancel]? ",
+      "expected": "Parent port returns to normal, no stale uRPF config",
+      "analysis": "Cleanup commits=FAIL, breakout=none=No, no stale urpf=Yes"
+    }
+  ]
+}

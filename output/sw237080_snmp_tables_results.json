@@ -1,0 +1,196 @@
+{
+  "ticket": "SW-237080",
+  "start": "2026-03-22T09:04:26.942957+00:00",
+  "end": "2026-03-22T09:11:12.691975+00:00",
+  "duration_s": 405.7,
+  "host": "100.64.5.225",
+  "sw_version": "26.2.0",
+  "md_name": "MD-SCALE",
+  "ma_name": "MA-SCALE-0001",
+  "dm_session": "RESTCONF_DM_SESS_mep3",
+  "overall": "FAIL",
+  "pass_count": 32,
+  "fail_count": 4,
+  "verdicts": [
+    {
+      "name": "SNMP community exists",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SNMP walk returns system OIDs",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DRIVENETS-CFM-MIB available",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM session 'RESTCONF_DM_SESS_mep3' exists",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SLM session 'SLM-SNMP-TEST' exists",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM CLI baseline collected (19 fields)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SLM CLI baseline collected (15 fields)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive DM Session populated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive DM Results populated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive SLM Session populated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive SLM Results populated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM SourceMdName: SNMP='MD-SCALE' vs CLI='MD-SCALE'",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM TargetMepId: SNMP='1' vs CLI='1'",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM SourceInterface: SNMP='ge100-0/0/70.1' vs CLI='ge100-0/0/70.1'",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM ProbeCount: SNMP='5' vs CLI='5'",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM Interval: SNMP='1' vs CLI='1'",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM Timeout: SNMP='2' vs CLI='2'",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM SourceMAC match",
+      "passed": true,
+      "detail": "SNMP='84 40 76 a7 34 4a' vs CLI='84:40:76:a7:34:4a'"
+    },
+    {
+      "name": "DM Validity: SNMP=1 (invalid) vs CLI='incomplete'",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "name": "DM DmmTransmitted: SNMP=5 (per-interval), probe-count=5, CLI cumulative=1",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM DmrReceived: SNMP=4 (per-interval), probe-count=5, CLI cumulative=1",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM SuccessRate: SNMP=8000 (=80.0%) vs CLI=100.0%",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "name": "DM DelayAvg: SNMP=4us vs CLI=4us",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM IfdvAvg: SNMP=0us vs CLI=0us",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM results: 11 intervals (max 10+1, no duplicates)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SLM SourceMdName: SNMP='MD-SCALE' vs CLI='MD-SCALE'",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SLM SourceMaName: SNMP='MA-SCALE-0001' vs CLI='MA-SCALE-0001'",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SLM TargetMepId: SNMP='1' vs CLI='1'",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SLM session table populated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM session count >= 1",
+      "passed": true,
+      "detail": "Found 1 sessions"
+    },
+    {
+      "name": "DM session 1.125.2.3623946976 has result entries",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "name": "No duplicate OIDs in full MIB walk (290 total)",
+      "passed": false,
+      "detail": "1 duplicates: DRIVENETS-SMI::dnMibs.15.1.18.1.20.1.125.2.3625118064.147"
+    },
+    {
+      "name": "On-Demand DM Info table populated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "On-Demand DM Results table populated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "On-Demand SLM Info table populated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "On-Demand SLM Results table populated",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

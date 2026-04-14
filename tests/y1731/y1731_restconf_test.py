@@ -78,7 +78,7 @@ class Y1731RestconfTest:
                  odl_user="admin", odl_password="admin",
                  node_name=None, cleanup=False, skip_mount=False,
                  no_ssh_verify=False, verbose=False, md_name=None, ma_name=None,
-                 source_mep_id=None, target_mep_id=None):
+                 source_mep_id=None, target_mep_id=None, max_meps=2):
         self.host = host
         self.username = username
         self.password = password
@@ -90,7 +90,7 @@ class Y1731RestconfTest:
         self.skip_mount = skip_mount
         self.no_ssh_verify = no_ssh_verify
         self.verbose = verbose
-        # CLI-provided single context (if any) -- used to seed cfm_contexts
+        self.max_meps = max_meps
         self._cli_md = md_name
         self._cli_ma = ma_name
         self._cli_src = source_mep_id
@@ -636,6 +636,10 @@ class Y1731RestconfTest:
                 key=lambda c: (0 if c["free"] else 1,
                                dir_order.get(c["dir"], 9)))
 
+            total_discovered = len(self.cfm_contexts)
+            if self.max_meps and len(self.cfm_contexts) > self.max_meps:
+                self.cfm_contexts = self.cfm_contexts[:self.max_meps]
+
             # Build summary
             free_ctx = [c for c in self.cfm_contexts if c["free"]]
             used_ctx = [c for c in self.cfm_contexts if not c["free"]]
@@ -645,7 +649,11 @@ class Y1731RestconfTest:
                 lines.append(
                     f"mep{c['src']}@{c['md']}/{c['ma']} "
                     f"dir={c['dir']} tgt={c['tgt']} [{tag}]")
-            summary = f"Found {len(self.cfm_contexts)} MEP(s): " + " | ".join(lines)
+            trunc_note = ""
+            if total_discovered > len(self.cfm_contexts):
+                trunc_note = (f" (discovered {total_discovered}, "
+                              f"limited to {len(self.cfm_contexts)} via --max-meps)")
+            summary = f"Found {len(self.cfm_contexts)} MEP(s){trunc_note}: " + " | ".join(lines)
             if free_ctx:
                 summary += f" -- will test {len(free_ctx)} free MEP(s)"
             else:
@@ -1218,6 +1226,226 @@ class Y1731RestconfTest:
             self._record("patch_invalid_value", True,
                          f"Exception: {type(e).__name__}")
 
+    def _neg_patch(self, name, label, xml, expect_reject=True):
+        """Helper for negative PATCH tests."""
+        self._phase(label)
+        try:
+            r = self.rc_patch(xml)
+            self._log_rc("PATCH", self._pu(), r.status_code, xml, r.text)
+            http_ok = r.status_code in (200, 201, 204)
+            err = self._extract_restconf_error(r.text) if not http_ok else ""
+            if expect_reject:
+                self._record(name, not http_ok,
+                             f"HTTP {r.status_code} "
+                             f"({'rejected: ' + err if not http_ok else 'UNEXPECTED accept'})")
+            else:
+                self._record(name, http_ok,
+                             f"HTTP {r.status_code} "
+                             f"({'accepted' if http_ok else 'UNEXPECTED reject: ' + err})")
+        except Exception as e:
+            self._record(name, expect_reject,
+                         f"{type(e).__name__}: {str(e)[:100]}")
+
+    def test_neg_patch_unknown_element(self):
+        self._neg_patch("neg_unknown_element",
+                        "PHASE 7.4: PATCH unknown element in valid namespace",
+                        f'<drivenets-top xmlns="{self.ns["dn-top"]}">'
+                        '<not-valid-element/></drivenets-top>')
+
+    def test_neg_patch_negative_integer(self):
+        self._neg_patch("neg_negative_int",
+                        "PHASE 7.5: PATCH negative value for unsigned field",
+                        self._wrap_pm(
+                            '<profiles><cfm><two-way-delay-measurement>'
+                            '<profile><profile-name>NEG_NEGINT</profile-name>'
+                            '<config-items><profile-name>NEG_NEGINT</profile-name>'
+                            '<cfm-eth-dm-performance-thresholds>'
+                            '<delay-rtt-min>-1</delay-rtt-min>'
+                            '</cfm-eth-dm-performance-thresholds>'
+                            '</config-items></profile>'
+                            '</two-way-delay-measurement></cfm></profiles>'))
+
+    def test_neg_patch_overflow_integer(self):
+        self._neg_patch("neg_overflow_int",
+                        "PHASE 7.6: PATCH overflow uint32 (>4294967295)",
+                        self._wrap_pm(
+                            '<profiles><cfm><two-way-delay-measurement>'
+                            '<profile><profile-name>NEG_OVER</profile-name>'
+                            '<config-items><profile-name>NEG_OVER</profile-name>'
+                            '<cfm-eth-dm-performance-thresholds>'
+                            '<delay-rtt-min>99999999999</delay-rtt-min>'
+                            '</cfm-eth-dm-performance-thresholds>'
+                            '</config-items></profile>'
+                            '</two-way-delay-measurement></cfm></profiles>'))
+
+    def test_neg_patch_empty_profile_name(self):
+        self._neg_patch("neg_empty_profile_name",
+                        "PHASE 7.7: PATCH empty profile name",
+                        self._wrap_pm(
+                            '<profiles><cfm><two-way-delay-measurement>'
+                            '<profile><profile-name></profile-name>'
+                            '<config-items><profile-name></profile-name>'
+                            '</config-items></profile>'
+                            '</two-way-delay-measurement></cfm></profiles>'))
+
+    def test_neg_patch_very_long_profile_name(self):
+        long_name = "X" * 300
+        self._neg_patch("neg_long_profile_name",
+                        "PHASE 7.8: PATCH 300-char profile name",
+                        self._wrap_pm(
+                            '<profiles><cfm><two-way-delay-measurement>'
+                            f'<profile><profile-name>{long_name}</profile-name>'
+                            f'<config-items><profile-name>{long_name}</profile-name>'
+                            '</config-items></profile>'
+                            '</two-way-delay-measurement></cfm></profiles>'))
+
+    def test_neg_patch_special_chars_profile_name(self):
+        self._neg_patch("neg_special_chars",
+                        "PHASE 7.9: PATCH special chars in profile name",
+                        self._wrap_pm(
+                            '<profiles><cfm><two-way-delay-measurement>'
+                            '<profile><profile-name>a&lt;b&gt;c&amp;d"e</profile-name>'
+                            '<config-items>'
+                            '<profile-name>a&lt;b&gt;c&amp;d"e</profile-name>'
+                            '</config-items></profile>'
+                            '</two-way-delay-measurement></cfm></profiles>'))
+
+    def test_neg_patch_missing_mandatory_leaf(self):
+        cfm_ns = self.ns["dn-cfm"]
+        self._neg_patch("neg_missing_mandatory",
+                        "PHASE 7.10: PATCH session missing source-mep-id",
+                        self._wrap_pm(
+                            f'<cfm-tests><proactive-monitoring xmlns="{cfm_ns}">'
+                            '<two-way-delay-measurements>'
+                            '<test-session><session-name>NEG_MISSING</session-name>'
+                            '<config-items>'
+                            '<profile>DEFAULT_DM</profile>'
+                            '<admin-state>enabled</admin-state>'
+                            '<source-md-name>FAKE_MD</source-md-name>'
+                            '<source-ma-name>FAKE_MA</source-ma-name>'
+                            '<target-mep-id>99</target-mep-id>'
+                            '</config-items></test-session>'
+                            '</two-way-delay-measurements>'
+                            '</proactive-monitoring></cfm-tests>'))
+
+    def test_neg_patch_nonexistent_profile_ref(self):
+        cfm_ns = self.ns["dn-cfm"]
+        self._neg_patch("neg_nonexistent_profile",
+                        "PHASE 7.11: PATCH session refs non-existent profile",
+                        self._wrap_pm(
+                            f'<cfm-tests><proactive-monitoring xmlns="{cfm_ns}">'
+                            '<two-way-delay-measurements>'
+                            '<test-session><session-name>NEG_BADPROF</session-name>'
+                            '<config-items>'
+                            '<profile>DOES_NOT_EXIST_PROFILE_12345</profile>'
+                            '<admin-state>enabled</admin-state>'
+                            '<source-md-name>FAKE_MD</source-md-name>'
+                            '<source-ma-name>FAKE_MA</source-ma-name>'
+                            '<source-mep-id>999</source-mep-id>'
+                            '<target-mep-id>998</target-mep-id>'
+                            '</config-items></test-session>'
+                            '</two-way-delay-measurements>'
+                            '</proactive-monitoring></cfm-tests>'))
+
+    def test_neg_patch_nonexistent_md(self):
+        cfm_ns = self.ns["dn-cfm"]
+        self._neg_patch("neg_nonexistent_md",
+                        "PHASE 7.12: PATCH session refs non-existent MD",
+                        self._wrap_pm(
+                            f'<cfm-tests><proactive-monitoring xmlns="{cfm_ns}">'
+                            '<two-way-delay-measurements>'
+                            '<test-session><session-name>NEG_BADMD</session-name>'
+                            '<config-items>'
+                            '<profile>DEFAULT_DM</profile>'
+                            '<admin-state>enabled</admin-state>'
+                            '<source-md-name>COMPLETELY_FAKE_MD_XYZ</source-md-name>'
+                            '<source-ma-name>COMPLETELY_FAKE_MA_XYZ</source-ma-name>'
+                            '<source-mep-id>1</source-mep-id>'
+                            '<target-mep-id>2</target-mep-id>'
+                            '</config-items></test-session>'
+                            '</two-way-delay-measurements>'
+                            '</proactive-monitoring></cfm-tests>'))
+
+    def test_neg_patch_invalid_admin_state(self):
+        cfm_ns = self.ns["dn-cfm"]
+        self._neg_patch("neg_invalid_admin_state",
+                        "PHASE 7.13: PATCH invalid admin-state enum value",
+                        self._wrap_pm(
+                            f'<cfm-tests><proactive-monitoring xmlns="{cfm_ns}">'
+                            '<two-way-delay-measurements>'
+                            '<test-session><session-name>NEG_BADSTATE</session-name>'
+                            '<config-items>'
+                            '<profile>DEFAULT_DM</profile>'
+                            '<admin-state>BANANA</admin-state>'
+                            '<source-md-name>FAKE</source-md-name>'
+                            '<source-ma-name>FAKE</source-ma-name>'
+                            '<source-mep-id>1</source-mep-id>'
+                            '<target-mep-id>2</target-mep-id>'
+                            '</config-items></test-session>'
+                            '</two-way-delay-measurements>'
+                            '</proactive-monitoring></cfm-tests>'))
+
+    def test_neg_patch_zero_probe_count(self):
+        self._neg_patch("neg_zero_probe_count",
+                        "PHASE 7.14: PATCH probe-count=0",
+                        self._dm_prof_xml(pn="NEG_ZERO_PC", pc=0))
+
+    def test_neg_patch_zero_probe_interval(self):
+        self._neg_patch("neg_zero_probe_interval",
+                        "PHASE 7.15: PATCH probe-interval=0",
+                        self._dm_prof_xml(pn="NEG_ZERO_PI", pi_=0))
+
+    def test_neg_patch_negative_pcp(self):
+        self._neg_patch("neg_negative_pcp",
+                        "PHASE 7.16: PATCH SLM pcp=-1",
+                        self._slm_prof_xml(pn="NEG_PCP_NEG", pcp=-1))
+
+    def test_neg_patch_pcp_out_of_range(self):
+        self._neg_patch("neg_pcp_out_of_range",
+                        "PHASE 7.17: PATCH SLM pcp=8 (max is 7)",
+                        self._slm_prof_xml(pn="NEG_PCP_8", pcp=8))
+
+    def test_neg_patch_negative_success_rate(self):
+        self._neg_patch("neg_negative_success_rate",
+                        "PHASE 7.18: PATCH success-rate-percent=-5.0",
+                        self._dm_prof_xml(pn="NEG_SR_NEG", sr=-5.0))
+
+    def test_neg_patch_success_rate_over_100(self):
+        self._neg_patch("neg_success_rate_150",
+                        "PHASE 7.19: PATCH success-rate-percent=150.0",
+                        self._dm_prof_xml(pn="NEG_SR_150", sr=150.0))
+
+    def test_neg_delete_nonexistent_profile(self):
+        self._phase("PHASE 7.20: DELETE non-existent profile")
+        try:
+            yp = (f"{self.yang_pm_path}/profiles/cfm/"
+                  f"two-way-delay-measurement/profile=THIS_PROFILE_NEVER_EXISTED")
+            r = self.rc_delete(yp)
+            url = RESTCONF_DATA_URL.format(
+                odl_host=self.odl_host, odl_port=self.odl_port,
+                node_name=self.node_name, yang_path=yp)
+            self._log_rc("DELETE", url, r.status_code, resp_body=r.text)
+            ok = r.status_code not in (200, 204)
+            self._record("neg_delete_nonexistent", ok,
+                         f"HTTP {r.status_code} "
+                         f"({'rejected' if ok else 'UNEXPECTED success'})")
+        except Exception as e:
+            self._record("neg_delete_nonexistent", True,
+                         f"{type(e).__name__}: {str(e)[:100]}")
+
+    def test_neg_patch_wrong_namespace(self):
+        self._neg_patch("neg_wrong_namespace",
+                        "PHASE 7.21: PATCH correct structure, wrong namespace",
+                        '<drivenets-top xmlns="http://wrong.example.com/fake">'
+                        '<services xmlns="http://wrong.example.com/fake2">'
+                        '<performance-monitoring xmlns="http://wrong.example.com/fake3">'
+                        '<profiles><cfm><two-way-delay-measurement>'
+                        '<profile><profile-name>NEG_NS</profile-name>'
+                        '<config-items><profile-name>NEG_NS</profile-name>'
+                        '</config-items></profile>'
+                        '</two-way-delay-measurement></cfm></profiles>'
+                        '</performance-monitoring></services></drivenets-top>')
+
     # ──────────────────────────────────────────────────────────────
     # Phase 8: Cleanup
     # ──────────────────────────────────────────────────────────────
@@ -1286,6 +1514,24 @@ class Y1731RestconfTest:
             self.test_get_invalid_path()
             self.test_patch_invalid_body()
             self.test_patch_invalid_profile_value()
+            self.test_neg_patch_unknown_element()
+            self.test_neg_patch_negative_integer()
+            self.test_neg_patch_overflow_integer()
+            self.test_neg_patch_empty_profile_name()
+            self.test_neg_patch_very_long_profile_name()
+            self.test_neg_patch_special_chars_profile_name()
+            self.test_neg_patch_missing_mandatory_leaf()
+            self.test_neg_patch_nonexistent_profile_ref()
+            self.test_neg_patch_nonexistent_md()
+            self.test_neg_patch_invalid_admin_state()
+            self.test_neg_patch_zero_probe_count()
+            self.test_neg_patch_zero_probe_interval()
+            self.test_neg_patch_negative_pcp()
+            self.test_neg_patch_pcp_out_of_range()
+            self.test_neg_patch_negative_success_rate()
+            self.test_neg_patch_success_rate_over_100()
+            self.test_neg_delete_nonexistent_profile()
+            self.test_neg_patch_wrong_namespace()
             # Phase 8: Cleanup
             self.test_unmount_device()
         except Exception as e:
@@ -1380,6 +1626,8 @@ def main():
     p.add_argument("--ma-name", default=None, help="Maintenance Association (auto-discovered)")
     p.add_argument("--source-mep-id", type=int, default=None, help="Source MEP ID")
     p.add_argument("--target-mep-id", type=int, default=None, help="Target MEP ID")
+    p.add_argument("--max-meps", type=int, default=2,
+                   help="Max MEPs to test sessions on (default: 2, 0=unlimited)")
     p.add_argument("--cleanup", action="store_true", help="Unmount from ODL at end")
     p.add_argument("--skip-mount", action="store_true", help="Skip mount (already mounted)")
     p.add_argument("--no-ssh-verify", action="store_true", help="Skip SSH/CLI verification")
@@ -1394,7 +1642,8 @@ def main():
         skip_mount=a.skip_mount, no_ssh_verify=a.no_ssh_verify,
         verbose=a.verbose,
         md_name=a.md_name, ma_name=a.ma_name,
-        source_mep_id=a.source_mep_id, target_mep_id=a.target_mep_id)
+        source_mep_id=a.source_mep_id, target_mep_id=a.target_mep_id,
+        max_meps=a.max_meps or None)
     sys.exit(0 if t.run_all() else 1)
 
 

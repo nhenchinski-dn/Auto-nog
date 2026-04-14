@@ -1,0 +1,141 @@
+{
+  "ticket": "SW-236991",
+  "start": "2026-03-22T11:17:53.958739+00:00",
+  "end": "2026-03-22T12:08:37.515150+00:00",
+  "duration_s": 3043.6,
+  "scale": 1000,
+  "host_a": "WKY1C7VD00008P2",
+  "host_b": "XEC1E3VR00008",
+  "iface_a": "ge400-0/0/33",
+  "iface_a2": "ge400-0/0/3",
+  "iface_b": "ge100-0/0/70",
+  "iface_b2": "ge10-0/0/32",
+  "overall": "FAIL",
+  "verdicts": [
+    {
+      "name": "Interface ge400-0/0/33 valid on host-a iface-a",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Interface ge400-0/0/3 valid on host-a iface-a2",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Interface ge100-0/0/70 valid on host-b iface-b",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Interface ge10-0/0/32 valid on host-b iface-b2",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Leftover MD-SCALE cleaned on both devices",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "MD created on both devices",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "MAs+MEPs on host-a (1000)",
+      "passed": false,
+      "detail": "9 ok, 1 failed"
+    },
+    {
+      "name": "MAs+MEPs on host-b (1000)",
+      "passed": false,
+      "detail": "9 ok, 1 failed"
+    },
+    {
+      "name": "PM profiles created on host-a",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM sessions 1..512 created",
+      "passed": true,
+      "detail": "5 ok, 0 failed"
+    },
+    {
+      "name": "DM sessions visible at 512",
+      "passed": false,
+      "detail": "total=0, ongoing=0"
+    },
+    {
+      "name": "DM session DM-SCALE-0001 reporting",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "name": "DM session DM-SCALE-0256 reporting",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "name": "DM session DM-SCALE-0512 reporting",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "name": "DM sessions 513..1000 created",
+      "passed": false,
+      "detail": "3 ok, 1 failed"
+    },
+    {
+      "name": "DM sessions visible at 1000",
+      "passed": false,
+      "detail": "total=0, ongoing=0"
+    },
+    {
+      "name": "DM session DM-SCALE-1000 reporting",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "name": "SLM sessions 1..512 created",
+      "passed": true,
+      "detail": "5 ok, 0 failed"
+    },
+    {
+      "name": "Total proactive sessions at DM=1000+SLM=512",
+      "passed": false,
+      "detail": "total=0, ongoing=0"
+    },
+    {
+      "name": "SLM session SLM-SCALE-0001 reporting",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "name": "SLM session SLM-SCALE-0256 reporting",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "name": "SLM session SLM-SCALE-0512 reporting",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "name": "SLM sessions 513..1000 created",
+      "passed": false,
+      "detail": "3 ok, 1 failed"
+    },
+    {
+      "name": "All 2000 proactive sessions visible",
+      "passed": false,
+      "detail": "total=0, ongoing=0"
+    },
+    {
+      "name": "SLM session SLM-SCALE-1000 reporting",
+      "passed": false,
+      "detail": ""
+    }
+  ]
+}

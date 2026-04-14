@@ -1,0 +1,331 @@
+[
+  {
+    "step": "1a",
+    "name": "probes min values (pc=1, pi=1, ri=1) accepted",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MIN test-duration probes probe-count 1 probe-interval 1 repeat-interval 1\nncpl-cfm-nog(cfg)#",
+    "expected": "Command accepted without error"
+  },
+  {
+    "step": "1b",
+    "name": "probes max count (pc=3600, pi=1, ri=3600) accepted",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX test-duration probes probe-count 3600 probe-interval 1 repeat-interval 3600\nncpl-cfm-nog(cfg)#",
+    "expected": "Command accepted without error"
+  },
+  {
+    "step": "1c",
+    "name": "probes config committed",
+    "status": "PASS",
+    "output": "commit\nWarning: User 'dnroot' committed at 28-Jul-2025 06:19:36 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? commit\nCommit succeeded by dnroot at 28-Jul-2025 06:20:09 UTC\nncpl-cfm-nog(cfg)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "1d",
+    "name": "TIMING_MIN shows probes config (pc=1, pi=1, ri=1)",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MIN | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:20:17 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_MIN\n          test-duration probes probe-count 1 probe-interval 1 repeat-interval 1\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "All min values visible"
+  },
+  {
+    "step": "1e",
+    "name": "TIMING_MAX shows probes config (pc=3600, pi=1, ri=3600)",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:20:25 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_MAX\n          test-duration probes probe-count 3600 probe-interval 1 repeat-interval 3600\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "Max count values visible"
+  },
+  {
+    "step": "1f",
+    "name": "probes max interval (pc=1, pi=255, ri=255) accepted",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX test-duration probes probe-count 1 probe-interval 255 repeat-interval 255\nncpl-cfm-nog(cfg)#",
+    "expected": "Command accepted without error"
+  },
+  {
+    "step": "1g",
+    "name": "TIMING_MAX shows probes config (pi=255)",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:20:58 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_MAX\n          test-duration probes probe-count 1 probe-interval 255 repeat-interval 255\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "Max probe-interval visible"
+  },
+  {
+    "step": "2a",
+    "name": "time-frame min values (m=1, pi=1, ri=1) accepted",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MIN test-duration time-frame minutes 1 probe-interval 1 repeat-interval 1\nncpl-cfm-nog(cfg)#",
+    "expected": "Command accepted without error"
+  },
+  {
+    "step": "2b",
+    "name": "time-frame max values (m=3600, pi=1, ri=3600) accepted",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX test-duration time-frame minutes 3600 probe-interval 1 repeat-interval 3600\nncpl-cfm-nog(cfg)#",
+    "expected": "Command accepted without error"
+  },
+  {
+    "step": "2c",
+    "name": "time-frame config committed",
+    "status": "PASS",
+    "output": "commit\nWarning: User 'dnroot' committed at 28-Jul-2025 06:21:40 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? commit\nERROR: profile 'TIMING_MIN' duration-minutes bigger than repeat-interval.\nncpl-cfm-nog(cfg)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "2d",
+    "name": "TIMING_MIN shows time-frame (m=1, pi=1, ri=1)",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MIN | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:22:06 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_MIN\n          test-duration time-frame minutes 1 probe-interval 1 repeat-interval 1\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "time-frame minutes=1 visible"
+  },
+  {
+    "step": "2e",
+    "name": "TIMING_MAX shows time-frame (m=3600, ri=3600)",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:22:14 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_MAX\n          test-duration time-frame minutes 3600 probe-interval 1 repeat-interval 3600\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "time-frame minutes=3600 visible"
+  },
+  {
+    "step": "2f",
+    "name": "time-frame max interval (pi=255) accepted",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX test-duration time-frame minutes 10 probe-interval 255 repeat-interval 3600\nncpl-cfm-nog(cfg)#",
+    "expected": "Command accepted without error"
+  },
+  {
+    "step": "2g",
+    "name": "TIMING_MAX shows time-frame (pi=255)",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:22:48 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_MAX\n          test-duration time-frame minutes 10 probe-interval 255 repeat-interval 3600\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "Max probe-interval visible"
+  },
+  {
+    "step": "3a",
+    "name": "non-stop computation-interval min=1 accepted",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MIN test-duration non-stop computation-interval 1\nncpl-cfm-nog(cfg)#",
+    "expected": "Command accepted without error"
+  },
+  {
+    "step": "3b",
+    "name": "non-stop computation-interval max=3600 accepted",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX test-duration non-stop computation-interval 3600\nncpl-cfm-nog(cfg)#",
+    "expected": "Command accepted without error"
+  },
+  {
+    "step": "3c",
+    "name": "non-stop probe-interval min=1 accepted",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MIN test-duration non-stop probe-interval 1\nncpl-cfm-nog(cfg)#",
+    "expected": "Command accepted without error"
+  },
+  {
+    "step": "3d",
+    "name": "non-stop probe-interval max=255 accepted",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX test-duration non-stop probe-interval 255\nncpl-cfm-nog(cfg)#",
+    "expected": "Command accepted without error"
+  },
+  {
+    "step": "3e",
+    "name": "non-stop config committed",
+    "status": "PASS",
+    "output": "commit\nWarning: User 'dnroot' committed at 28-Jul-2025 06:23:28 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? commit\nCommit succeeded by dnroot at 28-Jul-2025 06:23:58 UTC\nncpl-cfm-nog(cfg)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "3f",
+    "name": "TIMING_MIN shows non-stop config (ci=1, pi=1)",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MIN | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:24:06 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_MIN\n          test-duration non-stop computation-interval 1 probe-interval 1\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "non-stop computation-interval=1 visible"
+  },
+  {
+    "step": "3g",
+    "name": "TIMING_MAX shows non-stop config (ci=3600, pi=255)",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_MAX | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:24:14 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_MAX\n          test-duration non-stop computation-interval 3600 probe-interval 255\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "non-stop computation-interval=3600 visible"
+  },
+  {
+    "step": "4a",
+    "name": "Configure probes on TIMING_TEST (pc=10 pi=1 ri=60)",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST test-duration probes probe-count 10 probe-interval 1 repeat-interval 60\nncpl-cfm-nog(cfg)#",
+    "expected": "Probes config accepted"
+  },
+  {
+    "step": "4b",
+    "name": "TIMING_TEST shows probes after commit",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:25:07 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_TEST\n          test-duration probes probe-count 10 probe-interval 1 repeat-interval 60\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "probes visible in config"
+  },
+  {
+    "step": "4c",
+    "name": "Switch to time-frame on TIMING_TEST (after removing probes)",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST test-duration time-frame minutes 30 probe-interval 2 repeat-interval 120\nncpl-cfm-nog(cfg)#",
+    "expected": "Time-frame config accepted"
+  },
+  {
+    "step": "4d",
+    "name": "Only time-frame active (probes replaced)",
+    "status": "FAIL",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:25:40 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_TEST\n          test-duration probes probe-count 10 probe-interval 1 repeat-interval 60\n          test-duration time-frame minutes 30 probe-interval 2 repeat-interval 120\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "time-frame present, probes absent"
+  },
+  {
+    "step": "4e",
+    "name": "Switch to non-stop on TIMING_TEST (after removing time-frame)",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST test-duration non-stop computation-interval 300 probe-interval 3\nncpl-cfm-nog(cfg)#",
+    "expected": "Non-stop config accepted"
+  },
+  {
+    "step": "4f",
+    "name": "Only non-stop active (time-frame replaced)",
+    "status": "PASS",
+    "output": "show config services performance-monitoring profiles cfm two-way-delay-measurement TIMING_TEST | no-more\n\n# ncpl-cfm-nog config-start [28-Jul-2025 06:26:23 UTC]\n\nservices\n  performance-monitoring\n    profiles\n      cfm\n        two-way-delay-measurement TIMING_TEST\n          test-duration non-stop computation-interval 300 probe-interval 3\n          test-duration probes probe-count 10 probe-interval 1 repeat-interval 60\n        !\n      !\n    !\n  !\n!\n\n# ncpl-cfm-nog config-end\n\nncpl-cfm-nog(cfg)#",
+    "expected": "non-stop present, time-frame absent"
+  },
+  {
+    "step": "4g",
+    "name": "Setting both probes+non-stop: commit behavior",
+    "status": "PASS",
+    "output": "commit\nCommit succeeded by dnroot at 28-Jul-2025 06:26:45 UTC\nncpl-cfm-nog(cfg)#",
+    "expected": "Only one test-duration type should be active after commit"
+  },
+  {
+    "step": "5a",
+    "name": "non-stop computation-interval=0 rejected",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration non-stop computation-interval 0\nERROR: Invalid value '0'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for value 0 (below min 1)"
+  },
+  {
+    "step": "5b",
+    "name": "non-stop computation-interval=3601 rejected",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration non-stop computation-interval 3601\nERROR: Invalid value '3601'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for value 3601 (above max 3600)"
+  },
+  {
+    "step": "5c",
+    "name": "probes probe-interval=0 rejected",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration probes probe-interval 0\nERROR: Invalid value '0'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for value 0"
+  },
+  {
+    "step": "5d",
+    "name": "probes probe-interval=256 rejected",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration probes probe-interval 256\nERROR: Invalid value '256'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for value 256 (above max 255)"
+  },
+  {
+    "step": "5e",
+    "name": "probes probe-count=0 rejected",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration probes probe-count 0\nERROR: Invalid value '0'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for value 0"
+  },
+  {
+    "step": "5f",
+    "name": "time-frame minutes=0 rejected",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration time-frame minutes 0\nERROR: Invalid value '0'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for value 0"
+  },
+  {
+    "step": "6a",
+    "name": "non-numeric 'abc' rejected for computation-interval",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration non-stop computation-interval abc\n-----------------------------------------------------------------------------------------------------------------------------------------------^\nERROR: Unknown word: 'abc'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for non-numeric value"
+  },
+  {
+    "step": "6b",
+    "name": "negative value -1 rejected for computation-interval",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration non-stop computation-interval -1\n-----------------------------------------------------------------------------------------------------------------------------------------------^\nERROR: Unknown word: '-1'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for negative value"
+  },
+  {
+    "step": "6c",
+    "name": "non-numeric 'xyz' rejected for probe-count",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration probes probe-count xyz\n------------------------------------------------------------------------------------------------------------------------------------^\nERROR: Unknown word: 'xyz'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for non-numeric value"
+  },
+  {
+    "step": "6d",
+    "name": "negative value -5 rejected for minutes",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration time-frame minutes -5\n------------------------------------------------------------------------------------------------------------------------------------^\nERROR: Unknown word: '-5'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for negative value"
+  },
+  {
+    "step": "6e",
+    "name": "special chars rejected for probe-interval",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement NEG_TEST test-duration probes probe-interval @!#\n---------------------------------------------------------------------------------------------------------------------------------------^\nERROR: Unknown word: '@!#'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Error for special characters"
+  },
+  {
+    "step": "7a",
+    "name": "Create profile TIMING_APPLIED (non-stop ci=60 pi=1)",
+    "status": "PASS",
+    "output": "services performance-monitoring profiles cfm two-way-delay-measurement TIMING_APPLIED test-duration non-stop computation-interval 60 probe-interval 1\nncpl-cfm-nog(cfg)#",
+    "expected": "Profile created"
+  },
+  {
+    "step": "7b",
+    "name": "Commit TIMING_APPLIED",
+    "status": "PASS",
+    "output": "commit\nCommit succeeded by dnroot at 28-Jul-2025 06:28:43 UTC\nncpl-cfm-nog(cfg)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "7c",
+    "name": "Create DM session with source MEP",
+    "status": "FAIL",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION source-mep md-name MD-CUST ma-name MA-CUST mep-id 1\n---------------------------------------------------------------------------------------------------^\nERROR: Unknown word: 'source-mep'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Session source MEP configured"
+  },
+  {
+    "step": "7d",
+    "name": "Assign TIMING_APPLIED profile to session",
+    "status": "PASS",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION profile TIMING_APPLIED\nncpl-cfm-nog(cfg)#",
+    "expected": "Profile assigned"
+  },
+  {
+    "step": "7e",
+    "name": "Set target mep-id 2",
+    "status": "PASS",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION target mep-id 2\nncpl-cfm-nog(cfg)#",
+    "expected": "Target set"
+  },
+  {
+    "step": "7f",
+    "name": "Enable session admin-state",
+    "status": "PASS",
+    "output": "services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION admin-state enable\nncpl-cfm-nog(cfg)#",
+    "expected": "Admin state enabled"
+  },
+  {
+    "step": "7g",
+    "name": "Commit DM session",
+    "status": "FAIL",
+    "output": "commit\nERROR: Command failed\n'source_mep_id' is missing at 'services performance-monitoring cfm two-way-delay-measurement DM_TIMING_SESSION'.\nncpl-cfm-nog(cfg)#",
+    "expected": "Commit succeeds"
+  },
+  {
+    "step": "7h",
+    "name": "Session shows TIMING_APPLIED profile association",
+    "status": "FAIL",
+    "output": "show services performance-monitoring cfm tests proactive two-way-delay session-name DM_TIMING_SESSION detail | no-more\n--------------------------------------------------------------------------------------------------^\nERROR: Unknown word: 'DM_TIMING_SESSION'.\nncpl-cfm-nog#",
+    "expected": "Profile name or non-stop mode visible in session detail"
+  }
+]

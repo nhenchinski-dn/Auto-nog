@@ -1,0 +1,52 @@
+{
+  "baseline": {
+    "bgp_state": "Established",
+    "bgp_prefixes": 2000000,
+    "rib_bgp": 2000000,
+    "rib_total": 2000006,
+    "fib_routes": 2000003
+  },
+  "cycle_1": {
+    "disable": {
+      "bgp_state": "Established",
+      "bgp_routes": 2000000,
+      "total": 2000006
+    },
+    "enable": {
+      "bgp_state": "Established",
+      "bgp_routes": 2000000,
+      "total": 2000006
+    }
+  },
+  "cycle_2": {
+    "disable": {
+      "bgp_state": "Established",
+      "bgp_routes": 2000000,
+      "total": 2000006
+    },
+    "enable": {
+      "bgp_state": "Established",
+      "bgp_routes": 2000000,
+      "total": 2000006
+    }
+  },
+  "cycle_3": {
+    "disable": {
+      "bgp_state": "Established",
+      "bgp_routes": 2000000,
+      "total": 2000006
+    },
+    "enable": {
+      "bgp_state": "Established",
+      "bgp_routes": 2000000,
+      "total": 2000006
+    }
+  },
+  "final": {
+    "bgp_state": "Established",
+    "bgp_prefixes": 2000000,
+    "rib_bgp": 2000000,
+    "rib_total": 2000006,
+    "fib_routes": 2000003
+  }
+}

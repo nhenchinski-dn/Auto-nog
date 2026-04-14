@@ -1527,6 +1527,12 @@ def main() -> int:
         default=20,
         help="Seconds to wait for low-threshold violation event (default: 20)",
     )
+    parser.add_argument(
+        "--baseline-only",
+        action="store_true",
+        help="Only configure the baseline (discover CFM, create DM+SLM profiles and sessions, commit). "
+             "No tests are executed and cleanup is skipped so the config remains on the device.",
+    )
     args = parser.parse_args()
 
     args.host = _prompt_if_missing(args.host, "Device hostname or IP: ")
@@ -1782,7 +1788,7 @@ def main() -> int:
             args.slm_target = "mep-id 2"
 
         # SW-235372: profile variant tests are system-wide (not per-MEP), so run them once.
-        if not abort:
+        if not abort and not args.baseline_only:
             _progress("sw235372_dm_profile_variants")
             dm_prof_372 = f"{args.profile}_SW235372"
             dm_prof_base = [
@@ -2137,31 +2143,31 @@ def main() -> int:
                         )
                     )
 
-            if not abort:
+            if not abort and not args.baseline_only:
                 # TAB completion checks
                 tab_prefixes = [
-                "services performance-monitoring cfm two-way-delay-measurement ",
-                f"services performance-monitoring cfm two-way-delay-measurement {args.session} ",
-                f"services performance-monitoring cfm two-way-delay-measurement {args.session} description ",
-                "services performance-monitoring profiles cfm two-way-delay-measurement ",
-                "services performance-monitoring profiles cfm two-way-synthetic-loss-measurement ",
-                "services performance-monitoring cfm two-way-synthetic-loss-measurement ",
-                f"services performance-monitoring cfm two-way-synthetic-loss-measurement {args.slm_session} ",
-                f"services performance-monitoring cfm two-way-synthetic-loss-measurement {args.slm_session} description ",
-            ]
-            for prefix in tab_prefixes:
-                _progress(f"tab_completion: {prefix.strip()}")
-                output = run_tab_completion(client, prefix, timeout=15)
-                err, errs = has_cli_error(output)
-                results.append(
-                    StepResult(
-                        name=f"tab_completion: {prefix.strip()}",
-                        ok=not err,
-                        details="\n".join(errs) if err else "TAB completion returned output.",
-                        raw_output=output,
+                    "services performance-monitoring cfm two-way-delay-measurement ",
+                    f"services performance-monitoring cfm two-way-delay-measurement {args.session} ",
+                    f"services performance-monitoring cfm two-way-delay-measurement {args.session} description ",
+                    "services performance-monitoring profiles cfm two-way-delay-measurement ",
+                    "services performance-monitoring profiles cfm two-way-synthetic-loss-measurement ",
+                    "services performance-monitoring cfm two-way-synthetic-loss-measurement ",
+                    f"services performance-monitoring cfm two-way-synthetic-loss-measurement {args.slm_session} ",
+                    f"services performance-monitoring cfm two-way-synthetic-loss-measurement {args.slm_session} description ",
+                ]
+                for prefix in tab_prefixes:
+                    _progress(f"tab_completion: {prefix.strip()}")
+                    output = run_tab_completion(client, prefix, timeout=15)
+                    err, errs = has_cli_error(output)
+                    results.append(
+                        StepResult(
+                            name=f"tab_completion: {prefix.strip()}",
+                            ok=not err,
+                            details="\n".join(errs) if err else "TAB completion returned output.",
+                            raw_output=output,
+                        )
                     )
-                )
-                raw_outputs.append(f"## TAB: {prefix.strip()}\n{output}")
+                    raw_outputs.append(f"## TAB: {prefix.strip()}\n{output}")
 
             if not abort:
                 # Base config commands: create profile, create session, commit
@@ -2406,6 +2412,15 @@ def main() -> int:
                     except Exception as e:
                         results.append(StepResult(name="show_slm_proactive", ok=False, details=f"Exception: {str(e)}"))
     
+            if args.baseline_only:
+                mep_label = f" for MEP {args.mep_id}" if args.mep_id else ""
+                results.append(StepResult(
+                    name="baseline_only",
+                    ok=True,
+                    details=f"Baseline configuration complete{mep_label} (--baseline-only). Skipping tests; config left on device.",
+                ))
+                continue
+
             if not abort:
                 # DM session knobs: admin-state enabled/disabled, description, profile, source, target variants
                 _progress("sw235372_dm_session_variants")
@@ -3594,7 +3609,7 @@ def main() -> int:
                     )
                 )
     
-            if args.cleanup and not cleanup_done:
+            if args.cleanup and not cleanup_done and not args.baseline_only:
                 _progress("cleanup")
                 ok, detail = cleanup_config(
                     args.host,

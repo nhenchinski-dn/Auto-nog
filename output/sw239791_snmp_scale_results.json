@@ -1,0 +1,101 @@
+{
+  "ticket": "SW-239791",
+  "start": "2026-03-25T15:19:14.512422+00:00",
+  "end": "2026-03-25T15:35:59.560472+00:00",
+  "duration_s": 1005.0,
+  "host": "100.64.7.110",
+  "sw_version": "26.2.0",
+  "community": "noga",
+  "dm_sessions": 1000,
+  "slm_sessions": 1000,
+  "overall": "PASS",
+  "pass_count": 17,
+  "fail_count": 0,
+  "verdicts": [
+    {
+      "name": "Sessions discovered: 1000 DM + 1000 SLM",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive DM Session: 1000/1000 sessions (30.6s)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive DM Results: 50309 result rows (267.6s)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive SLM Session: 2000/1000 sessions (28.9s)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive SLM Results: 87306 result rows (559.1s)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM 'DM-SCALE-0001': 4/4 fields match",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM 'DM-SCALE-0501': 4/4 fields match",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DM 'DM-SCALE-1000': 4/4 fields match",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SLM 'SLM-SCALE-0001': 2/2 fields match",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SLM 'SLM-SCALE-0501': 2/2 fields match",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SLM 'SLM-SCALE-1000': 2/2 fields match",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive DM Session: 12000 OIDs, 0 duplicates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive DM Results: 110507 OIDs, 0 duplicates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive SLM Session: 12000 OIDs, 0 duplicates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Proactive SLM Results: 150708 OIDs, 0 duplicates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SNMP agent responsive (0.0s)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Sessions intact: 1000 DM + 1000 SLM",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}
