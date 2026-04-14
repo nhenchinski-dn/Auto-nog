@@ -32,6 +32,26 @@ Three artifact text files are needed. Derive them from the Jenkins build URL by 
 
 Each text file contains a URL to the actual package. Fetch each file (HTTP GET with Basic auth using the Jenkins credentials) and extract the package URL from its content.
 
+## Per-Machine State Isolation (CRITICAL)
+
+All intermediate state files (system info, config backups) **must** be stored in a per-machine directory to prevent parallel deploys from overwriting each other's data:
+
+```
+/home/dn/deploy_state/<hostname>/sys_info.json
+/home/dn/deploy_state/<hostname>/config_backup.txt
+```
+
+**Never** use shared/global file paths like `/home/dn/deploy_sys_info.json`. If two agents deploy different machines concurrently and share a file path, one will overwrite the other's system info, causing a deploy with the wrong system-type and name.
+
+A reusable deploy script exists at `/home/dn/dnos_deploy.py` that handles this automatically:
+
+```bash
+python3 /home/dn/dnos_deploy.py <hostname> <baseos_url> <dnos_url> <gi_url> [step]
+# Steps: all (default), info, save, delete, load, deploy, restore
+```
+
+If writing your own automation instead of using the script, always namespace state files under `deploy_state/<hostname>/`.
+
 ## Connecting to the Device
 
 Use paramiko with `invoke_shell` (see `dnos-ssh-connection` skill for full details):
