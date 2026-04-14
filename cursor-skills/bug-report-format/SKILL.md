@@ -34,7 +34,21 @@ When providing a bug summary, reporting a bug, or drafting a Jira bug descriptio
 `<describe any known workaround, or "None known" if none exists>`
 
 **Tech-support link:**
-`<link to tech-support bundle or relevant logs, or "N/A" if not available>`
+`<link to tech-support bundle on MinIO>`
+
+## Tech-Support Collection
+
+Before finalizing the bug report, **always offer to collect a tech-support** from
+the device where the bug was observed. If the user agrees:
+
+1. Follow the `dnos-techsupport` skill workflow — ask for a tech-support name
+   (suggest using the Jira ticket key or a short bug identifier, e.g. `sw123456_acl_drop`).
+2. Use the same device from the Environment Details section.
+3. Once the tech-support is uploaded to MinIO, fill in the **Tech-support link**
+   field with the MinIO URL (e.g. `http://minioio.dev.drivenets.net:9000/minio/techsupport/ts_<name>_<timestamp>.tar`).
+
+If the user declines or already has a tech-support link, use what they provide.
+Never leave this field as "N/A" without first offering to collect one.
 
 ## Rules
 
@@ -44,4 +58,4 @@ When providing a bug summary, reporting a bug, or drafting a Jira bug descriptio
 - Steps to Reproduce must be numbered and specific enough for someone else to follow.
 - Actual Results should include verbatim CLI output or log snippets when available.
 - Workaround should describe a concrete workaround if one exists, otherwise state "None known".
-- Tech-support link should point to the relevant tech-support bundle or log collection.
+- Tech-support link: always offer to collect a tech-support using the `dnos-techsupport` skill before leaving this field empty.
