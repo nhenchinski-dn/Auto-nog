@@ -1,0 +1,26 @@
+---
+description: Require user approval before creating or modifying any Jira tickets
+alwaysApply: true
+---
+
+# Jira Changes Require Explicit Approval
+
+## Bug Filing
+Before creating any Jira bug ticket (via `jira_create_issue` with issue_type Bug), you MUST:
+
+1. Present the bug summary, severity, and reproduction steps to the user
+2. Ask for explicit permission to file it
+3. Only create the Jira issue after the user confirms
+
+Never batch-file multiple bugs without per-bug approval. Present each bug individually and wait for a yes/no before proceeding.
+
+## Updating Existing Tickets
+NEVER update, modify, or edit any existing Jira ticket (via `jira_update_issue`, `jira_add_comment`, `jira_link_to_epic`, `jira_create_issue_link`, etc.) without explicit user approval first. This includes:
+
+- Updating fields (status, description, labels, priority, summary, etc.)
+- Adding comments
+- Linking or unlinking issues
+- Changing assignees or any other metadata
+- Modifying Epics or parent tickets
+
+Always present the proposed change and ask the user before making any modification to existing tickets.

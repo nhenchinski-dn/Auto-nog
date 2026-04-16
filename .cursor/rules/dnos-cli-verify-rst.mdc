@@ -1,0 +1,39 @@
+---
+description: Verify DNOS CLI commands against RST documentation before using them in scripts or SSH sessions
+alwaysApply: true
+---
+
+# Verify DNOS CLI Commands via RST Docs
+
+Before writing any script that sends CLI commands to a DNOS device, or before executing commands over SSH, **always look up the correct syntax in the RST documentation files** in the repository.
+
+## RST Doc Locations
+
+- **CLI command reference:** `cheetah/prod/dnos_monolith/dnos_cli/` — organized by feature area (Protocols, Interfaces, Network-services, Show Commands, System, etc.)
+- **Config hierarchy examples** are in the `::` code blocks inside each `.rst` file, showing the exact prompt progression and command syntax.
+
+## Workflow
+
+1. **Identify the feature area** (e.g., static routes → `Protocols/static/`, uRPF → search for `urpf`, ACLs → `access-lists`).
+2. **Search the RST files** using Glob (`**/dnos_cli/**/*.rst`) and Grep to find the relevant command documentation.
+3. **Read the RST file** to confirm:
+   - The exact config hierarchy path (e.g., `protocols static address-family ipv4-unicast route <prefix> next-hop <ip>`)
+   - Required parameters and their format
+   - The correct parent hierarchy (what config mode to enter first)
+4. **Use the documented syntax** in your script — do not guess or assume CLI paths.
+
+## Example
+
+Wrong (guessed):
+```
+routing static route 10.0.0.0/24 next-hop 10.1.1.2
+```
+
+Right (verified from RST):
+```
+protocols static address-family ipv4-unicast route 10.0.0.0/24 next-hop 10.1.1.2
+```
+
+## Key Principle
+
+DNOS CLI hierarchy is not like Cisco IOS or JunOS. Never assume a command path based on other vendors. The RST docs are the source of truth for DNOS CLI syntax.

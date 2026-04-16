@@ -3,7 +3,9 @@ __pycache__/
 *.pyo
 .cache/
 .local/
-.cursor/
+.cursor/*
+!.cursor/skills/
+!.cursor/rules/
 .cursor-server/
 .ssh/
 .config/
