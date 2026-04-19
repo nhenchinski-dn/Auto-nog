@@ -36,6 +36,27 @@ When providing a bug summary, reporting a bug, or drafting a Jira bug descriptio
 **Tech-support link:**
 `<link to tech-support bundle on MinIO>`
 
+**Git Commit:**
+`<contents of /.gitcommit from the device — identifies the exact build>`
+
+## Git Commit Collection
+
+Before finalizing the bug report, **always collect the `.gitcommit` value** from
+the DNOS device where the bug was observed. This identifies the exact build the
+defect was reproduced on and must be included in every bug report.
+
+To collect it, SSH into the device (or use an existing SSH session) and run:
+
+1. `start shell` — drop into the underlying Linux shell.
+2. When prompted for a password, enter: `dnroot`
+3. `cat /.gitcommit` — print the build commit hash.
+4. Copy the output verbatim into the **Git Commit** field of the bug report.
+
+If you are running commands on the device programmatically (e.g. via the
+`dnos-ssh-connection` skill), automate the same sequence and capture the
+`cat /.gitcommit` output. Never leave this field as "N/A" without first
+attempting to collect it.
+
 ## Tech-Support Collection
 
 Before finalizing the bug report, **always offer to collect a tech-support** from
@@ -59,3 +80,4 @@ Never leave this field as "N/A" without first offering to collect one.
 - Actual Results should include verbatim CLI output or log snippets when available.
 - Workaround should describe a concrete workaround if one exists, otherwise state "None known".
 - Tech-support link: always offer to collect a tech-support using the `dnos-techsupport` skill before leaving this field empty.
+- Git Commit: always collect `/.gitcommit` from the device (`start shell` → password `dnroot` → `cat /.gitcommit`) and include the output before submitting the bug.
