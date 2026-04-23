@@ -69,6 +69,29 @@ time.sleep(6)
 - **DNOS mode**: `set cli-no-confirm` works for most `(yes/no)` prompts. Run it once per session. **Exception**: `request system target-stack install` still prompts `Do you want to continue? (yes/no)` even with `cli-no-confirm` set. You must explicitly send `yes\n` for this command.
 - **GI mode**: `set cli-no-confirm` does **NOT** work. All commands that prompt `(yes/no)` require you to **explicitly send `yes\n`** after detecting the prompt. Poll the shell output for `yes/no` or `Yes/No` and then send `yes\n`.
 
+## Cluster (CL-xx) vs Standalone (SA-xx) Deploys
+
+Before starting, check the pre-deploy `show system` output to determine the chassis topology. This changes several steps.
+
+| Aspect | Standalone (e.g. `SA-64X8C-S`) | Cluster (e.g. `CL-51`) |
+|---|---|---|
+| `System Type` value | Chassis/personality model | Cluster model (`CL-xx`) |
+| `ncc-id` in deploy cmd | `0` | `0` (target this NCC) |
+| Deletion scope | Just this box | Propagates across the whole cluster — affects NCC1, NCFs, NCPs |
+| `request system delete` wait | ~3 min to GI mode | Up to 3 min for GI mode, **plus** poll `show system` in GI mode until `System status` leaves `delete (in-progress)` before trying any load. Otherwise loads fail with `error downloading package. error: upgrade in progress. try again later` |
+| Target stack after delete | Empty — must load all 3 packages | Often **already populated and REPLICATED** from the cluster peer; explicit `request system target-stack load` may return `error: file is already registered for download`. Before erroring out, check `show system stack` — if the Target column matches the build you want, loads can be skipped entirely |
+| Deploy duration | ~10-15 min to DNOS prompt | ~15 min to DNOS prompt, then an additional ~15 min while `System status` stays in `deployment (in-progress)` as NCC1, NCFs, NCPs re-initialize (`initializing (discovering)` → `up`). Do not do any config work until `System status: running` |
+| Post-deploy NCP enablement | N/A | **Required**: each NCP comes back with `admin-state disabled`. See Step 5a |
+| Config auto-sync from cluster peer | N/A | No — both NCCs are wiped, there is no surviving config. Fresh cluster has ~60 lines of default config |
+
+Useful polling commands in GI mode (many normal DNOS `show` commands do not exist):
+
+```
+show system          # shows System status and per-card state
+show system stack    # shows Current/Target/Revert stacks, sync state
+show system install  # shows in-flight load/install tasks
+```
+
 ## Deploy Workflow (Fresh Install)
 
 ### Step 1 — Save system info
@@ -133,7 +156,11 @@ ssh-keygen -f ~/.ssh/known_hosts -R <hostname>
 
 After reconnecting, confirm you see the `GI#` prompt.
 
+**Cluster caveat**: after reconnect in GI mode, run `show system` and wait until `System status` is no longer `delete (in-progress)` before proceeding. Poll every ~30s; this usually settles within 1-2 minutes after the SSH reconnect. If you send a load command too early you will see `error: upgrade in progress. try again later`.
+
 ### Step 4 — Load the 3 packages (in GI mode)
+
+**Cluster shortcut**: first run `show system stack`. If the `Target` column for BASEOS, DNOS, and GI all already match the build you want and `Stack replication status` shows `REPLICATED`, the cluster peer has already pushed the target stack for you and you can skip straight to Step 5. Attempting `request system target-stack load` in this case returns `error: file is already registered for download`.
 
 **GI mode requires explicit `yes` confirmation** for every `request system target-stack load` command. After sending the command, poll the shell output for `(yes/no)`, then send `yes\n`.
 
@@ -190,13 +217,32 @@ This also prompts `(yes/no)` in GI mode — send `yes` after detecting the promp
 Started deployment on NCC 0, task ID = <id>
 ```
 
-The device will reboot and come up in DNOS mode. This can take 10-15 minutes. The SSH host key will change again — remove the old key before reconnecting:
+The device will reboot and come up in DNOS mode. This can take 10-15 minutes for a standalone; **~15 min + another ~15 min on a cluster** for peer/NCF/NCP re-init. The SSH host key will change again — remove the old key before reconnecting:
 
 ```bash
 ssh-keygen -f ~/.ssh/known_hosts -R <hostname>
 ```
 
-Reconnect via SSH after the reboot and confirm you see the DNOS prompt (`<hostname>#`).
+Reconnect via SSH after the reboot. On a **cluster**, the prompt will be the cluster name (e.g. `Kira-lawfully-uses-CL-51#`), not the hostname. The cluster is not actually ready until `show system` reports `System status: running` — while it says `deployment (in-progress)`, other cards still show `initializing (discovering)` and config commits can race. Poll `show system` every ~45s until status is `running` before continuing.
+
+### Step 5a — Enable line cards (cluster deploys only)
+
+On a **cluster** (e.g. `CL-51`), NCP line cards come up with `admin-state disabled` after a fresh deploy — their ports will not work until you explicitly enable each NCP. For every NCP slot present in the chassis (you saw them in the `show system` output in Step 1), run in DNOS configure mode:
+
+```
+configure
+system ncp <slot-id> model <ncp-model> admin-state enabled
+commit
+```
+
+Example for the `dn02-cl-603a-ncc0` cluster which had `NCP 0` and `NCP 2` both `NCP-36CD-S`:
+
+```
+system ncp 0 model NCP-36CD-S admin-state enabled
+system ncp 2 model NCP-36CD-S admin-state enabled
+```
+
+You can read `<slot-id>` and `<ncp-model>` directly from the pre-deploy `show system` output (the `Id` and `Model` columns of the `NCP` rows). Skip this step for standalone (non-cluster) NCPs where the system-type already embeds a single NCP personality (e.g. `SA-64X8C-S`).
 
 ### Step 6 — Restore config (if saved)
 
@@ -224,6 +270,12 @@ exit
 ```
 
 Inform the user that deploy is complete and config has been restored.
+
+**Known restore pitfall (clusters especially)**: pasting a large multi-level config (e.g. 1000+ lines with `system → bundle-xxx → address-family → ...` nesting) line-by-line through an interactive CLI paste is unreliable. The CLI parser can get out of sync on deeply nested blocks (bundles, BGP address-families, ARP static tables, SSH algorithm lists), and a subsequent `commit` can silently succeed with only ~40-50% of the lines actually applied. On a freshly-deployed cluster with only ~60 lines of default config, this matters a lot.
+
+More reliable alternatives when the paste approach loses too many lines:
+- `request file download <user@host://path/file.txt>` (SCP-based; needs the remote SSH account to allow login) then `configure ; load override <file> ; commit`.
+- Hand the `<hostname>/config_backup.txt` to the user (e.g. print its path) and let them upload/apply it via their preferred mechanism — this avoids the lossy paste entirely.
 
 ## Upgrade Workflow (In-Place)
 
