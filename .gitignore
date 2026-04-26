@@ -27,15 +27,25 @@ __pycache__/
 .bug_dashboard_state/
 .bug_monitor.env
 .bug_monitor_state.json
+.webqa_helper.db
+.webqa_helper.db-shm
+.webqa_helper.db-wal
+.webqa_helper_secret
+.webqa_jenkins_creds.json
+
+# Run-time state directories (per-host deploy/verifier state)
+deploy_logs/
+deploy_state/
+bug_verifier_state/
 
 # Logs
 nohup.out
 bug_monitor.log
+webqa_helper.log
 *.mov
 *.vtt
 
 # Cloned repos / nested repos
-Auto-nog/
 cheetah/
 
 # Misc

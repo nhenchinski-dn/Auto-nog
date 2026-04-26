@@ -1,0 +1,30 @@
+{
+  "A": {
+    "d_acl_matches": 34406386,
+    "d_egress_tx": 1,
+    "d_egress_tx_drops": 0,
+    "d_ingress_rx": 35997452,
+    "d_ingress_route_unreach": 0
+  },
+  "B": {
+    "d_acl_matches": 36044785,
+    "d_egress_tx": 35,
+    "d_egress_tx_drops": 0,
+    "d_ingress_rx": 35902680,
+    "d_ingress_route_unreach": 0
+  },
+  "C": {
+    "d_acl_matches": 34406385,
+    "d_egress_tx": 1,
+    "d_egress_tx_drops": 0,
+    "d_ingress_rx": 36019249,
+    "d_ingress_route_unreach": 0
+  },
+  "D": {
+    "d_acl_matches": 34406386,
+    "d_egress_tx": 1,
+    "d_egress_tx_drops": 0,
+    "d_ingress_rx": 35999074,
+    "d_ingress_route_unreach": 0
+  }
+}

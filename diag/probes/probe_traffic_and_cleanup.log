@@ -1,0 +1,320 @@
+=== Current state ===
+set cli-no-confirm
+NCP3-nog# 
+show config protocols | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:23:14 UTC]
+
+protocols
+  bgp 65001
+    router-id 10.100.1.1
+    neighbor 10.100.1.2
+      remote-as 65002
+      admin-state enabled
+      address-family ipv4-unicast
+      !
+      address-family ipv6-unicast
+      !
+    !
+  !
+  lldp
+    admin-state enabled
+    interface ge400-0/0/0
+    !
+    interface ge400-0/0/2
+    !
+    interface ge400-0/0/4
+    !
+    interface ge400-0/0/5
+    !
+    interface ge400-0/0/6
+    !
+    interface ge400-0/0/7
+    !
+    interface ge400-0/0/8
+    !
+    interface ge400-0/0/9
+    !
+    interface ge400-0/0/10
+    !
+    interface ge400-0/0/11
+    !
+    interface ge400-0/0/12
+    !
+    interface ge400-0/0/13
+    !
+    interface ge400-0/0/14
+    !
+    interface ge400-0/0/15
+    !
+    interface ge400-0/0/16
+    !
+    interface ge400-0/0/18
+    !
+    interface ge400-0/0/20
+    !
+    interface ge400-0/0/21
+    !
+    interface ge400-0/0/22
+    !
+    interface ge400-0/0/23
+    !
+    interface ge400-0/0/24
+    !
+    interface ge400-0/0/25
+    !
+    interface ge400-0/0/26
+    !
+    interface ge400-0/0/27
+    !
+    interface ge400-0/0/28
+    !
+    interface ge400-0/0/29
+    !
+    interface ge400-0/0/30
+    !
+    interface ge400-0/0/31
+    !
+    interface ge400-0/0/32
+    !
+    interface ge400-0/0/33
+    !
+    interface ge400-0/0/34
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+show config access-lists | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:23:19 UTC]
+
+access-lists
+  ipv4 egress-bfd
+    rule 1 deny
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+show config interfaces ge100-0/0/3/0 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:23:23 UTC]
+
+interfaces
+  ge100-0/0/3/0
+    admin-state enabled
+    fec rs-fec-544-514
+    ipv4-address 10.10.10.1/24
+    urpf
+      admin-state enabled
+      allow-default disabled
+      address-family ipv4
+        admin-state enabled
+      !
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+=== Cleanup stale config (BGP, uBFD, revert ACL to allow, drop ingress uRPF) ===
+commit
+Commit succeeded by dnroot at 23-Apr-2026 05:23:55 UTC
+NCP3-nog(cfg)# 
+
+=== State after cleanup ===
+show config protocols | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:24:06 UTC]
+
+protocols
+  lldp
+    admin-state enabled
+    interface ge400-0/0/0
+    !
+    interface ge400-0/0/2
+    !
+    interface ge400-0/0/4
+    !
+    interface ge400-0/0/5
+    !
+    interface ge400-0/0/6
+    !
+    interface ge400-0/0/7
+    !
+    interface ge400-0/0/8
+    !
+    interface ge400-0/0/9
+    !
+    interface ge400-0/0/10
+    !
+    interface ge400-0/0/11
+    !
+    interface ge400-0/0/12
+    !
+    interface ge400-0/0/13
+    !
+    interface ge400-0/0/14
+    !
+    interface ge400-0/0/15
+    !
+    interface ge400-0/0/16
+    !
+    interface ge400-0/0/18
+    !
+    interface ge400-0/0/20
+    !
+    interface ge400-0/0/21
+    !
+    interface ge400-0/0/22
+    !
+    interface ge400-0/0/23
+    !
+    interface ge400-0/0/24
+    !
+    interface ge400-0/0/25
+    !
+    interface ge400-0/0/26
+    !
+    interface ge400-0/0/27
+    !
+    interface ge400-0/0/28
+    !
+    interface ge400-0/0/29
+    !
+    interface ge400-0/0/30
+    !
+    interface ge400-0/0/31
+    !
+    interface ge400-0/0/32
+    !
+    interface ge400-0/0/33
+    !
+    interface ge400-0/0/34
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+show config access-lists | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:24:11 UTC]
+
+access-lists
+  ipv4 egress-bfd
+    rule 1 allow
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+show config interfaces ge100-0/0/3/0 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:24:15 UTC]
+
+interfaces
+  ge100-0/0/3/0
+    admin-state enabled
+    fec rs-fec-544-514
+    ipv4-address 10.10.10.1/24
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+=== Clearing interface counters and starting Spirent traffic ===
+>>> before traffic:
+show interfaces counters ge100-0/0/3/0 | no-more
+
+Interface ge100-0/0/3/0:
+Operational state: up
+L2-service state: disabled
+
+Ethernet counters:
+	RX octets:                              46862322560 (           0 bps /       0 Mbps)
+	RX frames:                                366111895 (           0 fps /       0 Mfps)
+	RX unicast frames:                        366111895 (           0 fps /       0 Mfps)
+	RX broadcast frames:                              0 (           0 fps /       0 Mfps)
+	RX multicast frames:                              0 (           0 fps /       0 Mfps)
+	TX octets:                                      376 (           0 bps /       0 Mbps)
+	TX frames:                                        4 (           0 fps /       0 Mfps)
+	TX unicast frames:                                0 (           0 fps /       0 Mfps)
+	TX broadcast frames:                              0 (           0 fps /       0 Mfps)
+	TX multicast frames:                              4 (           0 fps /       0 Mfps)
+
+Ethernet control counters:
+	RX pause frames:                                  0
+	TX pause frames:                                  0
+	RX PFC frames:                                    0
+	TX PFC frames:                                    0
+
+Ethernet drop counters:
+	RX errors:                                        0
+	RX too short:                                     0
+	RX too long:                                      0
+	RX FCS errors:                                    0
+	RX internal MAC errors:                           0
+	RX pipeline MAC drops:                            0
+	TX errors:                                        0
+
+FEC counters:
+	FEC corrected errors:                       8481327
+	FEC uncorrected errors:                           6
+	FEC symbol errors:                          8479352
+	FEC bit errors:                                  57
+
+Interface forwarding IP Multicast counters:
+	RX IPv4 Multicast octets:                         0 (           0 bps /       0 Mbps)
+	RX IPv4 Multicast packets:                        0 (           0 pps /       0 Mpps)
+
+Interface forwarding drop counters:
+	RX drops:                                 366111895
+	TX drops:                                         0
+	RX TTL is too low:                                0
+	RX MPLS label mismatch:                           0
+	RX MPLS disabled:                                 0
+	Destination IF MTU is too low:                    0
+	Destination route unreachable:            366111895
+	Destination MAC unresolved:                       0
+	Destination route is null0:                       0
+	Multicast lookup failure:                         0
+	Multicast wrong IIF:                              0
+	uRPF Ipv4 drops:                                  0
+	uRPF Ipv6 drops:                                  0
+
+MTU violation counters:
+	TX MTU violations:                                0
+	TX IPv4 fragmented packets:                       0
+	TX generated IPv4 fragments:                      0
+
+Forwarding drops summary of logical and sub-IF:
+	RX VLAN mismatch:                                 0
+	Destination MAC mismatch:                         0
+	Invalid IP header:                                0
+
+NCP3-nog# 
+Spirent port online=true
+Generator started, waiting 10 s ...
+Traceback (most recent call last):
+  File "/home/dn/probe_traffic_and_cleanup.py", line 157, in <module>
+    main()
+  File "/home/dn/probe_traffic_and_cleanup.py", line 131, in main
+    tx_pkts = stc.get(gen_results, 'TotalFrameCount')
+  File "/home/dn/.local/lib/python3.10/site-packages/stcrestclient/stchttp.py", line 367, in get
+    status, data = self._rest.get_request('objects', str(handle), args)
+  File "/home/dn/.local/lib/python3.10/site-packages/stcrestclient/resthttp.py", line 215, in get_request
+    return self._handle_response(rsp, to_lower)
+  File "/home/dn/.local/lib/python3.10/site-packages/stcrestclient/resthttp.py", line 450, in _handle_response
+    raise RestHttpError(rsp.status_code, rsp.reason, detail, code)
+stcrestclient.resthttp.RestHttpError: 405 Method Not Allowed

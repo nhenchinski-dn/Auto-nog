@@ -1,0 +1,444 @@
+SW-244107 re-run — DENY ACL, BGP-BFD in Phase C
+DUT: WKY1C7VD00008P2  ingress: ge100-0/0/3/0 (VRF test)  egress: bundle-10
+Spirent: //100.64.15.236/1/25   1,000,000 fps @ 128B
+
+show system | no-more
+
+System Name: NCP3-nog, System-Id: 4754b29a-8df2-485a-86eb-9451a63777fc
+System Type: SA-36CD-S, Family: NCR
+Enterprise-Id: 49739
+Description: DRIVENETS Network Cloud Router
+System status: running 
+System Start Time: 23-Apr-2026 03:47:44 UTC
+System Uptime: 0 days, 2:19:31
+System Boot Uptime: 0 days, 2:20:26
+Version: DNOS [26.2.0] build [328_dev], Copyright 2026 DRIVENETS LTD.
+Patch: N/A
+Environment:
+	Location: N/A
+	Floor: N/A
+	Rack: N/A
+Contact: support@drivenets.com
+Fabric Minimum Links: N/A
+Fabric Minimum NCF: N/A
+Dynamic Fabric State: N/A
+NCC switchovers: 0
+Last NCC switchover: N/A
+Escalation-stop-failovers
+  Max-failover(remaining): 2(2)
+  Failover-period(remaining): 30min(0 days, 0:30:00)
+Recovery-mode: supported
+BGP NSR: N/A
+
+
+| Type | Id     | Admin    | Operational                        | Model           | Uptime              | Description                | Serial Number        |
++------+--------+----------+------------------------------------+-----------------+---------------------+----------------------------+----------------------+
+| NCC  | 0      |          | active-up                          | NCP-36CD-S      | 0 days, 2:19:31     | dn-ncc-0                   |                      |
+| NCP  | 0      | enabled  | up                                 | NCP-36CD-S      | 0 days, 2:16:30     | dn-ncp-0                   | WKY1C7VD00008P2      |
+
+NCP3-nog# 
+
+>> DUT setup: ge100-0/0/3/0 -> VRF test; ACL rule 1 deny
+   commit: OK
+show config interfaces ge100-0/0/3/0 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 06:07:59 UTC]
+
+interfaces
+  ge100-0/0/3/0
+    admin-state enabled
+    fec rs-fec-544-514
+    ipv4-address 10.10.10.1/24
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+show config access-lists | no-more
+
+# NCP3-nog config-start [23-Apr-2026 06:08:03 UTC]
+
+access-lists
+  ipv4 egress-bfd
+    rule 1 deny
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+show config network-services | no-more
+
+# NCP3-nog config-start [23-Apr-2026 06:08:08 UTC]
+
+network-services
+  bridge-domain
+    instance bd100
+      admin-state enabled
+      router-interface irb100
+      interface ge100-0/0/3/1.100
+      !
+    !
+  !
+  vrf
+    instance bugver261042
+      interface ge400-0/0/10
+    !
+    instance test
+      interface bundle-10
+      interface bundle-20
+      interface ge100-0/0/3/0
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+show route vrf test 20.0.0.2 | no-more
+
+VRF: test
+Routing entry for 20.0.0.0/24
+  Known via "connected", priority high, distance 0, metric 0, vrf test, best, fib
+  Last update 01:19:05 ago
+  * directly connected, bundle-10
+
+NCP3-nog# 
+  Spirent 100.64.15.236/1/25 online=true
+  Spirent generator started: 1,000,000 fps @ 128B
+
+========================================================================
+  Phase A: baseline (ACL=deny, no BFD)
+========================================================================
+  t=0    ACL matches=9830396 | bundle-10 tx_frames=388 tx_drops=0 | ge100-0/0/3/0 rx_frames=2204789512
+  t=15s   ACL matches=44236782 | bundle-10 tx_frames=389 tx_drops=0 | ge100-0/0/3/0 rx_frames=2240786964
+  Δ ACL matches           : 34406386  (2,293,759 pps)
+  Δ bundle-10 tx_frames : 1  (0 pps)
+  Δ bundle-10 tx_drops  : 0
+  Δ ge100-0/0/3/0 rx_frames  : 35997452  (2,399,830 pps)
+
+>> DUT: configure uBFD on bundle-10 (neighbor 20.0.0.2)
+   commit: OK
+show bfd sessions | no-more
+
+Legend: R - RSVP dependency
+
+vrf: default
+
+IPv4
+
+| neighbor address   | state   | session Tx/Rx/Multiplier   | Uptime/Downtime   | clients   | interface/Policy+Path+SL   |
+|--------------------+---------+----------------------------+-------------------+-----------+----------------------------|
+
+
+IPv6
+
+| neighbor address   | state   | session Tx/Rx/Multiplier   | Uptime/Downtime   | clients   | interface/Policy+Path+SL   |
+|--------------------+---------+----------------------------+-------------------+-----------+----------------------------|
+
+NCP3-nog# 
+
+========================================================================
+  Phase B: ACL=deny + uBFD on bundle-10
+========================================================================
+  t=0    ACL matches=114687952 | bundle-10 tx_frames=425 tx_drops=0 | ge100-0/0/3/0 rx_frames=2312881476
+  t=15s   ACL matches=150732737 | bundle-10 tx_frames=460 tx_drops=0 | ge100-0/0/3/0 rx_frames=2348784156
+  Δ ACL matches           : 36044785  (2,402,986 pps)
+  Δ bundle-10 tx_frames : 35  (2 pps)
+  Δ bundle-10 tx_drops  : 0
+  Δ ge100-0/0/3/0 rx_frames  : 35902680  (2,393,512 pps)
+
+>> DUT: remove uBFD on bundle-10
+   commit: OK
+
+>> DUT: configure BGP neighbor 20.0.0.2 with single-hop BFD (SH-BFD in BGP)
+   commit: OK
+show config protocols | no-more
+
+# NCP3-nog config-start [23-Apr-2026 06:13:42 UTC]
+
+protocols
+  bgp 65001
+    router-id 10.100.1.1
+    neighbor 20.0.0.2
+      remote-as 65002
+      admin-state enabled
+      bfd
+        admin-state enabled
+        bfd-type single-hop
+        min-rx 300
+        min-tx 300
+        multiplier 3
+      !
+      address-family ipv4-unicast
+      !
+    !
+  !
+  lldp
+    admin-state enabled
+    interface ge400-0/0/0
+    !
+    interface ge400-0/0/2
+    !
+    interface ge400-0/0/4
+    !
+    interface ge400-0/0/5
+    !
+    interface ge400-0/0/6
+    !
+    interface ge400-0/0/7
+    !
+    interface ge400-0/0/8
+    !
+    interface ge400-0/0/9
+    !
+    interface ge400-0/0/10
+    !
+    interface ge400-0/0/11
+    !
+    interface ge400-0/0/12
+    !
+    interface ge400-0/0/13
+    !
+    interface ge400-0/0/14
+    !
+    interface ge400-0/0/15
+    !
+    interface ge400-0/0/16
+    !
+    interface ge400-0/0/18
+    !
+    interface ge400-0/0/20
+    !
+    interface ge400-0/0/21
+    !
+    interface ge400-0/0/22
+    !
+    interface ge400-0/0/23
+    !
+    interface ge400-0/0/24
+    !
+    interface ge400-0/0/25
+    !
+    interface ge400-0/0/26
+    !
+    interface ge400-0/0/27
+    !
+    interface ge400-0/0/28
+    !
+    interface ge400-0/0/29
+    !
+    interface ge400-0/0/30
+    !
+    interface ge400-0/0/31
+    !
+    interface ge400-0/0/32
+    !
+    interface ge400-0/0/33
+    !
+    interface ge400-0/0/34
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+show bfd sessions | no-more
+
+Legend: R - RSVP dependency
+
+vrf: default
+
+IPv4
+
+| neighbor address   | state   | session Tx/Rx/Multiplier   | Uptime/Downtime   | clients   | interface/Policy+Path+SL   |
+|--------------------+---------+----------------------------+-------------------+-----------+----------------------------|
+
+
+IPv6
+
+| neighbor address   | state   | session Tx/Rx/Multiplier   | Uptime/Downtime   | clients   | interface/Policy+Path+SL   |
+|--------------------+---------+----------------------------+-------------------+-----------+----------------------------|
+
+NCP3-nog# 
+show bgp neighbors | no-more
+
+BGP neighbor is 20.0.0.2, remote AS 65002, local AS 65001, external link
+  BGP version 4, remote router ID 0.0.0.0
+  BGP state = Active
+  Using BFD to detect fast fallover in standard single-hop mode
+  BFD session status = Down, last event = Pending BGP's session establishment updated at 00:00:31
+  Last read 00:00:31, hold time is 180, keepalive interval is 60 seconds
+  Configured hold time is 180, keepalive interval is 60 seconds
+  Graceful restart configuration: enable
+  Local Restart timer is 2 minutes 
+  Local Stalepath timer is 6 minutes 
+  Local Purge timer is 7 minutes 
+  Long Lived Graceful restart configuration: 
+    Address families by peer:
+      none
+  Message statistics:
+    Inq depth is 0
+    Outq depth is 0
+                         Sent       Rcvd
+    Opens:                  0          0
+    Notifications:          0          0
+    Updates:                0          0
+    Keepalives:             0          0
+    Route Refresh:          0          0
+    Capability:             0          0
+    Total:                  0          0
+  Minimum time between advertisement runs is 30 seconds
+
+ For address family: IPv4 Unicast
+  AS loop detection is enabled
+  0 prefixes accepted
+  0 prefixes out
+
+  Connections established 0; dropped 0
+  Last reset never
+Next connect timer due in 10 seconds
+Read thread: off  Write thread: off
+
+NCP3-nog# 
+
+========================================================================
+  Phase C: ACL=deny + BGP BFD (SH-BFD in BGP)
+========================================================================
+  t=0    ACL matches=289996679 | bundle-10 tx_frames=488 tx_drops=0 | ge100-0/0/3/0 rx_frames=2486781009
+  t=15s   ACL matches=324403064 | bundle-10 tx_frames=489 tx_drops=0 | ge100-0/0/3/0 rx_frames=2522800258
+  Δ ACL matches           : 34406385  (2,293,759 pps)
+  Δ bundle-10 tx_frames : 1  (0 pps)
+  Δ bundle-10 tx_drops  : 0
+  Δ ge100-0/0/3/0 rx_frames  : 36019249  (2,401,283 pps)
+
+>> DUT: remove BGP + uBFD
+   commit: OK
+
+========================================================================
+  Phase D: post-cleanup (ACL=deny, no BFD)
+========================================================================
+  t=0    ACL matches=380108641 | bundle-10 tx_frames=491 tx_drops=0 | ge100-0/0/3/0 rx_frames=2574780220
+  t=15s   ACL matches=414515027 | bundle-10 tx_frames=492 tx_drops=0 | ge100-0/0/3/0 rx_frames=2610779294
+  Δ ACL matches           : 34406386  (2,293,759 pps)
+  Δ bundle-10 tx_frames : 1  (0 pps)
+  Δ bundle-10 tx_drops  : 0
+  Δ ge100-0/0/3/0 rx_frames  : 35999074  (2,399,938 pps)
+
+>> DUT cleanup: ACL allow, remove ingress from VRF test
+   commit: OK
+show config access-lists | no-more
+
+# NCP3-nog config-start [23-Apr-2026 06:17:11 UTC]
+
+access-lists
+  ipv4 egress-bfd
+    rule 1 allow
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+show config interfaces ge100-0/0/3/0 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 06:17:16 UTC]
+
+interfaces
+  ge100-0/0/3/0
+    admin-state enabled
+    fec rs-fec-544-514
+    ipv4-address 10.10.10.1/24
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+show config protocols | no-more
+
+# NCP3-nog config-start [23-Apr-2026 06:17:20 UTC]
+
+protocols
+  lldp
+    admin-state enabled
+    interface ge400-0/0/0
+    !
+    interface ge400-0/0/2
+    !
+    interface ge400-0/0/4
+    !
+    interface ge400-0/0/5
+    !
+    interface ge400-0/0/6
+    !
+    interface ge400-0/0/7
+    !
+    interface ge400-0/0/8
+    !
+    interface ge400-0/0/9
+    !
+    interface ge400-0/0/10
+    !
+    interface ge400-0/0/11
+    !
+    interface ge400-0/0/12
+    !
+    interface ge400-0/0/13
+    !
+    interface ge400-0/0/14
+    !
+    interface ge400-0/0/15
+    !
+    interface ge400-0/0/16
+    !
+    interface ge400-0/0/18
+    !
+    interface ge400-0/0/20
+    !
+    interface ge400-0/0/21
+    !
+    interface ge400-0/0/22
+    !
+    interface ge400-0/0/23
+    !
+    interface ge400-0/0/24
+    !
+    interface ge400-0/0/25
+    !
+    interface ge400-0/0/26
+    !
+    interface ge400-0/0/27
+    !
+    interface ge400-0/0/28
+    !
+    interface ge400-0/0/29
+    !
+    interface ge400-0/0/30
+    !
+    interface ge400-0/0/31
+    !
+    interface ge400-0/0/32
+    !
+    interface ge400-0/0/33
+    !
+    interface ge400-0/0/34
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+========================================================================
+  SW-244107 retest SUMMARY
+========================================================================
+  Phase A baseline (ACL=deny, no BFD):  ACL Δ=34406386  (2,293,759 pps)  -> INCREMENTING
+  Phase B ACL=deny + uBFD:  ACL Δ=36044785  (2,402,986 pps)  -> INCREMENTING
+  Phase C ACL=deny + BGP BFD:  ACL Δ=34406385  (2,293,759 pps)  -> INCREMENTING
+  Phase D post-cleanup (ACL=deny, no BFD):  ACL Δ=34406386  (2,293,759 pps)  -> INCREMENTING
+
+Results saved to /home/dn/sw244107_retest_results.json

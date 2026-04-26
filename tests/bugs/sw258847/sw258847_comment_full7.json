@@ -1,0 +1,978 @@
+{
+  "type": "doc",
+  "version": 1,
+  "content": [
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Full 7-step lifecycle per variant \u2014 test outputs"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Each variant runs all 7 Jira test steps end-to-end. Each variant is isolated in its own test VRF so Step 5 (enable allow-default on one AFI) does not collide with other uRPF interfaces in the same VRF. For every step, "
+        },
+        {
+          "type": "text",
+          "text": "show interfaces <IF>",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " and "
+        },
+        {
+          "type": "text",
+          "text": "show interfaces detail <IF>",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " produced identical uRPF lines (Pass Criterion #2)."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Legend:",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " S1 = apply starting config, S2/S3 = show brief / show detail verification, S4 = modify a single AFI mode, S5 = enable allow-default on one AFI, S6 = delete per-AFI config (fall back to global), S7 = delete all uRPF (both AFIs disabled)."
+        }
+      ]
+    },
+    {
+      "type": "rule"
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "V1 \u2014 ge sub-interface ge400-0/0/34.100 (global-only strict, VRF urpf_v1_vrf)"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S1: admin-state enabled / mode strict / allow-default disabled",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S4: change global mode strict -> loose",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S5: enable v6 per-AFI admin-state enabled + allow-default enabled",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S6: no urpf address-family ipv6 (fall back to global)",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S7: no urpf (disabled)",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: disabled\nuRPF IPv6 check: disabled"
+        }
+      ]
+    },
+    {
+      "type": "rule"
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "V2 \u2014 bundle-99 (global-only loose, VRF urpf_v2_vrf)"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S1: admin-state enabled / mode loose / allow-default disabled",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S4: change global mode loose -> strict",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S5: enable v6 per-AFI admin-state + allow-default (per-AFI mode unspecified -> defaults to loose, overrides global)",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose,  Allow-default: enabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S6: no urpf address-family ipv6",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S7: no urpf",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: disabled\nuRPF IPv6 check: disabled"
+        }
+      ]
+    },
+    {
+      "type": "rule"
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "V3 \u2014 bundle sub-interface bundle-99.200 (per-AFI only, VRF urpf_v3_vrf)"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S1: urpf admin-state enabled + v4 strict + v6 loose (no global mode)",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose,  Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S4: modify v6 per-AFI mode loose -> strict",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S5: enable v6 per-AFI allow-default enabled",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: strict, Allow-default: enabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S6: no urpf address-family ipv6 (v4 per-AFI remains)",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose,  Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S7: no urpf",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: disabled\nuRPF IPv6 check: disabled"
+        }
+      ]
+    },
+    {
+      "type": "rule"
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "V4 \u2014 irb99 (IRB, loose only \u2014 strict unsupported on IRB, VRF urpf_v4_vrf)"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S1: admin-state enabled / mode loose / AD disabled + v6 per-AFI admin enabled",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S4 (adapted): v6 per-AFI allow-default disabled -> enabled (mode flip unavailable \u2014 IRB rejects strict)",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S5: v4 per-AFI admin-state enabled (inherits global loose / AD disabled)",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S6: no urpf address-family ipv6",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S7: no urpf",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: disabled\nuRPF IPv6 check: disabled"
+        }
+      ]
+    },
+    {
+      "type": "rule"
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "V5 \u2014 ge400-0/0/34 in VRF test (allow-default enabled, strict)"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S1: admin-state enabled / mode strict / allow-default enabled",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: enabled\nuRPF IPv6 check: enabled, Mode: strict, Allow-default: enabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S4: change global mode strict -> loose",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S5: add v6 per-AFI admin-state + allow-default enabled",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S6: no urpf address-family ipv6",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S7: no urpf",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: disabled\nuRPF IPv6 check: disabled"
+        }
+      ]
+    },
+    {
+      "type": "rule"
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "V6 \u2014 ge400-0/0/34 (global-only loose, VRF test)"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S1: admin-state enabled / mode loose / allow-default disabled",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S4: change global mode loose -> strict",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S5: v6 per-AFI admin-state + allow-default enabled (per-AFI mode unspecified -> defaults to loose, overrides global)",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: loose,  Allow-default: enabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S6: no urpf address-family ipv6",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\nuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "S7: no urpf",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "content": [
+        {
+          "type": "text",
+          "text": "uRPF IPv4 check: disabled\nuRPF IPv6 check: disabled"
+        }
+      ]
+    },
+    {
+      "type": "rule"
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Summary"
+        }
+      ]
+    },
+    {
+      "type": "bulletList",
+      "content": [
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "All 6 variants x 7 steps: PASS. show interfaces and show interfaces detail produced matching uRPF lines at every step."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "V2 & V6 at S5: adding a per-AFI block without explicit "
+                },
+                {
+                  "type": "text",
+                  "text": "mode",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " silently flips that AFI to "
+                },
+                {
+                  "type": "text",
+                  "text": "loose",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " (per-AFI default), overriding the global "
+                },
+                {
+                  "type": "text",
+                  "text": "strict",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ". "
+                },
+                {
+                  "type": "text",
+                  "text": "show config",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " omits the defaulted value \u2014 worth flagging as a usability gap."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "V4 adapted: "
+                },
+                {
+                  "type": "text",
+                  "text": "mode strict",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " is rejected on IRB \u2014 documented platform gap."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

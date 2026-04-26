@@ -1,0 +1,7 @@
+{
+  "cfg_show": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 00:29:53 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+  "v6_show_brief": "\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+  "v6_show_detail": "\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+  "cleanup_log": "\n--- Cleanup attempt 1 ---\nconfigure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 00:30:29 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+  "final_cfg": "show config interfaces ge400-0/0/34 | no-more\n\n# NCP3-nog config-start [20-Apr-2026 00:30:40 UTC]\n\ninterfaces\n  ge400-0/0/34\n    admin-state enabled\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# "
+}

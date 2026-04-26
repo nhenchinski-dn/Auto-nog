@@ -1,0 +1,187 @@
+
+############ show interfaces ge100-0/0/3/0 | no-more ############
+show interfaces ge100-0/0/3/0 | no-more
+
+Interface ge100-0/0/3/0
+	SNMP ifindex: 57344, Network-Service: VRF (default)
+	Admin state: enabled, Physical link state: up, Operational state: up, Uptime: 0 days, 1:01:58
+	State transitions: 0, Last cleared: 0 days, 1:02:39
+	Description: 
+	MAC Address: e8:c5:7a:d6:30:18 (HW: e8:c5:7a:d6:30:18)
+	Breakout state: child, Channel: 0
+	Speed: 100Gbps, Duplex: FULL, Bundle-id: N/A
+	Port-priority: 32768
+	Port-number: 49
+	MPLS: disabled
+	L2 MTU: 1514, MPLS MTU: 1500, IPv4 MTU: 1500, IPv6 MTU: 1500 (Hardware MTU: N/A)
+	MRU: 9600, L2 Frame Size Max: 1522
+	IPv4 Address: 10.10.10.1/24
+	Secondary IPv4 addresses: N/A
+	IPv6 Admin state: enabled, IPv6 link-local address: N/A, Status: N/A
+	IPv6 global unicast address(es): N/A
+	ARP Timeout: 3600 seconds
+	NDP Timeout: 3600 seconds
+	NDP Router-advertisement
+		Prefix-advertisement: disabled
+	Encapsulation: ethernet
+	L2 originated VLAN tags: N/A
+	Access-list IPv4: In: N/A, Out: N/A
+	Access-list IPv6: In: N/A, Out: N/A
+	Access-list Eth: In: N/A, Out: N/A
+	uRPF IPv4 check: disabled
+	uRPF IPv6 check: disabled
+	Priority Flow Control: disabled
+		Deadlock: disabled, Deadlock occurrences: 0
+			Flap suppression:
+				Status: TC0: N/A, TC1: N/A, TC2: N/A, TC3: N/A, TC4: N/A, TC5: N/A, TC6: N/A, TC7: N/A
+	Carrier-delay: up: 0 ms, down: 0 ms, on-startup: 0 seconds (on-startup remaining time: 0 seconds)
+	Fast Link Recovery timeout: 0 ms
+	FEC: rs-fec-544-514
+	LFS: Current Fault: None, Local Faults: 1, Remote Faults: 1
+	EFM: Admin state: N/A, Status: N/A
+	BER: Current-BER: None, Status: Disabled
+		BER-SD: admin-state: disabled, Threshold: 1e-8, Number of Hits: 0
+		BER-SF: admin-state: disabled, Threshold: 1e-5, Number of Hits: 0
+	Synchronous-Ethernet: non-synchronous
+	PTP Admin-state: disabled
+	PTP Port State: N/A
+	Interface-Dampening: disabled, current penalty counter: None
+		Half-life: 60 seconds, reuse-threshold: 750, suppress-threshold: 2000,
+		Penalty: 1000, max-suppress: 300 seconds
+	L2-service state: disabled
+	Flowspec: disabled
+	Reason for last down state: N/A
+	Utilization rates (input/output): 0%/0%
+	Utilization rate threshold: 100%
+
+NCP3-nog# 
+
+############ show interfaces ge100-0/0/3/1 | no-more ############
+show interfaces ge100-0/0/3/1 | no-more
+
+Interface ge100-0/0/3/1
+	SNMP ifindex: 57345, Network-Service: VRF (default)
+	Admin state: enabled, Physical link state: up, Operational state: up, Uptime: 0 days, 1:02:02
+	State transitions: 0, Last cleared: 0 days, 1:02:44
+	Description: 
+	MAC Address: e8:c5:7a:d6:30:19 (HW: e8:c5:7a:d6:30:19)
+	Breakout state: child, Channel: 1
+	Speed: 100Gbps, Duplex: FULL, Bundle-id: N/A
+	Port-priority: 32768
+	Port-number: 50
+	MPLS: disabled
+	L2 MTU: 1514, MPLS MTU: 1500, IPv4 MTU: 1500, IPv6 MTU: 1500 (Hardware MTU: N/A)
+	MRU: 9600, L2 Frame Size Max: 1522
+	IPv4 Address: N/A
+	Secondary IPv4 addresses: N/A
+	IPv6 Admin state: enabled, IPv6 link-local address: N/A, Status: N/A
+	IPv6 global unicast address(es): N/A
+	ARP Timeout: 3600 seconds
+	NDP Timeout: 3600 seconds
+	NDP Router-advertisement
+		Prefix-advertisement: disabled
+	Encapsulation: ethernet
+	L2 originated VLAN tags: N/A
+	Access-list IPv4: In: N/A, Out: N/A
+	Access-list IPv6: In: N/A, Out: N/A
+	Access-list Eth: In: N/A, Out: N/A
+	uRPF IPv4 check: disabled
+	uRPF IPv6 check: disabled
+	Priority Flow Control: disabled
+		Deadlock: disabled, Deadlock occurrences: 0
+			Flap suppression:
+				Status: TC0: N/A, TC1: N/A, TC2: N/A, TC3: N/A, TC4: N/A, TC5: N/A, TC6: N/A, TC7: N/A
+	Carrier-delay: up: 0 ms, down: 0 ms, on-startup: 0 seconds (on-startup remaining time: 0 seconds)
+	Fast Link Recovery timeout: 0 ms
+	FEC: rs-fec-544-514
+	LFS: Current Fault: None, Local Faults: 1, Remote Faults: 1
+	EFM: Admin state: N/A, Status: N/A
+	BER: Current-BER: None, Status: Disabled
+		BER-SD: admin-state: disabled, Threshold: 1e-8, Number of Hits: 0
+		BER-SF: admin-state: disabled, Threshold: 1e-5, Number of Hits: 0
+	Synchronous-Ethernet: non-synchronous
+	PTP Admin-state: disabled
+	PTP Port State: N/A
+	Interface-Dampening: disabled, current penalty counter: None
+		Half-life: 60 seconds, reuse-threshold: 750, suppress-threshold: 2000,
+		Penalty: 1000, max-suppress: 300 seconds
+	L2-service state: disabled
+	Flowspec: disabled
+	Reason for last down state: N/A
+	Utilization rates (input/output): 0%/0%
+	Utilization rate threshold: 100%
+
+NCP3-nog# 
+
+############ show config interfaces ge100-0/0/3/0 | no-more ############
+show config interfaces ge100-0/0/3/0 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:10:03 UTC]
+
+interfaces
+  ge100-0/0/3/0
+    admin-state enabled
+    fec rs-fec-544-514
+    ipv4-address 10.10.10.1/24
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+############ show interfaces | inc ge100-0/0/3 | no-more ############
+show interfaces | inc ge100-0/0/3 | no-more
+
+| ge100-0/0/3/0              | enabled  | up              | 10.10.10.1/24          |                                             |               | 1514 | VRF (default)                               |            |
+| ge100-0/0/3/1              | enabled  | up              |                        |                                             |               | 1514 | VRF (default)                               |            |
+| ge100-0/0/3/1.100 (L2)     | enabled  | up              |                        |                                             | 100           | 1518 | BD (bd100)                                  |            |
+| ge100-0/0/3/2              | disabled | down            |                        |                                             |               | 1514 | VRF (default)                               |            |
+| ge100-0/0/3/3              | disabled | down            |                        |                                             |               | 1514 | VRF (default)                               |            |
+
+NCP3-nog# 
+
+############ show lldp neighbors | no-more ############
+show lldp neighbors | no-more
+
+| Interface    | Neighbor System Name   | Neighbor interface   | Neighbor TTL   |
+|--------------+------------------------+----------------------+----------------|
+| ge400-0/0/0  |                        |                      |                |
+| ge400-0/0/2  |                        |                      |                |
+| ge400-0/0/4  | NCP3-nog               | ge400-0/0/18         | 120            |
+| ge400-0/0/5  | NCP3-nog               | ge400-0/0/6          | 120            |
+| ge400-0/0/6  | NCP3-nog               | ge400-0/0/5          | 120            |
+| ge400-0/0/7  |                        |                      |                |
+| ge400-0/0/8  |                        |                      |                |
+| ge400-0/0/9  |                        |                      |                |
+| ge400-0/0/10 |                        |                      |                |
+| ge400-0/0/11 | NCP3-nog               | ge400-0/0/12         | 120            |
+| ge400-0/0/12 | NCP3-nog               | ge400-0/0/11         | 120            |
+| ge400-0/0/13 |                        |                      |                |
+| ge400-0/0/14 |                        |                      |                |
+| ge400-0/0/15 | NCP3-nog               | ge400-0/0/16         | 120            |
+| ge400-0/0/16 | NCP3-nog               | ge400-0/0/15         | 120            |
+| ge400-0/0/18 | NCP3-nog               | ge400-0/0/4          | 120            |
+| ge400-0/0/20 |                        |                      |                |
+| ge400-0/0/21 | NCP3-nog               | ge400-0/0/22         | 120            |
+| ge400-0/0/22 | NCP3-nog               | ge400-0/0/21         | 120            |
+| ge400-0/0/23 | NCP3-nog               | ge400-0/0/24         | 120            |
+| ge400-0/0/24 | NCP3-nog               | ge400-0/0/23         | 120            |
+| ge400-0/0/25 |                        |                      |                |
+| ge400-0/0/26 |                        |                      |                |
+| ge400-0/0/27 |                        |                      |                |
+| ge400-0/0/28 |                        |                      |                |
+| ge400-0/0/29 |                        |                      |                |
+| ge400-0/0/30 |                        |                      |                |
+| ge400-0/0/31 |                        |                      |                |
+| ge400-0/0/32 |                        |                      |                |
+| ge400-0/0/33 | ncpl-nog               | ge100-0/0/70         | 120            |
+| ge400-0/0/34 |                        |                      |                |
+
+NCP3-nog# 
+
+############ show system cp-utilization | no-more ############
+show system cp-utilization | no-more
+----------------------^
+ERROR: Unknown word: 'cp-utilization'.
+NCP3-nog# 

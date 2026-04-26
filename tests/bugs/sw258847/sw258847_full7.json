@@ -1,0 +1,286 @@
+{
+  "V1": {
+    "name": "V1 ge sub-if global-only strict",
+    "iface": "ge400-0/0/34.100",
+    "vrf": "urpf_v1_vrf",
+    "setup_vrf_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 vlan-id 100\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# network-services vrf instance urpf_v1_vrf\nNCP3-nog(cfg-netsrv-vrf-inst)# interface ge400-0/0/34.100\nNCP3-nog(cfg-netsrv-vrf-inst)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:20:13 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "setup_vrf_ok": true,
+    "s1_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf mode strict\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf allow-default disabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:20:50 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s1_ok": true,
+    "s1_snap": {
+      "show_config": "show config interfaces ge400-0/0/34.100 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:20:59 UTC]\n\ninterfaces\n  ge400-0/0/34.100\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+    },
+    "s4_desc": "Change global mode strict -> loose",
+    "s4_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:21:33 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s4_ok": true,
+    "s4_snap": {
+      "show_config": "show config interfaces ge400-0/0/34.100 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:21:44 UTC]\n\ninterfaces\n  ge400-0/0/34.100\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+    },
+    "s5_desc": "Enable v6 AFI allow-default enabled",
+    "s5_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:22:27 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s5_ok": true,
+    "s5_snap": {
+      "show_config": "show config interfaces ge400-0/0/34.100 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:22:37 UTC]\n\ninterfaces\n  ge400-0/0/34.100\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s6_desc": "Delete per-AFI subtree (revert to global)",
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34.100 urpf address-family\nERROR: Incomplete command.\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nNOTICE: commit action is not applicable. no configuration changes were made\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "s6_snap": {
+      "show_config": "show config interfaces ge400-0/0/34.100 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:23:22 UTC]\n\ninterfaces\n  ge400-0/0/34.100\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34.100 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:23:56 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "s7_snap": {
+      "show_config": "show config interfaces ge400-0/0/34.100 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:24:07 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1_vrf)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1_vrf)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    },
+    "cleanup_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34.100\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# no network-services vrf instance urpf_v1_vrf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:24:51 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "cleanup_ok": true
+  },
+  "V2": {
+    "name": "V2 bundle global-only loose",
+    "iface": "bundle-99",
+    "vrf": "urpf_v2_vrf",
+    "setup_vrf_log": "configure\nNCP3-nog(cfg)# interfaces bundle-99 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# network-services vrf instance urpf_v2_vrf\nNCP3-nog(cfg-netsrv-vrf-inst)# interface bundle-99\nNCP3-nog(cfg-netsrv-vrf-inst)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:25:27 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "setup_vrf_ok": true,
+    "s1_log": "configure\nNCP3-nog(cfg)# interfaces bundle-99 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99 urpf mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99 urpf allow-default disabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:26:04 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s1_ok": true,
+    "s1_snap": {
+      "show_config": "show config interfaces bundle-99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:26:14 UTC]\n\ninterfaces\n  bundle-99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+    },
+    "s4_desc": "Change global mode loose -> strict",
+    "s4_log": "configure\nNCP3-nog(cfg)# interfaces bundle-99 urpf mode strict\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:26:48 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s4_ok": true,
+    "s4_snap": {
+      "show_config": "show config interfaces bundle-99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:26:59 UTC]\n\ninterfaces\n  bundle-99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+    },
+    "s5_desc": "Enable v6 AFI allow-default enabled",
+    "s5_log": "configure\nNCP3-nog(cfg)# interfaces bundle-99 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:27:42 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s5_ok": true,
+    "s5_snap": {
+      "show_config": "show config interfaces bundle-99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:27:51 UTC]\n\ninterfaces\n  bundle-99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s6_desc": "Delete per-AFI subtree",
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces bundle-99 urpf address-family\nERROR: Incomplete command.\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nNOTICE: commit action is not applicable. no configuration changes were made\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "s6_snap": {
+      "show_config": "show config interfaces bundle-99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:28:36 UTC]\n\ninterfaces\n  bundle-99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces bundle-99 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:29:10 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "s7_snap": {
+      "show_config": "show config interfaces bundle-99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:29:21 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2_vrf)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2_vrf)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    },
+    "cleanup_log": "configure\nNCP3-nog(cfg)# no interfaces bundle-99\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# no network-services vrf instance urpf_v2_vrf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:30:06 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "cleanup_ok": true
+  },
+  "V3": {
+    "name": "V3 bundle sub-if per-AFI only",
+    "iface": "bundle-99.200",
+    "vrf": "urpf_v3_vrf",
+    "setup_vrf_log": "configure\nNCP3-nog(cfg)# interfaces bundle-99 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99.200 vlan-id 200\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# network-services vrf instance urpf_v3_vrf\nNCP3-nog(cfg-netsrv-vrf-inst)# interface bundle-99.200\nNCP3-nog(cfg-netsrv-vrf-inst)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:30:49 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "setup_vrf_ok": true,
+    "s1_log": "configure\nNCP3-nog(cfg)# interfaces bundle-99.200 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99.200 urpf address-family ipv4 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99.200 urpf address-family ipv4 mode strict\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99.200 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99.200 urpf address-family ipv6 mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:31:41 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s1_ok": true,
+    "s1_snap": {
+      "show_config": "show config interfaces bundle-99.200 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:31:50 UTC]\n\ninterfaces\n  bundle-99.200\n    urpf\n      admin-state enabled\n      address-family ipv4\n        admin-state enabled\n        mode strict\n      !\n      address-family ipv6\n        admin-state enabled\n        mode loose\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v3_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v3_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+    },
+    "s4_desc": "Change v6 per-AFI mode loose -> strict",
+    "s4_log": "configure\nNCP3-nog(cfg)# interfaces bundle-99.200 urpf address-family ipv6 mode strict\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:32:24 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s4_ok": true,
+    "s4_snap": {
+      "show_config": "show config interfaces bundle-99.200 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:32:35 UTC]\n\ninterfaces\n  bundle-99.200\n    urpf\n      admin-state enabled\n      address-family ipv4\n        admin-state enabled\n        mode strict\n      !\n      address-family ipv6\n        admin-state enabled\n        mode strict\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v3_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v3_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+    },
+    "s5_desc": "Enable v6 AFI allow-default enabled",
+    "s5_log": "configure\nNCP3-nog(cfg)# interfaces bundle-99.200 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:33:11 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s5_ok": true,
+    "s5_snap": {
+      "show_config": "show config interfaces bundle-99.200 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:33:20 UTC]\n\ninterfaces\n  bundle-99.200\n    urpf\n      admin-state enabled\n      address-family ipv4\n        admin-state enabled\n        mode strict\n      !\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n        mode strict\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v3_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v3_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: enabled"
+    },
+    "s6_desc": "Delete v6 per-AFI (v4 per-AFI remains)",
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces bundle-99.200 urpf address-family ipv6\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:33:56 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "s6_snap": {
+      "show_config": "show config interfaces bundle-99.200 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:34:05 UTC]\n\ninterfaces\n  bundle-99.200\n    urpf\n      admin-state enabled\n      address-family ipv4\n        admin-state enabled\n        mode strict\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v3_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v3_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces bundle-99.200 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:34:39 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "s7_snap": {
+      "show_config": "show config interfaces bundle-99.200 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:34:50 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v3_vrf)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v3_vrf)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    },
+    "cleanup_log": "configure\nNCP3-nog(cfg)# no interfaces bundle-99.200\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# no interfaces bundle-99\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# no network-services vrf instance urpf_v3_vrf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:35:43 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "cleanup_ok": true
+  },
+  "V4": {
+    "name": "V4 IRB global+per-AFI loose (strict unsupported)",
+    "iface": "irb99",
+    "vrf": "urpf_v4_vrf",
+    "setup_vrf_log": "configure\nNCP3-nog(cfg)# interfaces irb99 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# network-services vrf instance urpf_v4_vrf\nNCP3-nog(cfg-netsrv-vrf-inst)# interface irb99\nNCP3-nog(cfg-netsrv-vrf-inst)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:36:18 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "setup_vrf_ok": true,
+    "s1_log": "configure\nNCP3-nog(cfg)# interfaces irb99 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces irb99 urpf mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces irb99 urpf allow-default disabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces irb99 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces irb99 urpf address-family ipv6 mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:37:10 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s1_ok": true,
+    "s1_snap": {
+      "show_config": "show config interfaces irb99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:37:20 UTC]\n\ninterfaces\n  irb99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n      address-family ipv6\n        admin-state enabled\n        mode loose\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+    },
+    "s4_desc": "Change v6 per-AFI AD disabled->enabled (strict unavailable on IRB)",
+    "s4_log": "configure\nNCP3-nog(cfg)# interfaces irb99 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:37:55 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s4_ok": true,
+    "s4_snap": {
+      "show_config": "show config interfaces irb99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:38:05 UTC]\n\ninterfaces\n  irb99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n        mode loose\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s5_desc": "Enable v4 AFI (inherits global loose, AD disabled)",
+    "s5_log": "configure\nNCP3-nog(cfg)# interfaces irb99 urpf address-family ipv4 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:38:39 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s5_ok": true,
+    "s5_snap": {
+      "show_config": "show config interfaces irb99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:38:49 UTC]\n\ninterfaces\n  irb99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n      address-family ipv4\n        admin-state enabled\n      !\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n        mode loose\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s6_desc": "Delete per-AFI subtree",
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces irb99 urpf address-family\nERROR: Incomplete command.\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nNOTICE: commit action is not applicable. no configuration changes were made\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "s6_snap": {
+      "show_config": "show config interfaces irb99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:39:34 UTC]\n\ninterfaces\n  irb99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n      address-family ipv4\n        admin-state enabled\n      !\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n        mode loose\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces irb99 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:40:08 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "s7_snap": {
+      "show_config": "show config interfaces irb99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:40:19 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4_vrf), L2-service (N/A)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4_vrf), L2-service (N/A)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    },
+    "cleanup_log": "configure\nNCP3-nog(cfg)# no interfaces irb99\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# no network-services vrf instance urpf_v4_vrf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:41:04 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "cleanup_ok": true
+  },
+  "V5": {
+    "name": "V5 ge VRF-isolated AD=enabled strict",
+    "iface": "ge400-0/0/34",
+    "vrf": "urpf_v5_vrf",
+    "setup_vrf_log": "configure\nNCP3-nog(cfg)# network-services vrf instance urpf_v5_vrf\nNCP3-nog(cfg-netsrv-vrf-inst)# interface ge400-0/0/34\nNCP3-nog(cfg-netsrv-vrf-inst)# top\nNCP3-nog(cfg)# commit\nERROR: Interface ge400-0/0/34 may not be configured on both vrf urpf_v5_vrf and vrf test.\nNCP3-nog(cfg)# rollback 0\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "setup_vrf_ok": false,
+    "s1_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf mode strict\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:42:15 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s1_ok": true,
+    "s1_snap": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:42:25 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default enabled\n      mode strict\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: enabled"
+    },
+    "s4_desc": "Change global mode strict -> loose",
+    "s4_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:42:59 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s4_ok": true,
+    "s4_snap": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:43:10 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default enabled\n      mode loose\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s5_desc": "Add per-AFI v6 admin-state+AD enabled (same as global)",
+    "s5_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:43:51 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s5_ok": true,
+    "s5_snap": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:44:02 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default enabled\n      mode loose\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s6_desc": "Delete per-AFI subtree",
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34 urpf address-family\nERROR: Incomplete command.\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nNOTICE: commit action is not applicable. no configuration changes were made\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "s6_snap": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:44:47 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default enabled\n      mode loose\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:45:21 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "s7_snap": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:45:32 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    },
+    "cleanup_log": "configure\nNCP3-nog(cfg)# no network-services vrf instance urpf_v5_vrf\n------------------------------------------------^\nERROR: Unknown word: 'urpf_v5_vrf'.\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nNOTICE: commit action is not applicable. no configuration changes were made\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "cleanup_ok": true
+  },
+  "V6": {
+    "name": "V6 ge global-only loose",
+    "iface": "ge400-0/0/34",
+    "vrf": "urpf_v6_vrf",
+    "setup_vrf_log": "configure\nNCP3-nog(cfg)# network-services vrf instance urpf_v6_vrf\nNCP3-nog(cfg-netsrv-vrf-inst)# interface ge400-0/0/34\nNCP3-nog(cfg-netsrv-vrf-inst)# top\nNCP3-nog(cfg)# commit\nERROR: Interface ge400-0/0/34 may not be configured on both vrf urpf_v6_vrf and vrf test.\nNCP3-nog(cfg)# rollback 0\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "setup_vrf_ok": false,
+    "s1_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf allow-default disabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:47:20 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s1_ok": true,
+    "s1_snap": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:47:30 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+    },
+    "s4_desc": "Change global mode loose -> strict",
+    "s4_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf mode strict\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:48:04 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s4_ok": true,
+    "s4_snap": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:48:15 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+    },
+    "s5_desc": "Enable v6 AFI allow-default enabled",
+    "s5_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:48:57 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s5_ok": true,
+    "s5_snap": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:49:07 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s6_desc": "Delete per-AFI subtree",
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34 urpf address-family\nERROR: Incomplete command.\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nNOTICE: commit action is not applicable. no configuration changes were made\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "s6_snap": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:49:52 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:50:26 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "s7_snap": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:50:37 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    },
+    "cleanup_log": "configure\nNCP3-nog(cfg)# no network-services vrf instance urpf_v6_vrf\n------------------------------------------------^\nERROR: Unknown word: 'urpf_v6_vrf'.\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nNOTICE: commit action is not applicable. no configuration changes were made\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "cleanup_ok": true
+  },
+  "_final_ge34": "show config interfaces ge400-0/0/34 | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:51:22 UTC]\n\ninterfaces\n  ge400-0/0/34\n    admin-state enabled\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+  "_final_vrfs": "show config network-services vrf instance | no-more\nERROR: Incomplete command.\nNCP3-nog# "
+}

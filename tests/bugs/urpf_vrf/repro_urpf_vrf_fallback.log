@@ -1,0 +1,282 @@
+
+=== STEP 1: baseline xray ===
+
+=== XRAY: baseline (no urpf cfg) ===
+(entered ncp shell)
+run start shell ncp 0
+Password: 
+[?2004h(WKY1C7VD00008P2)root@datapath:/[2026-04-18 22:14:48][default]# 
+>>> xraycli /wb_agent/vrf/active 2>&1 | head -80
+xraycli /wb_agent/vrf/active 2>&1 | head -80
+[?2004l  vrf_id           version    id    running_unique_id  name       n_ipv4_routes    n_ipv4_nh_entries    n_arps    n_ipv6_routes    n_ipv6_nh_entries    n_ndps    local_vrf_id  urpf_allow_default_ipv4    urpf_allow_default_ipv6    inband_mgmt_source_interface      vmpi    si_id
+--------  ----------------  ----  -------------------  -------  ---------------  -------------------  --------  ---------------  -------------------  --------  --------------  -------------------------  -------------------------  ------------------------------  ------  -------
+       0  2476879414885642     1                    1  default           100000               129760      5000            10000                64880      5000               0  FALSE                      FALSE                                                           0    65535
+[?2004h(WKY1C7VD00008P2)root@datapath:/[2026-04-18 22:14:48][default]# 
+>>> exit
+exit
+[?2004lexit
+NCP3-nog# 
+
+=== STEP 2: apply scenario ===
+>>> configure
+configure
+NCP3-nog(cfg)# 
+>>> interfaces
+interfaces
+NCP3-nog(cfg-if)# 
+>>> bundle-10
+bundle-10
+NCP3-nog(cfg-if-bundle-10)# 
+>>> urpf
+urpf
+NCP3-nog(cfg-if-bundle-10-urpf)# 
+>>> admin-state enabled
+admin-state enabled
+NCP3-nog(cfg-if-bundle-10-urpf)# 
+>>> allow-default disabled
+allow-default disabled
+NCP3-nog(cfg-if-bundle-10-urpf)# 
+>>> address-family ipv4
+address-family ipv4
+NCP3-nog(cfg-bundle-10-urpf-ipv4)# 
+>>> admin-state disabled
+admin-state disabled
+NCP3-nog(cfg-bundle-10-urpf-ipv4)# 
+>>> top
+top
+NCP3-nog(cfg)# 
+>>> interfaces
+interfaces
+NCP3-nog(cfg-if)# 
+>>> bundle-20
+bundle-20
+NCP3-nog(cfg-if-bundle-20)# 
+>>> urpf
+urpf
+NCP3-nog(cfg-if-bundle-20-urpf)# 
+>>> admin-state disabled
+admin-state disabled
+NCP3-nog(cfg-if-bundle-20-urpf)# 
+>>> address-family ipv4
+address-family ipv4
+NCP3-nog(cfg-bundle-20-urpf-ipv4)# 
+>>> admin-state enabled
+admin-state enabled
+NCP3-nog(cfg-bundle-20-urpf-ipv4)# 
+>>> allow-default enabled
+allow-default enabled
+NCP3-nog(cfg-bundle-20-urpf-ipv4)# 
+>>> top
+top
+NCP3-nog(cfg)# 
+>>> show config interfaces bundle-10 urpf
+show config interfaces bundle-10 urpf
+
+# NCP3-nog config-start [18-Apr-2026 22:15:35 UTC]
+
+interfaces
+  bundle-10
+    urpf
+      admin-state enabled
+      allow-default disabled
+      address-family ipv4
+        admin-state disabled
+      !
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog(cfg)# 
+>>> show config interfaces bundle-20 urpf
+show config interfaces bundle-20 urpf
+
+# NCP3-nog config-start [18-Apr-2026 22:15:38 UTC]
+
+interfaces
+  bundle-20
+    urpf
+      admin-state disabled
+      address-family ipv4
+        admin-state enabled
+        allow-default enabled
+      !
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog(cfg)# 
+>>> commit
+commit
+NOTICE: commit action is not applicable. no configuration changes were made
+NCP3-nog(cfg)# 
+>>> exit
+exit
+NCP3-nog# 
+
+=== XRAY: after initial commit ===
+(entered ncp shell)
+run start shell ncp 0
+Password: 
+[?2004h(WKY1C7VD00008P2)root@datapath:/[2026-04-18 22:16:05][default]# 
+>>> xraycli /wb_agent/vrf/active 2>&1 | head -80
+xraycli /wb_agent/vrf/active 2>&1 | head -80
+[?2004l  vrf_id           version    id    running_unique_id  name       n_ipv4_routes    n_ipv4_nh_entries    n_arps    n_ipv6_routes    n_ipv6_nh_entries    n_ndps    local_vrf_id  urpf_allow_default_ipv4    urpf_allow_default_ipv6    inband_mgmt_source_interface      vmpi    si_id
+--------  ----------------  ----  -------------------  -------  ---------------  -------------------  --------  ---------------  -------------------  --------  --------------  -------------------------  -------------------------  ------------------------------  ------  -------
+       0  2476879414885642     1                    1  default           100000               129760      5000            10000                64880      5000               0  FALSE                      FALSE                                                           0    65535
+[?2004h(WKY1C7VD00008P2)root@datapath:/[2026-04-18 22:16:05][default]# 
+>>> exit
+exit
+[?2004lexit
+NCP3-nog# 
+
+=== STEP 3: trigger recalc by toggling bundle-20 IPv4 allow-default ===
+>>> configure
+configure
+NCP3-nog(cfg)# 
+>>> interfaces
+interfaces
+NCP3-nog(cfg-if)# 
+>>> bundle-20
+bundle-20
+NCP3-nog(cfg-if-bundle-20)# 
+>>> urpf
+urpf
+NCP3-nog(cfg-if-bundle-20-urpf)# 
+>>> address-family ipv4
+address-family ipv4
+NCP3-nog(cfg-bundle-20-urpf-ipv4)# 
+>>> allow-default disabled
+allow-default disabled
+NCP3-nog(cfg-bundle-20-urpf-ipv4)# 
+>>> top
+top
+NCP3-nog(cfg)# 
+>>> commit
+commit
+Commit succeeded by dnroot at 18-Apr-2026 22:16:33 UTC
+NCP3-nog(cfg)# 
+>>> interfaces
+interfaces
+NCP3-nog(cfg-if)# 
+>>> bundle-20
+bundle-20
+NCP3-nog(cfg-if-bundle-20)# 
+>>> urpf
+urpf
+NCP3-nog(cfg-if-bundle-20-urpf)# 
+>>> address-family ipv4
+address-family ipv4
+NCP3-nog(cfg-bundle-20-urpf-ipv4)# 
+>>> allow-default enabled
+allow-default enabled
+NCP3-nog(cfg-bundle-20-urpf-ipv4)# 
+>>> top
+top
+NCP3-nog(cfg)# 
+>>> commit
+commit
+Commit succeeded by dnroot at 18-Apr-2026 22:17:01 UTC
+NCP3-nog(cfg)# 
+>>> exit
+exit
+NCP3-nog# 
+
+=== XRAY: after recalc trigger (toggle off then on) ===
+(entered ncp shell)
+run start shell ncp 0
+Password: 
+[?2004h(WKY1C7VD00008P2)root@datapath:/[2026-04-18 22:17:18][default]# 
+>>> xraycli /wb_agent/vrf/active 2>&1 | head -80
+xraycli /wb_agent/vrf/active 2>&1 | head -80
+[?2004l  vrf_id           version    id    running_unique_id  name       n_ipv4_routes    n_ipv4_nh_entries    n_arps    n_ipv6_routes    n_ipv6_nh_entries    n_ndps    local_vrf_id  urpf_allow_default_ipv4    urpf_allow_default_ipv6    inband_mgmt_source_interface      vmpi    si_id
+--------  ----------------  ----  -------------------  -------  ---------------  -------------------  --------  ---------------  -------------------  --------  --------------  -------------------------  -------------------------  ------------------------------  ------  -------
+       0  2476879414885642     1                    1  default           100000               129760      5000            10000                64880      5000               0  FALSE                      FALSE                                                           0    65535
+[?2004h(WKY1C7VD00008P2)root@datapath:/[2026-04-18 22:17:18][default]# 
+>>> exit
+exit
+[?2004lexit
+NCP3-nog# 
+
+=== STEP 4: ROLLBACK ===
+>>> configure
+configure
+NCP3-nog(cfg)# 
+>>> delete interfaces bundle-10 urpf
+delete interfaces bundle-10 urpf
+----------------^
+ERROR: Unknown word: 'delete'.
+NCP3-nog(cfg)# 
+>>> delete interfaces bundle-20 urpf
+delete interfaces bundle-20 urpf
+----------------^
+ERROR: Unknown word: 'delete'.
+NCP3-nog(cfg)# 
+>>> commit
+commit
+NOTICE: commit action is not applicable. no configuration changes were made
+NCP3-nog(cfg)# 
+>>> show config interfaces bundle-10 urpf
+show config interfaces bundle-10 urpf
+
+# NCP3-nog config-start [18-Apr-2026 22:17:54 UTC]
+
+interfaces
+  bundle-10
+    urpf
+      admin-state enabled
+      allow-default disabled
+      address-family ipv4
+        admin-state disabled
+      !
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog(cfg)# 
+>>> show config interfaces bundle-20 urpf
+show config interfaces bundle-20 urpf
+
+# NCP3-nog config-start [18-Apr-2026 22:17:57 UTC]
+
+interfaces
+  bundle-20
+    urpf
+      admin-state disabled
+      address-family ipv4
+        admin-state enabled
+        allow-default enabled
+      !
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog(cfg)# 
+>>> exit
+exit
+NCP3-nog# 
+
+=== XRAY: post-rollback ===
+(entered ncp shell)
+run start shell ncp 0
+Password: 
+[?2004h(WKY1C7VD00008P2)root@datapath:/[2026-04-18 22:18:04][default]# 
+>>> xraycli /wb_agent/vrf/active 2>&1 | head -80
+xraycli /wb_agent/vrf/active 2>&1 | head -80
+[?2004l  vrf_id           version    id    running_unique_id  name       n_ipv4_routes    n_ipv4_nh_entries    n_arps    n_ipv6_routes    n_ipv6_nh_entries    n_ndps    local_vrf_id  urpf_allow_default_ipv4    urpf_allow_default_ipv6    inband_mgmt_source_interface      vmpi    si_id
+--------  ----------------  ----  -------------------  -------  ---------------  -------------------  --------  ---------------  -------------------  --------  --------------  -------------------------  -------------------------  ------------------------------  ------  -------
+       0  2476879414885642     1                    1  default           100000               129760      5000            10000                64880      5000               0  FALSE                      FALSE                                                           0    65535
+[?2004h(WKY1C7VD00008P2)root@datapath:/[2026-04-18 22:18:04][default]# 
+>>> exit
+exit
+[?2004lexit
+NCP3-nog# 
+
+DONE

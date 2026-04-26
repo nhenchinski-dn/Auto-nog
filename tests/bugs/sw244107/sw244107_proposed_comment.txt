@@ -1,0 +1,56 @@
+h2. Re-test — ACL rule=DENY and corrected SH-BFD interpretation (BGP BFD, not SR-MPLS)
+
+*Device:* WKY1C7VD00008P2 (NCP3-nog, SA-36CD-S)
+*Software:* DNOS [26.2.0] build [328_dev]
+*Test date:* 2026-04-23
+*Traffic:* 1 Mpps @ 128 B from Spirent {{//100.64.15.236/1/25}} → ge100-0/0/3/0 (VRF {{test}}), src 10.10.10.2 → dst 20.0.0.2, routed to bundle-10 → ge400-0/0/11 (loopback to bundle-20)
+
+h3. Differences vs previous run
+
+# *ACL rule 1 is DENY* (not {{allow}}) — verify that the egress ACL counter still increments when traffic is actually being dropped by the rule.
+# *Phase C uses BGP BFD* (single-hop BFD attached to BGP neighbor 20.0.0.2), per clarification that _SH-BFD_ in this task refers to *BFD-in-BGP*, not the SR-MPLS {{seamless-bfd}} policy used in the previous run.
+# Ingress port {{ge100-0/0/3/0}} was placed into VRF {{test}} so traffic actually routes to bundle-10 (previous run used {{ge400-0/0/3.100}} which no longer exists — ge400-0/0/3 is now broken out 100g-4x).
+
+h3. Test phases (15 s measurement window each, ACL rule 1 = deny throughout)
+
+||Phase||Config on top of DENY baseline||Δ {{access-lists counters bundle-10}} (deny)||Rate||Result||
+|*A — Baseline*|no BFD|34,406,386|~2.29 M pps|*INCREMENTING*|
+|*B — uBFD*|{{protocols bfd interface bundle-10 neighbor 20.0.0.2 min-tx 300 min-rx 300 multiplier 3}}|36,044,785|~2.40 M pps|*INCREMENTING*|
+|*C — SH-BFD (BGP)*|{{protocols bgp 65001 neighbor 20.0.0.2 bfd admin-state enabled bfd-type single-hop min-tx 300 min-rx 300 multiplier 3}} + {{address-family ipv4-unicast}}|34,406,385|~2.29 M pps|*INCREMENTING*|
+|*D — Post-cleanup*|all BFD/BGP removed|34,406,386|~2.29 M pps|*INCREMENTING*|
+
+{{bundle-10}} {{tx_frames}} stayed near zero in all phases (~1-35 frames / 15 s, protocol chatter only) — the egress ACL with {{rule 1 deny}} _does drop the packets_, and they are counted by the ACL rather than forwarded.
+
+h3. BGP / BFD state verification (Phase C)
+
+{noformat}
+BGP neighbor is 20.0.0.2, remote AS 65002, local AS 65001, external link
+  BGP state = Active
+  Using BFD to detect fast fallover in standard single-hop mode
+  BFD session status = Down, last event = Pending BGP's session establishment
+ For address family: IPv4 Unicast
+  AS loop detection is enabled
+{noformat}
+
+BFD session does not reach Up because there is no real BFD speaker on the Spirent side (Spirent port 1/25 is used for raw traffic only, not for BGP/BFD emulation). The BFD client is {{bgp}}, single-hop mode, properly attached to the BGP neighbor — same limitation that the original run had for SR-MPLS seamless-BFD.
+
+h3. Conclusion
+
+With ACL {{rule 1 deny}}, *the egress ACL match counter continues to increment at the full offered rate (~2.29–2.40 Mpps) across all four phases* — baseline, uBFD-configured, BGP-single-hop-BFD-configured, and post-cleanup.
+
+# The egress ACL is *enforcing the deny* (no frames leave bundle-10 beyond protocol traffic) and *simultaneously counting the matches*.
+# Adding uBFD or BGP SH-BFD to bundle-10 / to a BGP neighbor on the same path *does not disable, reset, or slow the egress ACL counter*.
+# This is consistent with the previous run's observation (ACL=allow): *egress ACL and SH-BFD/uBFD coexist without functional impact on this device / software* — the "expected non-support" the user-story describes cannot be reproduced here.
+
+*Caveat:* BFD session did not come Up in either run because the remote side is not a BFD speaker. A follow-up with an actual BFD peer (e.g. Spirent EmulatedDevice BFD or a second DNOS) would confirm behaviour under an *active* BFD session; that case remains uncovered.
+
+h3. ACL counter snapshot from Phase A
+
+{noformat}
+Interface: bundle-10  Direction: out
+
+| Access-list name | Index        | Type  | Protocol | Matches  |
+| egress-bfd       | 1            | deny  | any      | 44236782 |
+|                  | default-icmp | allow | icmp     | 0        |
+|                  | default      | deny  | any      | 0        |
+{noformat}

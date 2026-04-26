@@ -1,0 +1,130 @@
+
+### show config network-services | no-more ###
+show config network-services | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:27:06 UTC]
+
+network-services
+  bridge-domain
+    instance bd100
+      admin-state enabled
+      router-interface irb100
+      interface ge100-0/0/3/1.100
+      !
+    !
+  !
+  vrf
+    instance bugver261042
+      interface ge400-0/0/10
+    !
+    instance test
+      interface bundle-10
+      interface bundle-20
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+### show route vrf test | no-more ###
+show route vrf test | no-more
+
+VRF: test
+IPv4 Route Table:
+Codes: K - kernel route, C - connected, S - static, r - RIP,
+       O - OSPF, I - IS-IS, B - BGP, P - PIM, A - Babel, D - BFD,
+       L - LDP, R - RSVP, M - OAM, I-SR - IS-IS Segment-Routing,
+       O-SR - OSPF Segment-Routing, SRTE - Segment-Routing TE,
+       EVI - EVI, X - Access route, Loc - Local,
+       > - selected route, * - FIB route, (S) - stale route
+       (L) - over limit route, ! - partial MPLS shortcut, m - Multicast
+       L1 - IS-IS level-1, L2 - IS-IS level-2, su - summary route
+       IA - OSPF inter-area, E1 - OSPF external type 1, E2 - OSPF external type 2
+       N1 - OSPF NSSA type 1, N2 - OSPF NSSA type 2, V - VXLAN
+       SRv6 - Segment-Routing-v6, U - Unreachable route
+
+C>*           20.0.0.0/24 is directly connected, bundle-10
+C>*           20.0.1.0/24 is directly connected, bundle-20
+
+IPv6 Route Table:
+
+NCP3-nog# 
+
+### show arp vrf test | no-more ###
+show arp vrf test | no-more
+
+VRF: test
+| IPv4 Address   | MAC Address       | Origin   | State   | Age   | Interface   |
+|----------------+-------------------+----------+---------+-------+-------------|
+| 20.0.0.1       | 84:40:76:5f:3d:35 | local    |         |       | bundle-10   |
+| 20.0.0.2       | 00:11:22:33:44:55 | static   | static  |       | bundle-10   |
+| 20.0.1.1       | 84:40:76:71:dd:42 | local    |         |       | bundle-20   |
+
+NCP3-nog# 
+
+### show config interfaces bundle-10 | no-more ###
+show config interfaces bundle-10 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:27:20 UTC]
+
+interfaces
+  bundle-10
+    access-list ipv4 egress-bfd direction out
+    admin-state enabled
+    arp host-address 20.0.0.2 mac-address 00:11:22:33:44:55
+    ipv4-address 20.0.0.1/24
+    urpf
+      admin-state enabled
+      allow-default disabled
+      address-family ipv4
+        admin-state disabled
+      !
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+### show config interfaces bundle-20 | no-more ###
+show config interfaces bundle-20 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:27:24 UTC]
+
+interfaces
+  bundle-20
+    admin-state enabled
+    ipv4-address 20.0.1.1/24
+    urpf
+      admin-state disabled
+      address-family ipv4
+        admin-state enabled
+        allow-default enabled
+      !
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+### show config interfaces ge100-0/0/3/0 | no-more ###
+show config interfaces ge100-0/0/3/0 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 05:27:29 UTC]
+
+interfaces
+  ge100-0/0/3/0
+    admin-state enabled
+    fec rs-fec-544-514
+    ipv4-address 10.10.10.1/24
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 

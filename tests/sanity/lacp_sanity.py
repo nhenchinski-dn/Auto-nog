@@ -225,8 +225,6 @@ def has_cli_error(text: str) -> Tuple[bool, List[str]]:
     return (len(errors) > 0, errors)
 
 
-
-
 def check_lacp_interfaces(text: str) -> SectionResult:
     warnings = []
     errors = []

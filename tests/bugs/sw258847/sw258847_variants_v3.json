@@ -1,0 +1,43 @@
+{
+  "ge34_baseline": "show config interfaces ge400-0/0/34 | no-more\n\n# NCP3-nog config-start [20-Apr-2026 00:07:23 UTC]\n\ninterfaces\n  ge400-0/0/34\n    admin-state enabled\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+  "irb99_baseline": "show config interfaces irb99 | no-more\n\n# NCP3-nog config-start [20-Apr-2026 00:07:28 UTC]\n\ninterfaces\n  irb99\n    admin-state enabled\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+  "V4": {
+    "label": "V4 IRB global-only loose (strict not supported on IRB)",
+    "iface": "irb99",
+    "precreate_log": "configure\nNCP3-nog(cfg)# interfaces irb99 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nNOTICE: commit action is not applicable. no configuration changes were made\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "precreate_ok": true,
+    "cfg_log": "configure\nNCP3-nog(cfg)# interfaces irb99 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces irb99 urpf mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces irb99 urpf allow-default disabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nERROR: Failed to perform commit, another commit is in progress.\nNCP3-nog(cfg)# rollback 0\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "cfg_ok": false,
+    "cfg_show": "show config interfaces irb99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 00:08:41 UTC]\n\ninterfaces\n  irb99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+    "show_brief": "\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+    "show_detail": "\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+    "teardown_log": "configure\nNCP3-nog(cfg)# no interfaces irb99\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nWarning: User 'dnroot' committed at 20-Apr-2026 00:09:09 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? rollback 0\nWarning: User 'dnroot' committed at 20-Apr-2026 00:09:09 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? end\nWarning: User 'dnroot' committed at 20-Apr-2026 00:09:09 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? ",
+    "teardown_ok": false
+  },
+  "V5": {
+    "label": "V5 ge VRF-isolated allow-default enabled",
+    "iface": "ge400-0/0/34",
+    "precreate_log": "configure\nWarning: User 'dnroot' committed at 20-Apr-2026 00:09:09 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? network-services vrf instance urpf_v5_vrf\nWarning: User 'dnroot' committed at 20-Apr-2026 00:09:09 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? interface ge400-0/0/34\nWarning: User 'dnroot' committed at 20-Apr-2026 00:09:09 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? top\nWarning: User 'dnroot' committed at 20-Apr-2026 00:09:09 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? commit\nNOTICE: commit action is not applicable. no configuration changes were made\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "precreate_ok": true,
+    "cfg_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf mode strict\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nWarning: User 'dnroot' committed at 20-Apr-2026 00:10:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? rollback 0\nWarning: User 'dnroot' committed at 20-Apr-2026 00:10:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? end\nWarning: User 'dnroot' committed at 20-Apr-2026 00:10:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? ",
+    "cfg_ok": false,
+    "cfg_show": "show config interfaces ge400-0/0/34 urpf | no-more\nWarning: User 'dnroot' committed at 20-Apr-2026 00:10:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? ",
+    "show_brief": "(no uRPF lines found)",
+    "show_detail": "(no uRPF lines found)",
+    "teardown_log": "configure\nWarning: User 'dnroot' committed at 20-Apr-2026 00:10:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? no interfaces ge400-0/0/34 urpf\nWarning: User 'dnroot' committed at 20-Apr-2026 00:10:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? top\nWarning: User 'dnroot' committed at 20-Apr-2026 00:10:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? no network-services vrf instance urpf_v5_vrf\nWarning: User 'dnroot' committed at 20-Apr-2026 00:10:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? top\nWarning: User 'dnroot' committed at 20-Apr-2026 00:10:16 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? commit\nERROR: allow-default value for IPV4 should be the same for all urpf enabled interfaces associated with the same VRF.\nVRF: default.\nInterface ge400-0/0/34 has allow-default: enabled,\nwhile\nInterface ge400-0/0/5 has allow-default: disabled.\nNCP3-nog(cfg)# rollback 0\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "teardown_ok": false
+  },
+  "V6": {
+    "label": "V6 ge global-only loose",
+    "iface": "ge400-0/0/34",
+    "cfg_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf allow-default disabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nWarning: User 'dnroot' committed at 20-Apr-2026 00:11:46 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? rollback 0\nWarning: User 'dnroot' committed at 20-Apr-2026 00:11:46 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? end\nWarning: User 'dnroot' committed at 20-Apr-2026 00:11:46 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? ",
+    "cfg_ok": false,
+    "cfg_show": "show config interfaces ge400-0/0/34 urpf | no-more\nWarning: User 'dnroot' committed at 20-Apr-2026 00:11:46 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? ",
+    "show_brief": "(no uRPF lines found)",
+    "show_detail": "(no uRPF lines found)",
+    "teardown_log": "configure\nWarning: User 'dnroot' committed at 20-Apr-2026 00:11:46 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? no interfaces ge400-0/0/34 urpf\nWarning: User 'dnroot' committed at 20-Apr-2026 00:11:46 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? top\nWarning: User 'dnroot' committed at 20-Apr-2026 00:11:46 UTC, your configuration is out of sync. What would you like to do (commit, merge-only, abort) [abort]? commit\nCommit succeeded by dnroot at 20-Apr-2026 00:12:56 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "teardown_ok": true
+  },
+  "_final_ge34": "show config interfaces ge400-0/0/34 | no-more\n\n# NCP3-nog config-start [20-Apr-2026 00:13:06 UTC]\n\ninterfaces\n  ge400-0/0/34\n    admin-state enabled\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+  "_final_irb99": "show config interfaces irb99 | no-more\n---------------------------------^\nERROR: Unknown word: 'irb99'.\nNCP3-nog# "
+}

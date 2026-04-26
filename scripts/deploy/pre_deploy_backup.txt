@@ -1,0 +1,240 @@
+system
+  grpc
+    security
+      tls server-certificate grpc_dnor
+    !
+  !
+  login
+    user dnroot
+      description "dnroot user"
+      password $6$m7b5lYW.PtBTZ0lr$ibN6YvwGYpPauDUIbNu7XMYRkKOnG3H.gyCQVweYv/lgsXMj65ClO8yeGTYX/Rmy80Bx23AeXOWM47nDXr9sN.
+      role admin
+    !
+    user dntechsupport
+      description "techsupport user"
+      password $6$m0NpQOgH8CusogMK$7JYzbJt55BxEOTkCG6z.9DNTPhDEbX8TN4Po1/mUJzlu/KaywxSoIRLvNYDdfE/WlVZVS2nfXd5J6S2Vin9D3/
+      role techsupport
+    !
+    ipmi
+      user admin
+        password enc-gAAAAABmq2hbWNJeMAc8_waIxsnc_enwuPfG8X6UqOZH_ytA1kwQScF7rlSi_6n3_NfPenA-AdpeWALLJ91cnsU3pNEQlldiPA==
+        privilege ADMINISTRATOR
+      !
+      user dnroot
+        password enc-gAAAAABmq2g4yq16J1ol3v4xEJ_2hiAPzWqel1YJNtaw4DgHdb6OdP6K6HKnPVBjuKJ-d12Mi9r5_TuI4sippgIVgKnf4l-GLw==
+        privilege ADMINISTRATOR
+      !
+    !
+  !
+  ssh
+    security
+      accepted-public-key-algorithms ecdsa-sha2-nistp256,ecdsa-sha2-nistp256-cert-v01-openssh.com,ecdsa-sha2-nistp384,ecdsa-sha2-nistp384-cert-v01-openssh.com,ecdsa-sha2-nistp521,ecdsa-sha2-nistp521-cert-v01-openssh.com,rsa-sha2-256,rsa-sha2-256-cert-v01-openssh.com,rsa-sha2-512,rsa-sha2-512-cert-v01-openssh.com,ssh-ed25519,ssh-ed25519-cert-v01-openssh.com
+      ca-signature-algorithms ecdsa-sha2-nistp256,rsa-sha2-256,rsa-sha2-512,ssh-ed25519
+      ciphers aes128-ctr,aes128-gcm-openssh.com,aes192-ctr,aes256-ctr,aes256-gcm-openssh.com,chacha20-poly1305-openssh.com
+      host-key-algorithms rsa-sha2-256,rsa-sha2-512,ssh-ed25519
+      key-exchange-algorithms curve25519-sha256,curve25519-sha256-libssh.org,diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,sntrup761x25519-sha512-openssh.com
+      macs hmac-sha2-256,hmac-sha2-256-etm-openssh.com,hmac-sha2-512,hmac-sha2-512-etm-openssh.com,umac-64-etm-openssh.com,umac-64-openssh.com,umac-128-etm-openssh.com,umac-128-openssh.com
+    !
+  !
+!
+
+interfaces
+  ge800-0/0/0
+    admin-state enabled
+  !
+  ge800-0/0/1
+    admin-state enabled
+  !
+  ge800-0/0/2
+    admin-state enabled
+  !
+  ge800-0/0/3
+    admin-state enabled
+  !
+  ge800-0/0/4
+    admin-state enabled
+  !
+  ge800-0/0/5
+    admin-state enabled
+  !
+  ge800-0/0/6
+    admin-state enabled
+  !
+  ge800-0/0/7
+    admin-state enabled
+  !
+  ge800-0/0/8
+    admin-state enabled
+  !
+  ge800-0/0/9
+    admin-state enabled
+  !
+  ge800-0/0/10
+    admin-state enabled
+    ipv4-address 40.40.40.1/30
+  !
+  ge800-0/0/11
+    admin-state enabled
+  !
+  ge800-0/0/12
+    admin-state enabled
+  !
+  ge800-0/0/13
+    admin-state enabled
+  !
+  ge800-0/0/14
+    admin-state enabled
+  !
+  ge800-0/0/15
+    admin-state enabled
+  !
+  ge800-0/0/16
+    admin-state enabled
+  !
+  ge800-0/0/17
+    admin-state enabled
+  !
+  ge800-0/0/18
+    admin-state enabled
+    ipv4-address 50.50.50.1/30
+  !
+  ge800-0/0/19
+    admin-state enabled
+    ipv4-address 50.50.50.2/30
+  !
+  ge800-0/0/20
+    admin-state enabled
+  !
+  ge800-0/0/21
+    admin-state enabled
+  !
+  ge800-0/0/22
+    admin-state enabled
+  !
+  ge800-0/0/23
+    admin-state enabled
+  !
+  ge800-0/0/24
+    admin-state enabled
+  !
+  ge800-0/0/25
+    admin-state enabled
+  !
+  ge800-0/0/26
+    admin-state enabled
+  !
+  ge800-0/0/27
+    admin-state enabled
+  !
+  ge800-0/0/28
+    admin-state enabled
+  !
+  ge800-0/0/29
+    admin-state enabled
+  !
+  ge800-0/0/30
+    admin-state enabled
+  !
+  ge800-0/0/31
+    admin-state enabled
+  !
+  ipmi-ncc-0/0
+    ipv4-address dhcp
+  !
+!
+
+protocols
+  lldp
+    interface ge800-0/0/0
+    !
+    interface ge800-0/0/1
+    !
+    interface ge800-0/0/2
+    !
+    interface ge800-0/0/3
+    !
+    interface ge800-0/0/4
+    !
+    interface ge800-0/0/5
+    !
+    interface ge800-0/0/6
+    !
+    interface ge800-0/0/7
+    !
+    interface ge800-0/0/8
+    !
+    interface ge800-0/0/9
+    !
+    interface ge800-0/0/10
+    !
+    interface ge800-0/0/11
+    !
+    interface ge800-0/0/12
+    !
+    interface ge800-0/0/13
+    !
+    interface ge800-0/0/14
+    !
+    interface ge800-0/0/15
+    !
+    interface ge800-0/0/16
+    !
+    interface ge800-0/0/17
+    !
+    interface ge800-0/0/18
+    !
+    interface ge800-0/0/19
+    !
+    interface ge800-0/0/20
+    !
+    interface ge800-0/0/21
+    !
+    interface ge800-0/0/22
+    !
+    interface ge800-0/0/23
+    !
+    interface ge800-0/0/24
+    !
+    interface ge800-0/0/25
+    !
+    interface ge800-0/0/26
+    !
+    interface ge800-0/0/27
+    !
+    interface ge800-0/0/28
+    !
+    interface ge800-0/0/29
+    !
+    interface ge800-0/0/30
+    !
+    interface ge800-0/0/31
+    !
+  !
+!
+
+qos
+  hw-mapping
+    queue-size
+      speed-ranges
+        admin-state enabled
+        upto 50 mbps use 50 mbps
+        upto 100 mbps use 100 mbps
+        upto 250 mbps use 250 mbps
+        upto 500 mbps use 500 mbps
+        upto 750 mbps use 750 mbps
+        upto 1 gbps use 1 gbps
+      !
+    !
+  !
+!
+
+network-services
+  vrf
+    instance a
+      interface ge800-0/0/19
+    !
+  !
+!
+
+# Q3D-Zohar config-end
+

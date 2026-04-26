@@ -1,0 +1,267 @@
+=== Connecting to wky1c7vd00008p2 ===
+DRIVENETS CLI Loading...                        NCP3-nog#
+
+=== Entering config mode ===
+configure
+NCP3-nog(cfg)#
+
+=== Sending config ===
+  > top   | ['NCP3-nog(cfg)#']
+  > interfaces   | ['NCP3-nog(cfg-if)#']
+  > ge100-0/0/3/0   | ['NCP3-nog(cfg-if-ge100-0/0/3/0)#']
+  > admin-state enabled   | ['NCP3-nog(cfg-if-ge100-0/0/3/0)#']
+  > ipv4-address 10.10.10.1/24   | ['NCP3-nog(cfg-if-ge100-0/0/3/0)#']
+  > top   | ['NCP3-nog(cfg)#']
+  > interfaces   | ['NCP3-nog(cfg-if)#']
+  > irb100   | ['NCP3-nog(cfg-if-irb100)#']
+  > admin-state enabled   | ['NCP3-nog(cfg-if-irb100)#']
+  > ipv4-address 20.20.20.1/24   | ['NCP3-nog(cfg-if-irb100)#']
+  > top   | ['NCP3-nog(cfg)#']
+  > interfaces   | ['NCP3-nog(cfg-if)#']
+  > ge100-0/0/3/1   | ['NCP3-nog(cfg-if-ge100-0/0/3/1)#']
+  > admin-state enabled   | ['NCP3-nog(cfg-if-ge100-0/0/3/1)#']
+  > top   | ['NCP3-nog(cfg)#']
+  > interfaces   | ['NCP3-nog(cfg-if)#']
+  > ge100-0/0/3/1.100   | ['NCP3-nog(cfg-if-ge100-0/0/3/1.100)#']
+  > admin-state enabled   | ['NCP3-nog(cfg-if-ge100-0/0/3/1.100)#']
+  > l2-service enabled   | ['NCP3-nog(cfg-if-ge100-0/0/3/1.100)#']
+  > vlan-id 100   | ['NCP3-nog(cfg-if-ge100-0/0/3/1.100)#']
+  > top   | ['NCP3-nog(cfg)#']
+  > network-services   | ['NCP3-nog(cfg-netsrv)#']
+  > bridge-domain   | ['NCP3-nog(cfg-netsrv-bd)#']
+  > instance bd100   | ['NCP3-nog(cfg-netsrv-bd-inst)#']
+  > admin-state enabled   | ['NCP3-nog(cfg-netsrv-bd-inst)#']
+  > router-interface irb100   | ['NCP3-nog(cfg-netsrv-bd-inst)#']
+  > interface ge100-0/0/3/1.100   | ['NCP3-nog(cfg-bd-inst-ge100-0/0/3/1.100)#']
+  > top   | ['NCP3-nog(cfg)#']
+
+=== Commit ===
+commit
+Commit succeeded by dnroot at 23-Apr-2026 04:13:14 UTC
+NCP3-nog(cfg)#
+
+=== Exit config ===
+
+############ VERIFICATION ############
+
+
+######## show config interfaces ge100-0/0/3/0 | no-more ########
+show config interfaces ge100-0/0/3/0 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 04:13:17 UTC]
+
+interfaces
+  ge100-0/0/3/0
+    admin-state enabled
+    fec rs-fec-544-514
+    ipv4-address 10.10.10.1/24
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+######## show config interfaces irb100 | no-more ########
+show config interfaces irb100 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 04:13:22 UTC]
+
+interfaces
+  irb100
+    admin-state enabled
+    ipv4-address 20.20.20.1/24
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+######## show config interfaces ge100-0/0/3/1.100 | no-more ########
+show config interfaces ge100-0/0/3/1.100 | no-more
+
+# NCP3-nog config-start [23-Apr-2026 04:13:27 UTC]
+
+interfaces
+  ge100-0/0/3/1.100
+    admin-state enabled
+    l2-service enabled
+    vlan-id 100
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+######## show config network-services bridge-domain | no-more ########
+show config network-services bridge-domain | no-more
+
+# NCP3-nog config-start [23-Apr-2026 04:13:32 UTC]
+
+network-services
+  bridge-domain
+    instance bd100
+      admin-state enabled
+      router-interface irb100
+      interface ge100-0/0/3/1.100
+      !
+    !
+  !
+!
+
+# NCP3-nog config-end
+
+NCP3-nog# 
+
+######## show interfaces detail ge100-0/0/3/0 | no-more ########
+show interfaces detail ge100-0/0/3/0 | no-more
+
+Interface ge100-0/0/3/0
+	SNMP ifindex: 57344, Network-Service: VRF (default)
+	Admin state: enabled, Physical link state: up, Operational state: up, Uptime: 0 days, 0:05:41
+	State transitions: 0, Last cleared: 0 days, 0:06:22
+	Description: 
+	MAC Address: e8:c5:7a:d6:30:18 (HW: e8:c5:7a:d6:30:18)
+	Breakout state: child, Channel: 0
+	Speed: 100Gbps, Duplex: FULL, Bundle-id: N/A
+	Port-priority: 32768
+	Port-number: 49
+	MPLS: disabled
+	L2 MTU: 1514, MPLS MTU: 1500, IPv4 MTU: 1500, IPv6 MTU: 1500 (Hardware MTU: N/A)
+	MRU: 9600, L2 Frame Size Max: 1522
+	IPv4 Address: 10.10.10.1/24
+	Secondary IPv4 addresses: N/A
+	IPv6 Admin state: enabled, IPv6 link-local address: N/A, Status: N/A
+	IPv6 global unicast address(es): N/A
+	ARP Timeout: 3600 seconds
+	NDP Timeout: 3600 seconds
+	NDP Router-advertisement
+		Prefix-advertisement: disabled
+	Encapsulation: ethernet
+	L2 originated VLAN tags: N/A
+	Access-list IPv4: In: N/A, Out: N/A
+	Access-list IPv6: In: N/A, Out: N/A
+	Access-list Eth: In: N/A, Out: N/A
+	uRPF IPv4 check: disabled
+	uRPF IPv6 check: disabled
+	Priority Flow Control: disabled
+		Deadlock: disabled, Deadlock occurrences: 0
+			Flap suppression:
+				Status: TC0: N/A, TC1: N/A, TC2: N/A, TC3: N/A, TC4: N/A, TC5: N/A, TC6: N/A, TC7: N/A
+	Carrier-delay: up: 0 ms, down: 0 ms, on-startup: 0 seconds (on-startup remaining time: 0 seconds)
+	Fast Link Recovery timeout: 0 ms
+	FEC: rs-fec-544-514
+	LFS: Current Fault: None, Local Faults: 1, Remote Faults: 1
+	EFM: Admin state: N/A, Status: N/A
+	BER: Current-BER: None, Status: Disabled
+		BER-SD: admin-state: disabled, Threshold: 1e-8, Number of Hits: 0
+		BER-SF: admin-state: disabled, Threshold: 1e-5, Number of Hits: 0
+	Synchronous-Ethernet: non-synchronous
+	PTP Admin-state: disabled
+	PTP Port State: N/A
+	Interface-Dampening: disabled, current penalty counter: None
+		Half-life: 60 seconds, reuse-threshold: 750, suppress-threshold: 2000,
+		Penalty: 1000, max-suppress: 300 seconds
+	L2-service state: disabled
+	Flowspec: disabled
+	Reason for last down state: N/A
+	Utilization rates (input/output): 0%/0%
+	Utilization rate threshold: 100%
+
+NCP3-nog# 
+
+######## show interfaces detail irb100 | no-more ########
+show interfaces detail irb100 | no-more
+
+Interface irb100
+	SNMP ifindex: 41986, Network-Service: VRF (default), BD (bd100)
+	Admin state: enabled, Operational state: up, Uptime: 0 days, 0:00:28
+	State transitions: 0, Last cleared: 0 days, 0:00:28
+	Description: 
+	MAC Address: 84:40:76:94:b9:c4
+	Speed: 100Gbps, Duplex: FULL, Bundle-id: N/A
+	MPLS: disabled
+	L2 MTU: 1522, MPLS MTU: 1500, IPv4 MTU: 1500, IPv6 MTU: 1500 (Hardware MTU: N/A)
+	IPv4 Address: 20.20.20.1/24
+	Secondary IPv4 addresses: N/A
+	IPv6 Admin state: enabled, IPv6 link-local address: N/A, Status: N/A
+	IPv6 global unicast address(es): N/A
+	ARP Timeout: 3600 seconds
+	NDP Timeout: 3600 seconds
+	NDP Router-advertisement
+		Prefix-advertisement: disabled
+		Install-default-route: disabled
+	Encapsulation: ethernet
+	L2 originated VLAN tags: N/A
+	Access-list IPv4: In: N/A, Out: N/A
+	Access-list IPv6: In: N/A, Out: N/A
+	Access-list Eth: In: N/A, Out: N/A
+	uRPF IPv4 check: disabled
+	uRPF IPv6 check: disabled
+	Flowspec: disabled
+	Reason for last down state: no layer-2 service associated with interface irb100
+
+NCP3-nog# 
+
+######## show interfaces detail ge100-0/0/3/1.100 | no-more ########
+show interfaces detail ge100-0/0/3/1.100 | no-more
+
+Interface ge100-0/0/3/1.100
+	SNMP ifindex: 13315, Network-Service: BD (bd100)
+	Admin state: enabled, Operational state: up, Uptime: 0 days, 0:00:33
+	Description: 
+	MAC Address: e8:c5:7a:d6:30:19
+	Speed: 100Gbps, Duplex: N/A, Bundle-id: N/A
+	MPLS: disabled
+	L2 MTU: 1518, MPLS MTU: 1500, IPv4 MTU: 1500, IPv6 MTU: 1500 (Hardware MTU: N/A)
+	IPv4 Address: N/A
+	Secondary IPv4 addresses: N/A
+	IPv6 Admin state: enabled, IPv6 link-local address: N/A, Status: N/A
+	IPv6 global unicast address(es): N/A
+	ARP Timeout: 3600 seconds
+	NDP Timeout: 3600 seconds
+	NDP Router-advertisement
+		Prefix-advertisement: disabled
+	Encapsulation: 802.1q, Vlan-Id: 100 (0x8100)
+	L2 originated VLAN tags: N/A
+	Access-list IPv4: In: N/A, Out: N/A
+	Access-list IPv6: In: N/A, Out: N/A
+	Access-list Eth: In: N/A, Out: N/A
+	VLAN manipulation:
+		Ingress mapping: N/A
+		Egress mapping: N/A
+	uRPF IPv4 check: disabled
+	uRPF IPv6 check: disabled
+	L2-service state: enabled
+	Flowspec: disabled
+	Reason for last down state: N/A
+
+NCP3-nog# 
+
+######## show network-services bridge-domain summary | no-more ########
+show network-services bridge-domain summary | no-more
+----------------------------------------------^
+ERROR: Unknown word: 'summary'.
+NCP3-nog# 
+
+######## show bridge-domain summary | no-more ########
+show bridge-domain summary | no-more
+
+Global Bridge-Domain parameters
+    mac-learning: enabled
+    mac-table-limit: 64000 entries
+    mac-table-aging-time: 320 seconds
+
+Number of Bridge-Domain instances: 1
+Total learned Mac Addresses: 1
+Total number of Interfaces/Up: 1/1
+
+| Name   | Interfaces/Up   | Number of MACs   |
+|--------+-----------------+------------------|
+| bd100  | 1 / 1           | 1                |
+
+NCP3-nog# 
+
+=== DONE ===

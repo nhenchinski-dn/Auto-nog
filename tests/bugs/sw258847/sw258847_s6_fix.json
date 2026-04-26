@@ -1,0 +1,140 @@
+{
+  "V1": {
+    "label": "V1 ge sub-if",
+    "iface": "ge400-0/0/34.100",
+    "precreate": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 vlan-id 100\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# network-services vrf instance urpf_v1b_vrf\nNCP3-nog(cfg-netsrv-vrf-inst)# interface ge400-0/0/34.100\nNCP3-nog(cfg-netsrv-vrf-inst)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:53:12 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "precreate_ok": true,
+    "build_to_s5_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf allow-default disabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34.100 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:54:04 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "build_ok": true,
+    "after_s5": {
+      "show_config": "show config interfaces ge400-0/0/34.100 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:54:13 UTC]\n\ninterfaces\n  ge400-0/0/34.100\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1b_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1b_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34.100 urpf address-family ipv6\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:54:49 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "after_s6": {
+      "show_config": "show config interfaces ge400-0/0/34.100 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:54:58 UTC]\n\ninterfaces\n  ge400-0/0/34.100\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1b_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1b_vrf)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34.100 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:55:32 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "after_s7": {
+      "show_config": "show config interfaces ge400-0/0/34.100 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:55:43 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1b_vrf)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 13318, Network-Service: VRF (urpf_v1b_vrf)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    },
+    "teardown": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34.100\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# no network-services vrf instance urpf_v1b_vrf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:56:28 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "teardown_ok": true
+  },
+  "V2": {
+    "label": "V2 bundle",
+    "iface": "bundle-99",
+    "precreate": "configure\nNCP3-nog(cfg)# interfaces bundle-99 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# network-services vrf instance urpf_v2b_vrf\nNCP3-nog(cfg-netsrv-vrf-inst)# interface bundle-99\nNCP3-nog(cfg-netsrv-vrf-inst)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:57:04 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "precreate_ok": true,
+    "build_to_s5_log": "configure\nNCP3-nog(cfg)# interfaces bundle-99 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99 urpf mode strict\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99 urpf allow-default disabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces bundle-99 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:57:56 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "build_ok": true,
+    "after_s5": {
+      "show_config": "show config interfaces bundle-99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:58:05 UTC]\n\ninterfaces\n  bundle-99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2b_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2b_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces bundle-99 urpf address-family ipv6\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:58:41 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "after_s6": {
+      "show_config": "show config interfaces bundle-99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:58:50 UTC]\n\ninterfaces\n  bundle-99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2b_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2b_vrf)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces bundle-99 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 03:59:24 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "after_s7": {
+      "show_config": "show config interfaces bundle-99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 03:59:35 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2b_vrf)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 12291, Network-Service: VRF (urpf_v2b_vrf)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    },
+    "teardown": "configure\nNCP3-nog(cfg)# no interfaces bundle-99\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# no network-services vrf instance urpf_v2b_vrf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:00:20 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "teardown_ok": true
+  },
+  "V4": {
+    "label": "V4 IRB (loose)",
+    "iface": "irb99",
+    "precreate": "configure\nNCP3-nog(cfg)# interfaces irb99 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# network-services vrf instance urpf_v4b_vrf\nNCP3-nog(cfg-netsrv-vrf-inst)# interface irb99\nNCP3-nog(cfg-netsrv-vrf-inst)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:00:56 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "precreate_ok": true,
+    "build_to_s5_log": "configure\nNCP3-nog(cfg)# interfaces irb99 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces irb99 urpf mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces irb99 urpf allow-default disabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces irb99 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces irb99 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:01:48 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "build_ok": true,
+    "after_s5": {
+      "show_config": "show config interfaces irb99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 04:01:57 UTC]\n\ninterfaces\n  irb99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4b_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4b_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces irb99 urpf address-family ipv6\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:02:33 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "after_s6": {
+      "show_config": "show config interfaces irb99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 04:02:42 UTC]\n\ninterfaces\n  irb99\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode loose\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4b_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4b_vrf), L2-service (N/A)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: disabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces irb99 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:03:16 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "after_s7": {
+      "show_config": "show config interfaces irb99 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 04:03:27 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4b_vrf), L2-service (N/A)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 41986, Network-Service: VRF (urpf_v4b_vrf), L2-service (N/A)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    },
+    "teardown": "configure\nNCP3-nog(cfg)# no interfaces irb99\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# no network-services vrf instance urpf_v4b_vrf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:04:12 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "teardown_ok": true
+  },
+  "V5": {
+    "label": "V5 ge VRF-iso AD=en",
+    "iface": "ge400-0/0/34",
+    "build_to_s5_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf mode loose\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:05:04 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "build_ok": true,
+    "after_s5": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 04:05:14 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default enabled\n      mode loose\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34 urpf address-family ipv6\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:05:48 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "after_s6": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 04:05:59 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default enabled\n      mode loose\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: loose, Allow-default: enabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:06:33 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "after_s7": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 04:06:44 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    }
+  },
+  "V6": {
+    "label": "V6 ge global-only",
+    "iface": "ge400-0/0/34",
+    "build_to_s5_log": "configure\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf mode strict\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf allow-default disabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf address-family ipv6 admin-state enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# interfaces ge400-0/0/34 urpf address-family ipv6 allow-default enabled\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:07:48 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "build_ok": true,
+    "after_s5": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 04:07:58 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n      address-family ipv6\n        admin-state enabled\n        allow-default enabled\n      !\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: loose, Allow-default: enabled"
+    },
+    "s6_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34 urpf address-family ipv6\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:08:33 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s6_ok": true,
+    "after_s6": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 04:08:43 UTC]\n\ninterfaces\n  ge400-0/0/34\n    urpf\n      admin-state enabled\n      allow-default disabled\n      mode strict\n    !\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: enabled, Mode: strict, Allow-default: disabled\n\tuRPF IPv6 check: enabled, Mode: strict, Allow-default: disabled"
+    },
+    "s7_log": "configure\nNCP3-nog(cfg)# no interfaces ge400-0/0/34 urpf\nNCP3-nog(cfg)# top\nNCP3-nog(cfg)# commit\nCommit succeeded by dnroot at 20-Apr-2026 04:09:17 UTC\nNCP3-nog(cfg)# end\nNCP3-nog# ",
+    "s7_ok": true,
+    "after_s7": {
+      "show_config": "show config interfaces ge400-0/0/34 urpf | no-more\n\n# NCP3-nog config-start [20-Apr-2026 04:09:28 UTC]\n\n\n# NCP3-nog config-end\n\nNCP3-nog# ",
+      "show_brief": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled",
+      "show_detail": "\tSNMP ifindex: 26, Network-Service: VRF (test)\n\tuRPF IPv4 check: disabled\n\tuRPF IPv6 check: disabled"
+    }
+  },
+  "_final": "show config interfaces ge400-0/0/34 | no-more\n\n# NCP3-nog config-start [20-Apr-2026 04:09:49 UTC]\n\ninterfaces\n  ge400-0/0/34\n    admin-state enabled\n  !\n!\n\n# NCP3-nog config-end\n\nNCP3-nog# "
+}
