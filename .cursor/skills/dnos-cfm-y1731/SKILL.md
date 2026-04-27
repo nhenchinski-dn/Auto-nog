@@ -25,13 +25,49 @@ Always verify CLI command paths in the RST docs before scripting (workspace rule
 
 Out of scope on DNOS: **dual-ended PM (1DM, 1SL), ETH-LM (LMM/LMR), ETH-AIS/MCC/LCK, MIP creation logic (MHF), Sender ID TLV, multicast DMM/SLM, EFD `oper-down` action.**
 
+## Up-MEP vs Down-MEP (the directionality model)
+
+Pick the wrong direction and CFM will commit cleanly but never see a frame. Direction is set per local MEP via `direction {up|down}`.
+
+```
+                           ┌──────────────────── DNOS box ────────────────────┐
+                           │                                                  │
+                           │  ┌──────────── bridge-relay /                ┐  │
+                           │  │            L2 service (BD/VPWS/EVPN/…)     │  │
+                           │  │                                            │  │
+   wire ─── port A ───────►│──┤                                            │──│───── port B ───── wire
+            ▲              │  │  ▲                                         │  │       ▲
+            │              │  │  │                                         │  │       │
+       Down-MEP            │  │  Up-MEP (faces the relay)                  │  │   Down-MEP
+       (faces the wire)    │  └────────────────────────────────────────────┘  │   (faces the wire)
+                           │                                                  │
+                           └──────────────────────────────────────────────────┘
+```
+
+| | **Down-MEP** | **Up-MEP** |
+|---|---|---|
+| Faces | Outward — the physical wire on the bound interface | Inward — the bridge relay / L2 service |
+| Where its CCMs are emitted | Out the bound (sub-)interface, onto the wire | Into the bridge relay → out the **other** member ports of the same L2 service |
+| Where it processes received CCMs | Frames arriving on the bound (sub-)interface from the wire | Frames arriving into the bridge relay from the other side, destined to the bound (sub-)interface |
+| Bind point | Physical port, bundle, physical VLAN sub-if, bundle VLAN sub-if | Same set, but the (sub-)interface must be a member of an L2 service |
+| Canonical use case | **PE-CE link monitoring** — DNOS PE port toward CE; one MEP at each end of the link | **PE-PE service monitoring** — end-to-end across the provider core (any number of P-routers in between); MEPs sit at the service edges |
+| Forwarding plane requirement on this box | None for a physical port; bridge-domain / xc / VPWS / EVPN if on an L2 sub-if | Always — Up-MEP only "exists" through a working L2 service on the box (BD, VPWS, EVPN, EVPN-VPWS, EVPN-E-LAN) |
+| Sees frames terminating on its own port? | Yes (the link is what it monitors) | No — those terminate before reaching the relay |
+| Sees frames passing through to other service members? | No | Yes (its whole purpose) |
+| Multi-VLAN tag handling | Inherits sub-if tag config; no extra config needed | Requires `interfaces … l2-originated-vlan-tags` on multi-VLAN sub-ifs — without it OAMP-generated DMR/SLR/LBR ship untagged on a tagged service |
+| Y.1731 ETH-DM HW timestamping (`tx_timestampb`) | Works without recycle-port plumbing | NCP6/BCM88690 requires two BCM recycle ports (one per core) configured `INJECTED_2_PP`, **and** BCM data key `oam.feature.up_mep_tod_recycle_enable = 1`; if `0` then `tx_timestampb = 0` in DMRs (PR #92176 W4) |
+| MY-CFM-MAC BGP type-2 advertisement (EVPN-LAN/E-TREE) | Not relevant (link-local) | Triggered by first unicast CFM reply (DMR / SLR / LTR) — important when CCM TX is disabled, otherwise initial unicast PM probes get flooded |
+| Counters / show paths | Identical (both report under `…/meps/<id>`) | Identical |
+
+Pick **Down** for any "is the link to the customer up and clean" question. Pick **Up** for any "is the L2 service end-to-end healthy across the core" question. The two perspectives are layered as different MD levels in real deployments — customer/EVC level (Up-MEPs) at a higher MD level, link/operator level (Down-MEPs) at a lower MD level on the same physical port — so CCMs of the inner (lower-level) domain pass transparently through the outer Up-MEPs and the two state machines stay independent.
+
 ## Must-haves for CFM to actually work
 
 These are the most common reasons "CFM is configured but not running":
 
 1. **Forwarding context.** A Down-MEP on an L2 sub-interface (`ge400-0/0/X.Y`) **must** be attached to a forwarding instance — a `network-services bridge-domain instance <name>`, `l2-cross-connect`, EVPN-VPWS/E-LAN, or VPWS service. Without it CCM/DMM/DMR PDUs never leave the wire even though `l2-service enabled` is set. (The Auto-nog `cfm_between_machines.py` helper enforces this — see baseline-config.md.)
 2. **L2 service on the (sub-)interface.** Set `l2-service enabled` on the sub-interface; otherwise the MEP binds but no Ethernet path exists.
-3. **MEP direction.** `direction down` for PE-CE link monitoring, `direction up` for PE-PE service monitoring. Up-MEPs additionally require `l2-originated-vlan-tags` on multi-VLAN sub-interfaces (otherwise OAMP produces malformed DMR/SLR/LBR).
+3. **MEP direction.** `direction down` for PE-CE link monitoring (CCMs go out the wire), `direction up` for PE-PE service monitoring (CCMs go into the bridge relay). See the Up-MEP vs Down-MEP table above. Up-MEPs additionally need `l2-originated-vlan-tags` on multi-VLAN sub-interfaces, and Up-MEP DM HW timestamping needs the BCM recycle-port plumbing (reference.md → "Up-MEP HW path").
 4. **MD level matches.** Both ends must use the same `level` (0–7); CCMs at the wrong level are dropped and counted in `Wrong MD Level`. Multicast DMAC last nibble = MD level.
 5. **MA `short-ma-name` matches** between peers; a mismatch produces `DefXconCCM` (cross-connect, highest priority).
 6. **Remote-MEP entry.** Either `crosscheck mep-id <id>` per peer **or** `auto-discovery enabled`. ETH-DM/ETH-SLM responders **require** the RMEP to be known; DMM/SLM from unknown peers are silently dropped.

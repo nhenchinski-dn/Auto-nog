@@ -118,6 +118,47 @@ FNG states: `fng-reset → fng-defect → fng-report-defect → fng-defect-repor
 
 ---
 
+## 4a. Up-MEP HW path & gotchas (BCM Jericho-2 / Q2A / NCP6)
+
+The Up-MEP frame path on BCM differs in two important ways from the Down-MEP path, and most Up-MEP "everything looks configured but DM/SLM is broken" symptoms trace back to one of these:
+
+**1. Frame flow.** A Down-MEP punted/generated frame leaves the bound port directly. An Up-MEP frame must traverse the bridge relay first — i.e. it is injected into the L2 service, looked up, and forwarded to the egress member port(s) just like data traffic. That means:
+- The L2 service (BD / VPWS / EVPN-VPWS / EVPN-LAN) must be operationally up on this box. An Up-MEP on a standalone sub-if with no service binding will commit but produce no CCMs.
+- Outbound CCMs of an Up-MEP appear on the **other** member ports of the same L2 service, not on the bound (sub-)interface.
+- Inbound CCMs are matched after relay lookup — the OAMP processes them when they egress toward the Up-MEP's bound (sub-)interface.
+
+**2. TOD recycle plumbing for HW timestamping.**
+For the OAMP to insert a real `tx_timestampb` into a DMR transmitted by an Up-MEP, the egress timestamp has to be recycled back into the OAMP. On BCM88690 / Jericho-2 this is done via two dedicated recycle ports:
+
+| Element | Value / Requirement |
+|---|---|
+| Number of recycle ports | 2 (one per BCM core) |
+| Header type | `INJECTED_2_PP` |
+| BCM hardcoded gports | `CFM_CORE_0_TOD_RECYCLE_GPORT`, `CFM_CORE_1_TOD_RECYCLE_GPORT` |
+| Enable knob | BCM data key `oam.feature.up_mep_tod_recycle_enable = 1` |
+| Symptom if `= 0` or recycle ports not provisioned | `tx_timestampb` reads `0` in DMRs sent by Up-MEPs (and by extension `RxTimeStampf` may also be 0); the initiator silently falls back to plain two-way RTT. Documented as W4 in the SW-216153 / PR #92176 weakness inventory. |
+| Down-MEP equivalent | None needed — Down-MEP DMRs egress directly with the OAMP timestamp inline. |
+
+**3. VLAN tagging on Up-MEP responses.** OAMP-generated DMR/SLR/LBR frames inherit the (sub-)interface tag profile. On a multi-VLAN sub-if the operator must populate `interfaces … l2-originated-vlan-tags` (outer-tag/inner-tag, with TPID where relevant); without it OAMP ships the response untagged on a tagged service, which the peer drops as a service mismatch (SW-134427).
+
+**4. Trap-path contention.** Up-MEP-destined frames that need host punt share the trap path `WB_RX_TRAP_OAM_UP_MEP_DEST1` with LBR / LT / BFD (`WB_RX_TRAP_NON_ACC_OAM_BFD`). At high session counts these protocols contend for trap bandwidth — under stress, expect missed LBR/LTR before missed CCM (CCM never trap-paths once the remote MEP is `rmep-ok`). W9 in PR #92176 inventory.
+
+**5. NCP3 / Cluster.** Up-MEP DM on NCP3 depends on BCM SDK 6.5.32 (CS00012345851). On NCP3-SA without inter-unit SyncE the dev tests carry a `MIN_SYNCE_SUPPORTED_DEVICE_VERSION_NCP3` skipif, and `tx_timestampb` behavior differs (W17). Cluster HA sync is not implemented (SW-129152 open).
+
+**6. MY-CFM-MAC advertisement.** Only Up-MEPs sit inside the EVPN service; the BGP type-2 sticky-MAC advertisement (SW-144792) is therefore an Up-MEP-only concern. It triggers on the **first unicast CFM reply** (DMR / SLR / LTR), not on CCM. If CCM TX is disabled and an operator runs an on-demand DMM/SLM before the MAC has been advertised, the initial probes will be flooded across the EVPN MAC-VRF until the first reply triggers the advertisement.
+
+**Quick triage when an Up-MEP "doesn't work":**
+
+| Symptom | First place to check |
+|---|---|
+| MEP committed, zero CCM TX/RX | L2 service operational state on this box (BD/VPWS/EVPN); other member ports of the service |
+| CCMs flow, DMM works, but `tx_timestampb = 0` in DMR | `oam.feature.up_mep_tod_recycle_enable`, recycle-port gport configuration |
+| CCMs flow, DMR/SLR drop at peer as malformed | `interfaces … l2-originated-vlan-tags` on multi-VLAN sub-if |
+| First DMM/SLM probes flood across the EVPN service | MY-CFM-MAC type-2 advertisement not yet sent (no prior unicast CFM reply) |
+| Up-MEP works in lab, fails on Cluster failover | SW-129152 (no HA sync) + 3.3 ms CCM may flash RDI during failover |
+
+---
+
 ## 5. YANG paths (high-level)
 
 Top-level CFM container:
